@@ -1,0 +1,226 @@
+{% load static %}
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div id='signup' class='signup-light'>
+        <form method='post' action='/signup/' id='signup-form'>
+            {% csrf_token %}
+            <img id='logo' src="{% static 'logo-light.svg' %}" alt="EduSource" width="125" height="125" />
+            <div id='fields'>
+                {% for field in form1 %}
+                    <div>
+                        <label id="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                <strong>Address</strong>
+                {% for field in form2 %}
+                    <div>
+                        <label id="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                {% endfor %}
+            </div>
+            <button type='button' id='submit'>Submit</button>
+        </form>
+    </div>
+</body>
+
+<script>
+    /* Adding an event listener to ensure a description about the user is only requested
+       if they want to be a seller */
+    const mode = document.querySelector('[name="mode"]')
+    const descriptionInput = document.querySelector('[name="description"]')
+    descriptionInput.style.display = 'none'
+    const descriptionLabel = document.getElementById('id_description')
+    descriptionLabel.style.display = 'none'
+    function toggleDescriptionVisibility() {
+        if (mode.value === 'buyer') {
+            descriptionInput.style.display = 'none'
+            descriptionLabel.style.display = 'none'
+        } else {
+            descriptionInput.style.display = 'block'
+            descriptionLabel.style.display = 'block'
+            descriptionLabel.parentNode.style.setProperty('display', 'block', 'important')
+            descriptionInput.placeholder = 'Enter a description about yourself, and what you sell'
+        }
+    }
+    mode.addEventListener('change', toggleDescriptionVisibility) 
+    
+    /* Allows users to see result of changing themes */
+    const theme = document.querySelector('[name="theme_preference"]')
+    function toggleSignupTheme() {
+        const body = document.querySelector('body')
+        const signup = document.getElementById('signup')
+        if (theme.value === 'dark') {
+            body.style.background = '#807E7E'
+            signup.classList.replace('signup-light', 'signup-dark')
+            document.querySelector('img').src = "{% static 'logo-dark.svg' %}"
+        } else {
+            body.style.background = '#FFFFFF'
+            document.querySelector('img').src = "{% static 'logo-light.svg' %}"
+            signup.classList.replace('signup-dark', 'signup-light')
+        }
+    }
+    theme.addEventListener('change', toggleSignupTheme) 
+</script>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+    
+    body {
+        height: 100vh;
+        width: 100vw;
+        margin: 0;
+    }
+
+    #logo { 
+        height: 5rem;
+        margin-bottom: 1rem;
+    }
+
+    #signup {
+        font-family: 'Inter';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 5rem;
+        height: 30rem;
+        width: 30rem;
+        overflow: auto;
+    }
+
+    .signup-light {
+        background-color: #0DCAF0;
+        color: black;
+    }
+
+    .signup-dark {
+        background-color: #000000;
+        color: white;
+    }
+    
+    #signup-form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #fields {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+    }
+
+    #fields div {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    #fields div label {
+        width: 10rem;
+    }
+
+    #signup input, #signup textarea, #signup select {
+        border-radius: 1rem;
+        border: none;
+        height: 1rem;
+    }
+
+    #signup input {
+        padding: 0.9rem;
+    }
+
+    #signup input, #signup select {
+        width: 14rem;
+    }
+
+    #signup select {
+        padding: 0.3rem;
+        height: 2rem;
+        text-align: center;
+    }
+
+    #signup textarea {
+        padding: 0.5rem;
+        width: 24rem;
+        height: 10rem;
+        margin-top: 0.7rem;
+    }
+
+    /* Removing placeholder for aesthetics */
+    #signup input::placeholder {
+        visibility: hidden;
+    }
+
+    #signup button {
+        border-radius: 0.5rem;
+        background: white;
+        border: none;
+        padding: 0.5rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        margin-top: 2rem;
+        margin-bottom: 0.8rem;
+    }
+
+    #signup button:hover {
+        background:rgb(237, 229, 229);
+        transition: background 0.2s ease;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 499px) {
+        #signup {
+            width: 25rem;
+        }
+
+        #fields div {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        #signup textarea {
+            width: 14rem;
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 417px) {
+        #signup {
+            width: 23rem;
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 400px) {
+        #signup {
+            width: 20rem;
+        }
+    }
+
+    ::-webkit-scrollbar {
+        width: 0.5rem;
+        height: 0.5rem;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: lightgray;
+        border-radius: 1rem;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: darkgrey;
+        border-radius: 1rem;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background:rgb(50, 55, 56);
+        margin-left: 1rem;
+    }
+</style>
