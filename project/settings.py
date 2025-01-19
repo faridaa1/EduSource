@@ -60,12 +60,12 @@ SESSION_COOKIE_SECURE = False # set to true in production
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
-    'http://127.0..1:5173'
+    'http://127.0.0.1:5173'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
-    'http://127.0..1:5173'
+    'http://127.0.0.1:5173'
 ]
 
 TEMPLATES = [
@@ -97,6 +97,7 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = "api.User"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -133,6 +134,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

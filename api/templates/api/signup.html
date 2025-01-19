@@ -1,0 +1,319 @@
+{% load static %}
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'icon/logo.ico' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <title>Sign Up</title>
+</head>
+<body>
+    <div id='signup' class='signup-light'>
+        <form method='post' action='/signup/' id='signup-form'>
+            {% csrf_token %}
+            <img id='logo' src="{% static 'logo-light.svg' %}" alt="EduSource" width="125" height="125" />
+            <div id='fields'>
+                {% for field in signup_form %}
+                    <div>
+                        {% if field.label == 'Reenter password' %}
+                            <label id="{{ field.id_for_label }}">Re-enter Password</label>
+                        {% else %}
+                            <label id="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% endif %}
+                        {{ field }}
+                        {% if field.label == 'Password' %}
+                            <button type='button' id='show-pass' class='password'><i class="bi bi-eye"></i></button>
+                            <button type='button' id='hide-pass' class='password'><i class="bi bi-eye-slash-fill"></i></button>
+                        {% endif %}
+                        {% if field.label == 'Reenter password' %}
+                            <button type='button' id='show-re-pass' class='password'><i class="bi bi-eye"></i></button>
+                            <button type='button' id='hide-re-pass' class='password'><i class="bi bi-eye-slash-fill"></i></button>
+                        {% endif %}
+                    </div>
+                    {% for error in field.errors %}
+                        {% if field.label != 'Description' %}
+                            <span class='error'> {{ error }} </span>
+                        {% else %}
+                            <span id='description-error' class='error'> {{ error }} </span>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+                <strong>Address</strong>
+                {% for field in address_form %}
+                    <div>
+                        <label id="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                    {% for error in field.errors %}
+                        <span class='error'> {{ error }} </span>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            <button id='submit'>Sign up</button>
+            <a href='/login/' class='alt'>Log in instead</a>
+        </form>
+    </div>
+</body>
+
+<script>
+    const usernameElement = document.querySelector('[name="username"]')
+    usernameElement.setAttribute('autocomplete', 'username')
+    /*Toggling whether password is shown or not*/
+    const passwordElement = document.querySelector('[name="password"]')
+    passwordElement.type = 'password'
+    passwordElement.setAttribute('autocomplete', 'new-password')
+    const passwordShowButton = document.getElementById('show-pass')
+    const passwordHideButton = document.getElementById('hide-pass')
+    passwordHideButton.style.display = 'none'
+    function togglePasswordVisibility() {
+        if (passwordElement.type === 'password') {
+            passwordElement.type = 'text'
+            passwordShowButton.style.display = 'none'
+            passwordHideButton.style.display = 'inline'
+        } else {
+            passwordElement.type = 'password'
+            passwordShowButton.style.display = 'inline'
+            passwordHideButton.style.display = 'none'
+        }
+    }
+    passwordShowButton.addEventListener('click', togglePasswordVisibility)
+    passwordHideButton.addEventListener('click', togglePasswordVisibility)
+    
+    const reEnterPasswordElement = document.querySelector('[name="reenter_password"]')
+    reEnterPasswordElement.type = 'password'
+    reEnterPasswordElement.setAttribute('autocomplete', 'new-password')
+    const reEnterPasswordShowButton = document.getElementById('show-re-pass')
+    const reEnterPasswordHideButton = document.getElementById('hide-re-pass')
+    reEnterPasswordHideButton.style.display = 'none'
+    function toggleReEnterPasswordVisibility() {
+        if (reEnterPasswordElement.type === 'password') {
+            reEnterPasswordElement.type = 'text'
+            reEnterPasswordShowButton.style.display = 'none'
+            reEnterPasswordHideButton.style.display = 'inline'
+        } else {
+            reEnterPasswordElement.type = 'password'
+            reEnterPasswordShowButton.style.display = 'inline'
+            reEnterPasswordHideButton.style.display = 'none'
+        }
+    }
+    reEnterPasswordShowButton.addEventListener('click', toggleReEnterPasswordVisibility)
+    reEnterPasswordHideButton.addEventListener('click', toggleReEnterPasswordVisibility)
+    
+    /* Adding an event listener to ensure a description about the user is only requested
+       if they want to be a seller */
+    const mode = document.querySelector('[name="mode"]')
+    const descriptionInput = document.querySelector('[name="description"]')
+    descriptionInput.placeholder = 'Enter a description about yourself, and what you sell'
+    const descriptionLabel = document.getElementById('id_description')
+    const description_error = document.getElementById('description-error')
+    toggleDescriptionVisibility()
+    function toggleDescriptionVisibility() {
+        if (mode.value === 'seller') {
+            descriptionLabel.parentNode.style.setProperty('display', 'block', 'important')
+        }
+        descriptionInput.style.display = mode.value === 'buyer' ? 'none' : 'block'
+        descriptionLabel.style.display = mode.value === 'buyer' ? 'none' : 'block'
+        if (description_error) {
+            description_error.style.display = mode.value === 'buyer' ? 'none' : 'block'
+        }
+    }
+    mode.addEventListener('change', toggleDescriptionVisibility) 
+    
+    /* Allows users to see result of changing themes */
+    const theme = document.querySelector('[name="theme_preference"]')
+    function toggleSignupTheme() {
+        const body = document.querySelector('body')
+        const signup = document.getElementById('signup')
+        body.style.background = theme.value === 'dark' ? '#807E7E' : '#FFFFFF'
+        document.querySelector('img').src = theme.value === 'dark' ? "{% static 'logo-dark.svg' %}" : "{% static 'logo-light.svg' %}"
+        signup.classList.replace(theme.value === 'dark' ? 'signup-light' : 'signup-dark', theme.value === 'dark' ? 'signup-dark' : 'signup-light')
+    }
+    theme.addEventListener('change', toggleSignupTheme) 
+</script>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+    body {
+        height: 100vh;
+        width: 100vw;
+        margin: 0;
+    }
+
+    #logo { 
+        height: 5rem;
+        margin-bottom: 1rem;
+    }
+
+    #signup {
+        font-family: 'Inter';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 5rem;
+        height: 30rem;
+        width: 30rem;
+        overflow: auto;
+    }
+
+    .signup-light {
+        background-color: #0DCAF0;
+        color: black;
+    }
+
+    .signup-dark {
+        background-color: #000000;
+        color: white;
+    }
+    
+    #signup-form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #fields {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+    }
+
+    #fields div {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    #fields div label {
+        width: 9rem;
+    }
+
+    #signup input, #signup textarea, #signup select {
+        border-radius: 1rem;
+        border: none;
+        height: 1rem;
+    }
+
+    #signup input {
+        padding: 0.9rem;
+    }
+
+    #signup input, #signup select {
+        width: 14rem;
+    }
+
+    #signup select {
+        padding: 0.3rem;
+        height: 2rem;
+        text-align: center;
+    }
+
+    #signup textarea {
+        padding: 0.5rem;
+        width: 24rem;
+        height: 10rem;
+        margin-top: 0.7rem;
+    }
+
+    /* Removing placeholder for aesthetics */
+    #signup input::placeholder {
+        visibility: hidden;
+    }
+
+    #submit {
+        border-radius: 0.5rem;
+        background: white;
+        border: none;
+        padding: 0.5rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        margin-top: 2rem;
+        margin-bottom: 0.8rem;
+    }
+
+    #signup .error {
+        color: red;
+    }
+
+    #submit:hover, .password:hover {
+        background:rgb(237, 229, 229);
+        transition: background 0.2s ease;
+    }
+
+    .password {
+        border: 0;
+        font-size: 1rem;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 499px) {
+        #signup {
+            width: 25rem;
+        }
+
+        #fields div {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        #signup textarea {
+            width: 14rem;
+        }
+    }
+
+    #signup .alt {
+        margin: 0;
+        font-size: 0.9rem;
+        margin-top: 0.3rem;
+        text-decoration: none;
+        margin-bottom: 0.8rem;
+    }
+
+    .signup-light .alt {
+        color: black;
+    }
+
+    .signup-dark .alt {
+        color: white;
+    }
+
+    #signup .alt:hover {
+        text-decoration: underline;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 417px) {
+        #signup {
+            width: 23rem;
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 400px) {
+        #signup {
+            width: 20rem;
+        }
+    }
+
+    ::-webkit-scrollbar {
+        width: 0.5rem;
+        height: 0.5rem;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: lightgray;
+        border-radius: 1rem;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: darkgrey;
+        border-radius: 1rem;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background:rgb(50, 55, 56);
+        margin-left: 1rem;
+    }
+</style>
