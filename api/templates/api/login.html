@@ -13,11 +13,7 @@
             <div id='fields'>
                 {% for field in signup_form %}
                     <div>
-                        {% if field.label == 'Reenter password' %}
-                            <label id="{{ field.id_for_label }}">Re-enter Password</label>
-                        {% else %}
-                            <label id="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {% endif %}
+                        <label id="{{ field.id_for_label }}">{{ field.label }}</label>
                         {{ field }}
                         {% if field.label == 'Password' %}
                             <button type='button' id='show-pass' class='password'><i class="bi bi-eye"></i></button>
@@ -29,33 +25,19 @@
                         {% endif %}
                     </div>
                     {% for error in field.errors %}
-                        {% if field.label != 'Description' %}
-                            <span class='error'> {{ error }} </span>
-                        {% else %}
-                            <span id='description-error' class='error'> {{ error }} </span>
-                        {% endif %}
-                    {% endfor %}
-                {% endfor %}
-                <strong>Address</strong>
-                {% for field in address_form %}
-                    <div>
-                        <label id="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {{ field }}
-                    </div>
-                    {% for error in field.errors %}
-                        <span class='error'> {{ error }} </span>
+                        <span id='description-error' class='error'> {{ error }} </span>
                     {% endfor %}
                 {% endfor %}
             </div>
-            <button id='submit'>Sign up</button>
-            <a href='/login/' class='alt'>Log in instead</a>
+            <button id='submit'>Log in</button>
+            <a href='/signup/' class='alt'>Sign up instead</a>
         </form>
     </div>
 </body>
 
 <script>
-    const usernameElement = document.querySelector('[name="username"]')
-    usernameElement.setAttribute('autocomplete', 'username')
+    {% comment %} const usernameElement = document.querySelector('[name="username"]')
+    usernameElement.setAttribute('autocomplete', 'username') {% endcomment %}
     /*Toggling whether password is shown or not*/
     const passwordElement = document.querySelector('[name="password"]')
     passwordElement.type = 'password'
@@ -96,37 +78,6 @@
     }
     reEnterPasswordShowButton.addEventListener('click', toggleReEnterPasswordVisibility)
     reEnterPasswordHideButton.addEventListener('click', toggleReEnterPasswordVisibility)
-    
-    /* Adding an event listener to ensure a description about the user is only requested
-       if they want to be a seller */
-    const mode = document.querySelector('[name="mode"]')
-    const descriptionInput = document.querySelector('[name="description"]')
-    descriptionInput.placeholder = 'Enter a description about yourself, and what you sell'
-    const descriptionLabel = document.getElementById('id_description')
-    const description_error = document.getElementById('description-error')
-    toggleDescriptionVisibility()
-    function toggleDescriptionVisibility() {
-        if (mode.value === 'seller') {
-            descriptionLabel.parentNode.style.setProperty('display', 'block', 'important')
-        }
-        descriptionInput.style.display = mode.value === 'buyer' ? 'none' : 'block'
-        descriptionLabel.style.display = mode.value === 'buyer' ? 'none' : 'block'
-        if (description_error) {
-            description_error.style.display = mode.value === 'buyer' ? 'none' : 'block'
-        }
-    }
-    mode.addEventListener('change', toggleDescriptionVisibility) 
-    
-    /* Allows users to see result of changing themes */
-    const theme = document.querySelector('[name="theme_preference"]')
-    function toggleSignupTheme() {
-        const body = document.querySelector('body')
-        const signup = document.getElementById('signup')
-        body.style.background = theme.value === 'dark' ? '#807E7E' : '#FFFFFF'
-        document.querySelector('img').src = theme.value === 'dark' ? "{% static 'logo-dark.svg' %}" : "{% static 'logo-light.svg' %}"
-        signup.classList.replace(theme.value === 'dark' ? 'signup-light' : 'signup-dark', theme.value === 'dark' ? 'signup-dark' : 'signup-light')
-    }
-    theme.addEventListener('change', toggleSignupTheme) 
 </script>
 
 <style>
