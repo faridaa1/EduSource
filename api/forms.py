@@ -141,8 +141,14 @@ class SignupForm(ModelForm):
         """Handling re-entered password validation"""
         reentered_password: str = self.cleaned_data['reenter_password']
         clean_password: str | None = self.cleaned_data.get('password', None)
-        if clean_password:
-            if not self.cleaned_data['password'] == reentered_password:
+        if clean_password and not self.cleaned_data['password'] == reentered_password:
                 raise ValidationError('Both passwords must match')
         return reentered_password
+    
+    def clean_description(self) -> ValidationError | str:
+        """Handling description validation"""
+        description: str | None = self.cleaned_data.get('description', None)
+        if description and not re.match(r"^\S+( \S+)*$", description):
+            raise ValidationError('Only one space between words')
+        return description
 

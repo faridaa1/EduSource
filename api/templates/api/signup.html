@@ -87,13 +87,19 @@
     }
     reEnterPasswordShowButton.addEventListener('click', toggleReEnterPasswordVisibility)
     reEnterPasswordHideButton.addEventListener('click', toggleReEnterPasswordVisibility)
+    
     /* Adding an event listener to ensure a description about the user is only requested
        if they want to be a seller */
     const mode = document.querySelector('[name="mode"]')
     const descriptionInput = document.querySelector('[name="description"]')
-    descriptionInput.style.display = 'none'
     const descriptionLabel = document.getElementById('id_description')
-    descriptionLabel.style.display = 'none'
+    if (mode === 'buyer') {
+        descriptionLabel.style.display = 'none'
+        descriptionInput.style.display = 'none'
+    } else {
+        descriptionInput.style.display = 'block'
+        descriptionLabel.parentNode.style.setProperty('display', 'block', 'important')
+    }
     function toggleDescriptionVisibility() {
         if (mode.value === 'buyer') {
             descriptionInput.style.display = 'none'
