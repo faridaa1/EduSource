@@ -13,20 +13,26 @@
             <div id='fields'>
                 <p class='required-label'><span class='required'>*</span> - Required</p>
                 {% for field in signup_form %}
-                    <div>
+                    <div class='field-main-div'>
                         {% if field.label == 'Reenter password' %}
                             <label id="{{ field.id_for_label }}">Re-enter Password<span class='required'> *</span></label>
                         {% else %}
                             <label id="{{ field.id_for_label }}">{{ field.label }}<span class='required'> *</span></label>
                         {% endif %}
-                        {{ field }} 
                         {% if field.label == 'Password' %}
-                            <button type='button' id='show-pass' class='password'><i class="bi bi-eye"></i></button>
-                            <button type='button' id='hide-pass' class='password'><i class="bi bi-eye-slash-fill"></i></button>
-                        {% endif %}
-                        {% if field.label == 'Reenter password' %}
-                            <button type='button' id='show-re-pass' class='password'><i class="bi bi-eye"></i></button>
-                            <button type='button' id='hide-re-pass' class='password'><i class="bi bi-eye-slash-fill"></i></button>
+                            <div class='pass'>
+                                {{ field }} 
+                                <button type='button' id='show-pass' class='password'><i class="bi bi-eye"></i></button>
+                                <button type='button' id='hide-pass' class='password'><i class="bi bi-eye-slash-fill"></i></button>
+                            </div>
+                        {% elif field.label == 'Reenter password' %}
+                            <div class='pass'>
+                                {{ field }} 
+                                <button type='button' id='show-re-pass' class='password'><i class="bi bi-eye"></i></button>
+                                <button type='button' id='hide-re-pass' class='password'><i class="bi bi-eye-slash-fill"></i></button>
+                            </div>
+                        {% else %}
+                            {{ field }} 
                         {% endif %}
                     </div>
                     {% for error in field.errors %}
@@ -39,7 +45,7 @@
                 {% endfor %}
                 <strong>Address</strong>
                 {% for field in address_form %}
-                    <div>
+                    <div class='field-main-div'>
                         {% if field.label == 'Second line' %}
                             <label id="{{ field.id_for_label }}">{{ field.label }}</label>
                         {% else %}
@@ -181,7 +187,7 @@
         gap: 1.2rem;
     }
 
-    #fields div {
+    .field-main-div {
         display: flex;
         flex-direction: column;
         gap: 1rem;
@@ -191,6 +197,7 @@
     #signup input, #signup textarea, #signup select {
         border-radius: 1rem;
         border: none;
+        padding: 0.9rem;
         height: 1rem;
     }
 
@@ -268,6 +275,12 @@
 
     #signup .alt:hover {
         text-decoration: underline;
+    }
+
+    .pass { 
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
     }
 
     /* Responsive Design */
