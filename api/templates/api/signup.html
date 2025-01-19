@@ -1,6 +1,7 @@
 {% load static %}
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
     <div id='signup' class='signup-light'>
@@ -8,26 +9,84 @@
             {% csrf_token %}
             <img id='logo' src="{% static 'logo-light.svg' %}" alt="EduSource" width="125" height="125" />
             <div id='fields'>
-                {% for field in form1 %}
+                {% for field in signup_form %}
                     <div>
-                        <label id="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% if field.label == 'Reenter password' %}
+                            <label id="{{ field.id_for_label }}">Re-enter Password</label>
+                        {% else %}
+                            <label id="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% endif %}
                         {{ field }}
+
+                        {% if field.label == 'Password' %}
+                            <button type='button' id='show-pass' class='password'><i class="bi bi-eye"></i></button>
+                            <button type='button' id='hide-pass' class='password'><i class="bi bi-eye-slash-fill"></i></button>
+                        {% endif %}
+                        {% if field.label == 'Reenter password' %}
+                            <button type='button' id='show-re-pass' class='password'><i class="bi bi-eye"></i></button>
+                            <button type='button' id='hide-re-pass' class='password'><i class="bi bi-eye-slash-fill"></i></button>
+                        {% endif %}
                     </div>
+                    {% for error in field.errors %}
+                        <span class='error'> {{ error }} </span>
+                    {% endfor %}
                 {% endfor %}
                 <strong>Address</strong>
-                {% for field in form2 %}
+                {% for field in address_form %}
                     <div>
                         <label id="{{ field.id_for_label }}">{{ field.label }}</label>
                         {{ field }}
                     </div>
+                    {% for error in field.errors %}
+                        <span class='error'> {{ error }} </span>
+                    {% endfor %}
                 {% endfor %}
             </div>
-            <button type='button' id='submit'>Submit</button>
+            <button id='submit'>Submit</button>
         </form>
     </div>
 </body>
 
 <script>
+    /*Toggling whether password is shown or not*/
+    const passwordElement = document.querySelector('[name="password"]')
+    passwordElement.type = 'password'
+    const passwordShowButton = document.getElementById('show-pass')
+    const passwordHideButton = document.getElementById('hide-pass')
+    passwordHideButton.style.display = 'none'
+    function togglePasswordVisibility() {
+        if (passwordElement.type === 'password') {
+            passwordElement.type = 'text'
+            passwordShowButton.style.display = 'none'
+            passwordHideButton.style.display = 'inline'
+        } else {
+            passwordElement.type = 'password'
+            passwordShowButton.style.display = 'inline'
+            passwordHideButton.style.display = 'none'
+        }
+    }
+    passwordShowButton.addEventListener('click', togglePasswordVisibility)
+    passwordHideButton.addEventListener('click', togglePasswordVisibility)
+    
+    const reEnterPasswordElement = document.querySelector('[name="reenter_password"]')
+    reEnterPasswordElement.type = 'password'
+    const reEnterPasswordShowButton = document.getElementById('show-re-pass')
+    const reEnterPasswordHideButton = document.getElementById('hide-re-pass')
+    reEnterPasswordHideButton.style.display = 'none'
+    function toggleReEnterPasswordVisibility() {
+        if (reEnterPasswordElement.type === 'password') {
+            console.log("afeter")
+            reEnterPasswordElement.type = 'text'
+            reEnterPasswordShowButton.style.display = 'none'
+            reEnterPasswordHideButton.style.display = 'inline'
+        } else {
+            reEnterPasswordElement.type = 'password'
+            reEnterPasswordShowButton.style.display = 'inline'
+            reEnterPasswordHideButton.style.display = 'none'
+        }
+    }
+    reEnterPasswordShowButton.addEventListener('click', toggleReEnterPasswordVisibility)
+    reEnterPasswordHideButton.addEventListener('click', toggleReEnterPasswordVisibility)
     /* Adding an event listener to ensure a description about the user is only requested
        if they want to be a seller */
     const mode = document.querySelector('[name="mode"]')
@@ -68,7 +127,6 @@
 
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
-    
     body {
         height: 100vh;
         width: 100vw;
@@ -122,7 +180,7 @@
     }
 
     #fields div label {
-        width: 10rem;
+        width: 9rem;
     }
 
     #signup input, #signup textarea, #signup select {
@@ -157,7 +215,7 @@
         visibility: hidden;
     }
 
-    #signup button {
+    #submit {
         border-radius: 0.5rem;
         background: white;
         border: none;
@@ -168,9 +226,20 @@
         margin-bottom: 0.8rem;
     }
 
-    #signup button:hover {
+    #signup .error {
+        color: red;
+    }
+
+    #submit:hover, .password:hover {
         background:rgb(237, 229, 229);
         transition: background 0.2s ease;
+    }
+
+    .password {
+        border: 0;
+        font-size: 1rem;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
     }
 
     /* Responsive Design */

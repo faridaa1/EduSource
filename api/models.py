@@ -12,6 +12,8 @@ class Address(models.Model):
 class User(AbstractUser):
     """Defining attrbiutes and methods for User model"""
     email = models.EmailField(unique=True, null=False, blank=False)
+    first_name = models.CharField(max_length=150, null=False, blank=False)
+    last_name = models.CharField(max_length=150, null=False, blank=False)
     phone_number = models.CharField(max_length=11 ,unique=True, null=False, blank=False)
     rating = models.FloatField(null=False, blank=True, default=0.0)
     description = models.TextField(null=False, blank=True)
