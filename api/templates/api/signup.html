@@ -28,7 +28,11 @@
                         {% endif %}
                     </div>
                     {% for error in field.errors %}
-                        <span class='error'> {{ error }} </span>
+                        {% if field.label != 'Description' %}
+                            <span class='error'> {{ error }} </span>
+                        {% else %}
+                            <span id='description-error' class='error'> {{ error }} </span>
+                        {% endif %}
                     {% endfor %}
                 {% endfor %}
                 <strong>Address</strong>
@@ -75,7 +79,6 @@
     reEnterPasswordHideButton.style.display = 'none'
     function toggleReEnterPasswordVisibility() {
         if (reEnterPasswordElement.type === 'password') {
-            console.log("afeter")
             reEnterPasswordElement.type = 'text'
             reEnterPasswordShowButton.style.display = 'none'
             reEnterPasswordHideButton.style.display = 'inline'
@@ -92,23 +95,18 @@
        if they want to be a seller */
     const mode = document.querySelector('[name="mode"]')
     const descriptionInput = document.querySelector('[name="description"]')
+    descriptionInput.placeholder = 'Enter a description about yourself, and what you sell'
     const descriptionLabel = document.getElementById('id_description')
-    if (mode === 'buyer') {
-        descriptionLabel.style.display = 'none'
-        descriptionInput.style.display = 'none'
-    } else {
-        descriptionInput.style.display = 'block'
-        descriptionLabel.parentNode.style.setProperty('display', 'block', 'important')
-    }
+    const description_error = document.getElementById('description-error')
+    toggleDescriptionVisibility()
     function toggleDescriptionVisibility() {
-        if (mode.value === 'buyer') {
-            descriptionInput.style.display = 'none'
-            descriptionLabel.style.display = 'none'
-        } else {
-            descriptionInput.style.display = 'block'
-            descriptionLabel.style.display = 'block'
+        if (mode.value === 'seller') {
             descriptionLabel.parentNode.style.setProperty('display', 'block', 'important')
-            descriptionInput.placeholder = 'Enter a description about yourself, and what you sell'
+        }
+        descriptionInput.style.display = mode.value === 'buyer' ? 'none' : 'block'
+        descriptionLabel.style.display = mode.value === 'buyer' ? 'none' : 'block'
+        if (description_error) {
+            description_error.style.display = mode.value === 'buyer' ? 'none' : 'block'
         }
     }
     mode.addEventListener('change', toggleDescriptionVisibility) 
@@ -118,15 +116,9 @@
     function toggleSignupTheme() {
         const body = document.querySelector('body')
         const signup = document.getElementById('signup')
-        if (theme.value === 'dark') {
-            body.style.background = '#807E7E'
-            signup.classList.replace('signup-light', 'signup-dark')
-            document.querySelector('img').src = "{% static 'logo-dark.svg' %}"
-        } else {
-            body.style.background = '#FFFFFF'
-            document.querySelector('img').src = "{% static 'logo-light.svg' %}"
-            signup.classList.replace('signup-dark', 'signup-light')
-        }
+        body.style.background = theme.value === 'dark' ? '#807E7E' : '#FFFFFF'
+        document.querySelector('img').src = theme.value === 'dark' ? "{% static 'logo-dark.svg' %}" : "{% static 'logo-light.svg' %}"
+        signup.classList.replace(theme.value === 'dark' ? 'signup-light' : 'signup-dark', theme.value === 'dark' ? 'signup-dark' : 'signup-light')
     }
     theme.addEventListener('change', toggleSignupTheme) 
 </script>
