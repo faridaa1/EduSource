@@ -1,68 +1,71 @@
 {% load static %}
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="{% static 'icon/logo.ico' %}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <title>Sign Up</title>
-</head>
-<body>
-    <div id='signup' class='signup-light'>
-        <form method='post' action='/signup/' id='signup-form'>
-            {% csrf_token %}
-            <img id='logo' src="{% static 'logo-light.svg' %}" alt="EduSource" width="125" height="125" />
-            <div id='fields'>
-                <p class='required-label'><span class='required'>*</span> - Required</p>
-                {% for field in signup_form %}
-                    <div class='field-main-div'>
-                        {% if field.label == 'Reenter password' %}
-                            <label id="{{ field.id_for_label }}">Re-enter Password<span class='required'> *</span></label>
-                        {% else %}
-                            <label id="{{ field.id_for_label }}">{{ field.label }}<span class='required'> *</span></label>
-                        {% endif %}
-                        {% if field.label == 'Password' %}
-                            <div class='pass'>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" href="{% static 'icon/logo.ico' %}">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+        <title>Sign Up</title>
+    </head>
+    <body>
+        <div id='signup' class='signup-light'>
+            <form method='post' action='/signup/' id='signup-form'>
+                {% csrf_token %}
+                <img id='logo' src="{% static 'logo-light.svg' %}" alt="EduSource" width="125" height="125" />
+                <div id='fields'>
+                    <p class='required-label'><span class='required'>*</span> - Required</p>
+                    {% for field in signup_form %}
+                        <div class='field-main-div'>
+                            {% if field.label == 'Reenter password' %}
+                                <label id="{{ field.id_for_label }}">Re-enter Password<span class='required'> *</span></label>
+                            {% else %}
+                                <label id="{{ field.id_for_label }}">{{ field.label }}<span class='required'> *</span></label>
+                            {% endif %}
+                            {% if field.label == 'Password' %}
+                                <div class='pass'>
+                                    {{ field }} 
+                                    <button type='button' id='show-pass' class='password'><i class="bi bi-eye"></i></button>
+                                    <button type='button' id='hide-pass' class='password'><i class="bi bi-eye-slash-fill"></i></button>
+                                </div>
+                            {% elif field.label == 'Reenter password' %}
+                                <div class='pass'>
+                                    {{ field }} 
+                                    <button type='button' id='show-re-pass' class='password'><i class="bi bi-eye"></i></button>
+                                    <button type='button' id='hide-re-pass' class='password'><i class="bi bi-eye-slash-fill"></i></button>
+                                </div>
+                            {% else %}
                                 {{ field }} 
-                                <button type='button' id='show-pass' class='password'><i class="bi bi-eye"></i></button>
-                                <button type='button' id='hide-pass' class='password'><i class="bi bi-eye-slash-fill"></i></button>
-                            </div>
-                        {% elif field.label == 'Reenter password' %}
-                            <div class='pass'>
-                                {{ field }} 
-                                <button type='button' id='show-re-pass' class='password'><i class="bi bi-eye"></i></button>
-                                <button type='button' id='hide-re-pass' class='password'><i class="bi bi-eye-slash-fill"></i></button>
-                            </div>
-                        {% else %}
-                            {{ field }} 
-                        {% endif %}
-                    </div>
-                    {% for error in field.errors %}
-                        {% if field.label != 'Description' %}
+                            {% endif %}
+                        </div>
+                        {% for error in field.errors %}
+                            {% if field.label != 'Description' %}
+                                <span class='error'> {{ error }} </span>
+                            {% else %}
+                                <span id='description-error' class='error'> {{ error }} </span>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                    <strong>Address</strong>
+                    {% for field in address_form %}
+                        <div class='field-main-div'>
+                            {% if field.label == 'Second line' %}
+                                <label id="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {% else %}
+                                <label id="{{ field.id_for_label }}">{{ field.label }}<span class='required'> *</span></label>
+                            {% endif %}
+                            {{ field }}
+                        </div>
+                        {% for error in field.errors %}
                             <span class='error'> {{ error }} </span>
-                        {% else %}
-                            <span id='description-error' class='error'> {{ error }} </span>
-                        {% endif %}
+                        {% endfor %}
                     {% endfor %}
-                {% endfor %}
-                <strong>Address</strong>
-                {% for field in address_form %}
-                    <div class='field-main-div'>
-                        {% if field.label == 'Second line' %}
-                            <label id="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {% else %}
-                            <label id="{{ field.id_for_label }}">{{ field.label }}<span class='required'> *</span></label>
-                        {% endif %}
-                        {{ field }}
-                    </div>
-                    {% for error in field.errors %}
-                        <span class='error'> {{ error }} </span>
-                    {% endfor %}
-                {% endfor %}
-            </div>
-            <button id='submit'>Sign up</button>
-            <a href='/login/' class='alt'>Log in instead</a>
-        </form>
-    </div>
-</body>
+                </div>
+                <button id='submit'>Sign up</button>
+                <a href='/login/' class='alt'>Log in instead</a>
+            </form>
+        </div>
+    </body>
+</html>
 
 <script>
     const usernameElement = document.querySelector('[name="username"]')
