@@ -2,9 +2,9 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate
 from django.contrib import auth
-from django.contrib.auth.hashers import check_password
 from .forms import SignupForm, AddressForm, LoginForm
 from .models import User, Address
+
 
 def signup(request: HttpRequest) -> HttpResponse:
     """Handling user sign up"""
@@ -43,4 +43,21 @@ def signup(request: HttpRequest) -> HttpResponse:
 
 def login(request: HttpRequest) -> HttpResponse:
     """Handling user log in"""
+    if request.method == 'POST':
+        login_form: LoginForm = LoginForm(request.POST)
+        if login_form.is_valid():
+            login_data: dict[str, str] = login_form.cleaned_data
+            if '@' in login_data['user']:
+                try:
+                    user: User = User.objects.get(email=login_data['user'])
+                    authenticated_user: User | None = authenticate(request, username=user.username, password=login_data['password'])
+                except:
+                    authenticated_user: None = None
+            else:
+               authenticated_user: User | None = authenticate(request, username=login_data['user'], password=login_data['password'])
+            if authenticated_user:
+                auth.login(request, authenticated_user)
+                return redirect('http://localhost:5173/')
+            login_form.add_error(None, 'Invalid email or password' if '@' in login_data['user'] else 'Invalid username or password')
+        return render(request, 'api/login.html', {'login_form' : login_form})
     return render(request, 'api/login.html', {'login_form' : LoginForm()})
