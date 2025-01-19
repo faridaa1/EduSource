@@ -24,6 +24,20 @@ class User(AbstractUser):
         """Defining string representation of User model"""
         return f"{self.first_name} {self.last_name}: {self.email}"
     
+    def as_dict(self) -> dict[str, int | float | str]:
+        """Dictionary representation of User object"""
+        return {
+            'id': self.id,
+            'email': self.email,
+            'username': self.username,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'phone_number': self.phone_number,
+            'rating': self.rating,
+            'description': self.description,
+            'theme_preference': self.theme_preference,
+            'mode': self.mode
+        }
 
 class Address(models.Model):
     """Defining attributes and methods for Address model"""
