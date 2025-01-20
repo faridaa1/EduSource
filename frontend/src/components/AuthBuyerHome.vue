@@ -1,5 +1,4 @@
 <template>
-    ok
 </template>
 
 <script lang="ts">

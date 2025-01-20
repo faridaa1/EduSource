@@ -61,3 +61,8 @@ def login(request: HttpRequest) -> HttpResponse:
             login_form.add_error(None, 'Invalid email or password' if '@' in login_data['user'] else 'Invalid username or password')
         return render(request, 'api/login.html', {'login_form' : login_form})
     return render(request, 'api/login.html', {'login_form' : LoginForm()})
+
+def user(request: HttpRequest) -> JsonResponse:
+    if request.user.is_authenticated:
+        return JsonResponse({'user' : User.objects.get(username=request.user.username).as_dict()})
+    return JsonResponse({'user' : 'unauthenticated'})
