@@ -7,19 +7,40 @@
         <RouterLink to="/" class="hide-on-mobile">Profile</RouterLink>
         <div id="search-div">
           <input type="text" placeholder="Search">
-          <button><i class="bi bi-search search-icon"></i></button>
+          <button><i class="bi bi-search"></i></button>
         </div>
         <RouterLink to="/" class="hide-on-mobile">Help</RouterLink>
-        <p class="hide-on-mobile">Settings</p>
+        <div class="hide-on-mobile">
+          Settings
+          <div id="settings">
+            <div id="theme" class="setting">
+              <label for="">Theme</label>
+              <div id="toggle">
+                <div id="circle" @click="toggle_theme">
+                </div>
+              </div>
+            </div>
+            <div id="currency" class="setting">
+              <label for="">Currency</label>
+            </div>
+            <div id="mode" class="setting">
+              <label for="">Mode</label>
+              <select name="" id="" value="">
+                <option value=""></option>
+              </select>
+            </div>
+          </div>
+        </div>
         <RouterLink to="/" class="hide-on-mobile">Sign out</RouterLink>
         <button id="show-on-mobile" @click="show_menu"><i class="bi bi-list"></i></button>
       </header>
       <div id="hamburger">
-        <RouterLink to="/" id="item1" class="hide-on-mobile">Home</RouterLink>
-        <RouterLink to="/" id="item2" class="hide-on-mobile">Profile</RouterLink>
-        <RouterLink to="/" id="item3" class="hide-on-mobile">Help</RouterLink>
-        <p id="item4" class="hide-on-mobile">Settings</p>
-        <RouterLink to="/" id="item5" class="hide-on-mobile">Sign out</RouterLink>
+        <button><i class="bi bi-x"></i></button>
+        <RouterLink to="/" id="item1" class="show-mobile">Home</RouterLink>
+        <RouterLink to="/" id="item2" class="show-mobile">Profile</RouterLink>
+        <RouterLink to="/" id="item3" class="show-mobile">Help</RouterLink>
+        <p id="item4" class="show-mobile">Settings</p>
+        <RouterLink to="/" id="item5" class="show-mobile">Sign out</RouterLink>
       </div>
       <RouterView />
    </div>
@@ -27,9 +48,10 @@
 </template>
 
 <script lang="ts">
-  import { defineComponent, shallowReactive } from 'vue';
+  import { defineComponent } from 'vue';
   import { RouterLink, RouterView } from 'vue-router'
   import type { User } from './types';
+  import { useUserStore } from './stores/user';
   export default defineComponent({
     components: { RouterView },
     async mounted(): Promise<void> {
@@ -38,18 +60,36 @@
         credentials: 'include'
       })
       let userData: { user: User | 'unauthenticated' } = await userResponse.json()
-      if (!(userData.user === 'unauthenticated')) {
+      if (userData.user === 'unauthenticated') {
+      } else {
         let theme_preference = userData.user.theme_preference
-        console.log(document.getElementById('light'))
+        // useUserStore().saveCsrf()
+        console.log(document.cookie)
+        useUserStore().saveUser(userData.user)
       }
     },
     methods: {
+      toggle_theme(event: Event): void {
+        const div = document.getElementById('app-vue')
+        if (div) {
+          const theme = div.firstElementChild
+          if (theme) {
+            theme.id = theme.id === 'light' ? 'dark' : 'light'
+            document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
+            document.body.style.color = theme.id === 'light' ? 'black' : 'white'
+            const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
+            if (logo) {
+              logo.src = theme.id === 'light' ? '/logo-light.svg' : '/logo-dark.svg'
+            }
+          }
+        }
+      },
       hide_menu(event: Event): void {
         const hamburgerElement = document.getElementById('show-on-mobile')
         const menuElement = document.getElementById('hamburger')
         if (hamburgerElement && !hamburgerElement.contains(event.target as Node) && menuElement) {
           hamburgerElement.style.display = 'block'
-          menuElement.style.display = 'none'
+          menuElement.classList.remove('show-mobile')
           document.removeEventListener('click', this.hide_menu)
         }
       },
@@ -58,7 +98,7 @@
         const menuElement = document.getElementById('hamburger')
         if (hamburgerElement && menuElement) {
           hamburgerElement.style.display = 'none'
-          menuElement.style.display = 'block'
+          menuElement.classList.add('show-mobile')
           document.addEventListener('click', this.hide_menu)
         }
       }
@@ -81,14 +121,16 @@
     grid-template-columns: 1fr 1fr 1fr 2fr 1fr 1fr 1fr;
     place-items: center;
     padding-top: 0.8rem;
+    background-color: #0DCAF0;
     padding-bottom: 0.8rem;
   }
 
-  #app-vue #light header {
-    background-color: #0DCAF0;
+  #app-vue #dark header {
+    background-color: black;
   }
 
   #app-vue a {
+    color: black;
     text-decoration: none;
   }
 
@@ -96,17 +138,18 @@
     text-decoration: underline;
   }
 
-  #app-vue #light a {
-    color: black;
+  #app-vue #dark a {
+    color: white;
   }
 
   #app-vue #search-div {
-    position: relative;
+    display: flex;
   }
 
   #app-vue input {
     background-color: rgb(224, 222, 222);
-    border-radius: 0.4rem;
+    border-top-left-radius: 0.4rem;
+    border-bottom-left-radius: 0.4rem;
     border: none;
     padding: 0.3rem;
     width: 100%;
@@ -117,21 +160,84 @@
   }
 
   #app-vue #search-div button {
-    position: absolute;
-    top: 0.2rem;
-    right: 0.5rem;
     border: none;
-    background-color: transparent;
+    border-top-right-radius: 0.4rem;
+    border-bottom-right-radius: 0.4rem;
+    background-color: rgb(224, 222, 222);
+    padding-right: 0.3rem;
+    padding-left: 0.3rem;
   }
 
-  #app-vue #search-div i:hover {
+  #app-vue #search-div button:hover {
     cursor: pointer;
-    color: #0DCAF0;
+    background-color: darkgrey;
   }
 
-  #show-on-mobile, #hamburger, #item1, #item2, #item3, #item4, #item5 { 
+  #show-on-mobile, .show-mobile { 
     display: none;
   }
+
+  #hamburger {
+    position: absolute;
+    top: 0;
+    right: -6rem;
+    grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
+    place-items: center;
+    border-radius: 0.5rem;
+    transition: 0.5s ease;
+    overflow: hidden;
+  }
+
+  #hamburger button {
+    position: absolute;
+    color: rgb(236, 99, 99);
+    border: none;
+    background: none;
+    right: 6rem;
+  }
+
+  #hamburger button:hover {
+    color: red;
+  }
+
+  #hamburger button i {
+    font-size: 2rem;
+  }
+
+  .setting {
+    display: flex;
+    width: 10rem;
+    gap: 2rem;
+  }
+
+  #toggle {
+    position: relative;
+    height: 1.5rem;
+    width: 3.5rem;
+    background-color: white;
+    border-radius: 1rem;
+  }
+
+  #circle {
+    position: absolute;
+    height: 1.1rem;
+    width: 1.1rem;
+    border-radius: 1rem;
+    top: 0.23rem;
+    transform: translateX(0);
+    left: 0.4rem;
+    background-color: yellow;
+    transition: transform 0.5s ease;
+  }
+
+  #dark #circle {
+    background-color: darkblue;
+  }
+
+  #dark #circle {
+    transform: translateX(155%);
+  }
+
 
   /* Responsive Design */
   @media (min-width: 1110px) {
@@ -147,11 +253,8 @@
   }
 
   @media (max-width: 654px) {
-    .hide-on-mobile {
-      display: none;
-    }
-
     #app-vue header {
+      position: relative;
       display: grid;
       grid-template-columns: 1fr 2fr 1fr;
       place-items: center;
@@ -159,13 +262,12 @@
       padding-bottom: 0.8rem;
     }
 
-    #app-vue #hamburger {
-      position: absolute;
+    #app-vue .show-mobile {
+      display: block;
       right: 0;
-      top: 0;
-      grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
-      place-items: center;
-      border-radius: 0.5rem;
+    }
+
+    #app-vue #light .show-mobile {
       background-color: darkgray;
     }
 
@@ -216,7 +318,6 @@
       grid-row: 5;
     }
 
-
     #show-on-mobile {
       display: block;
       border: none;
@@ -225,6 +326,10 @@
 
     #show-on-mobile i {
       font-size: 1.5rem;
+    }
+
+    .hide-on-mobile {
+      display: none;
     }
   }
 </style>
