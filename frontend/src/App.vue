@@ -15,7 +15,7 @@
           <div id="settings">
             <div id="theme" class="setting">
               <label for="">Theme</label>
-              <div id="toggle" @click="toggle_theme">
+              <div id="toggle" @click="(event) => toggle_theme('click', event)">
                 <div id="circle">
                 </div>
               </div>
@@ -57,30 +57,59 @@
     async mounted(): Promise<void> {
       let userResponse: Response = await fetch('http://localhost:8000/api/user/', {
         method: 'GET',
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'X-CSRFToken' : useUserStore().csrf
+        }
       })
       let userData: { user: User | 'unauthenticated' } = await userResponse.json()
       if (userData.user === 'unauthenticated') {
       } else {
-        let theme_preference = userData.user.theme_preference
-        // useUserStore().saveCsrf()
-        console.log(document.cookie)
         useUserStore().saveUser(userData.user)
+        for (let cookie of document.cookie.split(';')) {
+          const cookie_pair = cookie.split('=')
+           if (cookie_pair[0] === 'csrftoken') {
+              useUserStore().saveCsrf(cookie_pair[1])
+           }
+        }
+        this.toggle_theme('mounted')
       }
     },
     methods: {
-      toggle_theme(event: Event): void {
+      async toggle_theme(called_by: string, event?: Event): Promise<void> {
+        console.log(called_by)
         const div = document.getElementById('app-vue')
         if (div) {
           const theme = div.firstElementChild
           if (theme) {
-            theme.id = theme.id === 'light' ? 'dark' : 'light'
+            if (called_by === 'mounted') {
+              theme.id = useUserStore().user.theme_preference
+            } else {
+              theme.id = theme.id === 'light' ? 'dark' : 'light'
+            }
             document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
             document.body.style.color = theme.id === 'light' ? 'black' : 'white'
             const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
             if (logo) {
               logo.src = theme.id === 'light' ? '/logo-light.svg' : '/logo-dark.svg'
             }
+            if (called_by === 'mounted') return
+            let updateResponse: Response = await fetch(`http://localhost:8000/api/user/${useUserStore().user.id}/details/`, {
+              method: 'PUT',
+              credentials: 'include',
+              headers: {
+                'Content-Type' : 'application/json',
+                'X-CSRFToken' : useUserStore().csrf
+              },
+              body: JSON.stringify(theme.id)
+            })
+            if (!updateResponse.ok) {
+              console.error('Error updating theme')
+              alert('Error updating theme')
+              return
+            }
+            let userUpdateData: User = await updateResponse.json()
+            useUserStore().user.theme_preference = userUpdateData.theme_preference
           }
         }
       },

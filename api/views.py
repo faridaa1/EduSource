@@ -1,5 +1,6 @@
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import redirect, render
+import json
+from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate
 from django.contrib import auth
 from .forms import SignupForm, AddressForm, LoginForm
@@ -62,7 +63,17 @@ def login(request: HttpRequest) -> HttpResponse:
         return render(request, 'api/login.html', {'login_form' : login_form})
     return render(request, 'api/login.html', {'login_form' : LoginForm()})
 
+
 def user(request: HttpRequest) -> JsonResponse:
     if request.user.is_authenticated:
         return JsonResponse({'user' : User.objects.get(username=request.user.username).as_dict()})
     return JsonResponse({'user' : 'unauthenticated'})
+
+
+def user_details(request: HttpRequest, id: int) -> JsonResponse | Http404:
+    print('hi')
+    if request.method == 'PUT':
+        user: User | Http404 = get_object_or_404(User, id=id)
+        user.theme_preference = json.loads(request.body)
+        user.save()
+    return JsonResponse(user.as_dict())
