@@ -15,8 +15,8 @@
           <div id="settings">
             <div id="theme" class="setting">
               <label for="">Theme</label>
-              <div id="toggle">
-                <div id="circle" @click="toggle_theme">
+              <div id="toggle" @click="toggle_theme">
+                <div id="circle">
                 </div>
               </div>
             </div>
@@ -236,6 +236,10 @@
 
   #dark #circle {
     transform: translateX(155%);
+  }
+
+  #toggle:hover {
+    background-color: rgb(245, 245, 245);
   }
 
 
