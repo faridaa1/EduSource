@@ -10,13 +10,15 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=11 ,unique=True, null=False, blank=False, validators=[RegexValidator(r'^07(\d{8,9})$', message='Must be 10 or 11 digit number starting with 07')])
     rating = models.FloatField(null=False, blank=True, default=0.0)
     description = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
-    
     THEMES: list [tuple[str, str]] = [('light', 'light'), ('dark', 'dark')]
     theme_preference = models.CharField(max_length=5, choices=THEMES, default='light', null=False, blank=False)
     
     MODES: list [tuple[str, str]] = [('buyer', 'buyer'), ('seller', 'seller')]
     mode = models.CharField(max_length=6, choices=MODES, default='buyer', null=False, blank=False)
     
+    CURRENCIES: list [tuple[str, str]] = [('USD', 'USD'), ('GBP', 'GBP'), ('EUR', 'EUR')]
+    currency = models.CharField(max_length=3, choices=CURRENCIES, default='GBP', null=False, blank=False)
+
     groups = models.ManyToManyField(Group, blank=True, related_name='new_user_set')
     user_permissions = models.ManyToManyField(Permission, blank=True, related_name='new_user_permissions_set')
 
@@ -36,7 +38,8 @@ class User(AbstractUser):
             'rating': self.rating,
             'description': self.description,
             'theme_preference': self.theme_preference,
-            'mode': self.mode
+            'mode': self.mode,
+            'currency': self.currency
         }
 
 class Address(models.Model):

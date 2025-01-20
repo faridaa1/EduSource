@@ -5,6 +5,8 @@ from django.contrib.auth import authenticate
 from django.contrib import auth
 from .forms import SignupForm, AddressForm, LoginForm
 from .models import User, Address
+from djmoney.money import Money
+from djmoney.contrib.exchange.models import convert_money
 
 
 def signup(request: HttpRequest) -> HttpResponse:
@@ -65,13 +67,28 @@ def login(request: HttpRequest) -> HttpResponse:
 
 
 def user(request: HttpRequest) -> JsonResponse:
+    test = Money(100,'GBP')
+    print(convert_money(test, 'GBP'))
     if request.user.is_authenticated:
         return JsonResponse({'user' : User.objects.get(username=request.user.username).as_dict()})
     return JsonResponse({'user' : 'unauthenticated'})
 
 
+def user_settings(request: HttpRequest, id: int, setting: str) -> JsonResponse | Http404:
+    if request.method == 'PUT':
+        user: User | Http404 = get_object_or_404(User, id=id)
+        if setting == 'theme':
+            user.theme_preference = json.loads(request.body)
+        elif setting == 'currency':
+            user.currency = json.loads(request.body)
+        else:
+            user.mode = json.loads(request.body)
+        user.save()
+        print(request.body)
+    return JsonResponse(user.as_dict())
+
+
 def user_details(request: HttpRequest, id: int) -> JsonResponse | Http404:
-    print('hi')
     if request.method == 'PUT':
         user: User | Http404 = get_object_or_404(User, id=id)
         user.theme_preference = json.loads(request.body)

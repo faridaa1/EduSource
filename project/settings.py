@@ -38,8 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'api'
+    'api',
+    'djmoney',
+    'djmoney.contrib.exchange'
 ]
+
+EXCHANGE_BACKEND = 'djmoney.contrib.exchange.backends.FixerBackend'
+FIXER_ACCESS_KEY = 'b25103306c1c87d04c3a977546cf5916'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

@@ -9,4 +9,5 @@ export interface User {
     description: string;
     theme_preference: 'light' | 'dark';
     mode: 'buyer' | 'seller';
+    currency: 'USD' | 'GBP' | 'EUR';
 }
