@@ -74,23 +74,55 @@ def user(request: HttpRequest) -> JsonResponse:
     return JsonResponse({'user' : 'unauthenticated'})
 
 
-def user_settings(request: HttpRequest, id: int, setting: str) -> JsonResponse | Http404:
+def user_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse | Http404:
     if request.method == 'PUT':
         user: User | Http404 = get_object_or_404(User, id=id)
-        if setting == 'theme':
+        address: Address | Http404 = get_object_or_404(Address, user=user)
+        if attribute == 'theme':
             user.theme_preference = json.loads(request.body)
-        elif setting == 'currency':
+        elif attribute == 'currency':
             user.currency = json.loads(request.body)
-        else:
+        elif attribute == 'mode':
             user.mode = json.loads(request.body)
+        elif attribute == 'email':
+            user.email = json.loads(request.body)
+        elif attribute == 'username':
+            user.username = json.loads(request.body)
+        elif attribute == 'password':
+            user.set_password(json.loads(request.body))
+        elif attribute == 'name':
+            user.first_name = json.loads(request.body)
+        elif attribute == 'surname':
+            user.last_name = json.loads(request.body)
+        elif attribute == 'number':
+            user.phone_number = json.loads(request.body)
+        elif attribute == 'description':
+            user.description = json.loads(request.body)
+        elif attribute == 'address_line_one':
+            address.first_line = json.loads(request.body)
+        elif attribute == 'address_line_two':
+            address.second_line = json.loads(request.body)
+        elif attribute == 'city':
+            address.city = json.loads(request.body)
+        elif attribute == 'postcode':
+            address.postcode = json.loads(request.body)
         user.save()
-        print(request.body)
+        address.save()
+        if attribute == 'password':
+            user: User | None = authenticate(request, username=user.username, password=json.loads(request.body))
+            if user:
+                auth.login(request, user)
     return JsonResponse(user.as_dict())
 
 
-def user_details(request: HttpRequest, id: int) -> JsonResponse | Http404:
+def check_details(request: HttpRequest, id: int, attribute: str):
     if request.method == 'PUT':
-        user: User | Http404 = get_object_or_404(User, id=id)
-        user.theme_preference = json.loads(request.body)
-        user.save()
-    return JsonResponse(user.as_dict())
+        if attribute == 'email':
+            return JsonResponse(User.objects.filter(email=json.loads(request.body)).exists(), safe=False)
+        elif attribute == 'username':
+            return JsonResponse(User.objects.filter(username=json.loads(request.body)).exists(), safe=False)
+        elif attribute == 'password':
+            user: User = User.objects.get(id=id)
+            return JsonResponse(user.check_password(json.loads(request.body)), safe=False)
+        elif attribute == 'number':
+            return JsonResponse(User.objects.filter(phone_number=json.loads(request.body)).exists(), safe=False)

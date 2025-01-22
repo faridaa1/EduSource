@@ -28,6 +28,7 @@ class User(AbstractUser):
     
     def as_dict(self) -> dict[str, int | float | str]:
         """Dictionary representation of User object"""
+        address: Address = Address.objects.get(user=self)
         return {
             'id': self.id,
             'email': self.email,
@@ -39,14 +40,18 @@ class User(AbstractUser):
             'description': self.description,
             'theme_preference': self.theme_preference,
             'mode': self.mode,
-            'currency': self.currency
+            'currency': self.currency,
+            'address_line_one': address.first_line,
+            'address_second_line': address.second_line,
+            'city': address.city,
+            'postcode': address.postcode
         }
 
 class Address(models.Model):
     """Defining attributes and methods for Address model"""
-    first_line = models.CharField(max_length=255, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9 ]+$', message='No special characters allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
-    second_line = models.CharField(max_length=255, null=False, blank=True, validators=[RegexValidator(r'^[a-zA-Z0-9 ]+$', message='No special characters allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
-    city = models.CharField(max_length=255, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9 ]+$', message='No special characters allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
+    first_line = models.CharField(max_length=255, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$', message='No special characters allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
+    second_line = models.CharField(max_length=255, null=False, blank=True, validators=[RegexValidator(r'^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$', message='No special characters allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
+    city = models.CharField(max_length=255, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$', message='No special characters allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
     postcode = models.CharField(max_length=7, null=False, blank=False, validators=[RegexValidator(r'^[A-Za-z0-9]{5,7}$', message='Enter 5-7 character postcode without spaces')])
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='address')
     

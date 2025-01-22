@@ -71,10 +71,16 @@ class SignupForm(ModelForm):
     def clean_password(self) -> ValidationError | str:
         """Handling password validation"""
         password: str = self.cleaned_data['password']
+        username: str | None = self.cleaned_data.get('username', None)
+        email: str | None = self.cleaned_data.get('email', None)
         if re.search(r"\s", password):
             raise ValidationError('Password cannot contain spaces')
         if len(password) < 8 or len(password) > 15:
             raise ValidationError('Password must be between 8 to 15 characters long')
+        if username == password:
+            raise ValidationError('Password cannot be the same as username')
+        if password == email:
+            raise ValidationError('Password cannot be the same as email')
         return password
     
     def clean_reenter_password(self) -> ValidationError | str:

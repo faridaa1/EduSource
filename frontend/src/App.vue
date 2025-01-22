@@ -3,15 +3,23 @@
     <div id="light">
       <header>
         <img id='logo' src="/logo-light.svg" alt="EduSource" width="125" height="125" v-pre/>
-        <RouterLink to="/" class="hide-on-mobile">Home</RouterLink>
-        <RouterLink to="/" class="hide-on-mobile">Profile</RouterLink>
+        <RouterLink to="/" class="hide-on-mobile link">Home</RouterLink>
+        <div id="profile-div" class="hide-on-mobile" @click="show_profile('desktop')">
+          <p id="profile-header">Profile</p>
+          <div id="profile-nav">
+            <RouterLink class="profile-item border-bottom rounded-top" to="/details" >Details</RouterLink>
+            <RouterLink class="profile-item border-bottom" to="/">Orders</RouterLink>
+            <RouterLink class="profile-item border-bottom" to="/">Cart</RouterLink>
+            <RouterLink class="profile-item rounded-bottom" to="/">Wishlist</RouterLink>
+          </div>
+        </div>
         <div id="search-div">
           <input type="text" placeholder="Search">
           <button><i class="bi bi-search"></i></button>
         </div>
-        <RouterLink to="/" class="hide-on-mobile">Help</RouterLink>
+        <RouterLink to="/" class="hide-on-mobile link">Help</RouterLink>
         <div id="main-settings" class="hide-on-mobile">
-          Settings
+          <p id="settings-header" @click="show_settings('desktop')">Settings</p>
           <div id="settings">
             <div id="theme" class="setting">
               <label for="">Theme</label>
@@ -38,16 +46,51 @@
             </div>
           </div>
         </div>
-        <RouterLink to="/" class="hide-on-mobile">Sign out</RouterLink>
+        <RouterLink to="/" class="hide-on-mobile link">Sign out</RouterLink>
         <button id="show-on-mobile" @click="show_menu"><i class="bi bi-list"></i></button>
       </header>
       <div id="hamburger">
         <button><i class="bi bi-x"></i></button>
         <RouterLink to="/" id="item1" class="show-mobile">Home</RouterLink>
-        <RouterLink to="/" id="item2" class="show-mobile">Profile</RouterLink>
+        <div id="item2" class="show-mobile" @click="show_profile('mobile')">
+          <p id="profile-header">Profile</p>
+          <div id="profile-nav">
+            <RouterLink class="profile-item border-bottom rounded-top" to="/details" >Details</RouterLink>
+            <RouterLink class="profile-item border-bottom" to="/">Orders</RouterLink>
+            <RouterLink class="profile-item border-bottom" to="/">Cart</RouterLink>
+            <RouterLink class="profile-item rounded-bottom" to="/">Wishlist</RouterLink>
+          </div>
+        </div>
         <RouterLink to="/" id="item3" class="show-mobile">Help</RouterLink>
-        <p id="item4" class="show-mobile">Settings</p>
-        <RouterLink to="/" id="item5" class="show-mobile">Sign out</RouterLink>
+        <div id="item4" class="show-mobile">
+          <p id="settings-header" @click="show_settings('mobile')">Settings</p>
+          <div id="settings-mobile">
+            <div id="theme" class="setting">
+              <label for="">Theme</label>
+              <div id="toggle" @click="(event) => toggle_theme('click', event)">
+                <div id="circle">
+                </div>
+              </div>
+            </div>
+            <div id="currency" class="setting">
+              <label for="">Currency</label>
+              <select id="currency-dropdown" v-model="currency_setting" @change="update_setting('currency', currency_setting)">
+                <option v-for="currency in ['USD', 'GBP', 'EUR']" :key="currency" :value="currency">
+                  {{ currency }}
+                </option>
+              </select>
+            </div>
+            <div id="mode" class="setting">
+              <label for="">Mode</label>
+              <select id="currency-dropdown" v-model="mode_setting" @change="update_setting('mode', mode_setting)">
+                <option v-for="mode in ['buyer', 'seller']" :key="mode" :value="mode">
+                  {{ mode }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <RouterLink to="/" id="item5" class="show-mobile link">Sign out</RouterLink>
       </div>
       <RouterView />
    </div>
@@ -96,7 +139,7 @@
     },
     methods: {
       async update_setting(called_by: string, data: string): Promise<void> {
-        let updateResponse: Response = await fetch(`http://localhost:8000/api/user/settings/${useUserStore().user.id}/${called_by}/`, {
+            let updateResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/${called_by}/`, {
               method: 'PUT',
               credentials: 'include',
               headers: {
@@ -124,7 +167,6 @@
               theme.id = theme.id === 'light' ? 'dark' : 'light'
             }
             document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
-            document.body.style.color = theme.id === 'light' ? 'black' : 'white'
             const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
             if (logo) {
               logo.src = theme.id === 'light' ? '/logo-light.svg' : '/logo-dark.svg'
@@ -142,11 +184,41 @@
         } else {
           hamburgerElement.style.display = 'block'
         }
+      }, 
+      show_profile(called_by: string): void {
+        const profileElement = document.getElementById('profile-nav')
+        if (profileElement) {
+          profileElement.classList.add('profile-nav-mobile')
+          document.addEventListener('click', (event) => this.hide_profile(event, called_by))
+        }
+      },
+      hide_profile(event: Event, called_by: string): void {
+        const profileElement = document.getElementById('profile-nav')
+        const mainProfileElement = document.getElementById(called_by === 'mobile' ? 'item2' : 'profile-div')
+        if (profileElement && mainProfileElement && !mainProfileElement.contains(event.target as Node)) {
+          profileElement.classList.remove('profile-nav-mobile')
+          document.removeEventListener('click', (event) => this.hide_profile(event, called_by))
+        }
+      },
+      show_settings(called_by: string): void {
+        const settingElement = document.getElementById(called_by !== 'mobile' ? 'settings' :'settings-mobile')
+        if (settingElement) {
+          settingElement.classList.add('show-settings')
+          document.addEventListener('click', (event) => this.hide_settings(event, called_by))
+        }
+      },
+      hide_settings(event: Event, called_by: string): void {
+        const settingElement = document.getElementById(called_by !== 'mobile' ? 'settings' :'settings-mobile')
+        const mainSettingsElement = document.getElementById(called_by !== 'mobile' ? 'main-settings' : 'item4')
+        if (settingElement && mainSettingsElement && !mainSettingsElement.contains(event.target as Node)) {
+          settingElement.classList.remove('show-settings')
+          document.removeEventListener('click', (event) => this.hide_settings(event, called_by))
+        }
       },
       hide_menu(event: Event): void {
         const hamburgerElement = document.getElementById('show-on-mobile')
         const menuElement = document.getElementById('hamburger')
-        if (hamburgerElement && !hamburgerElement.contains(event.target as Node) && menuElement) {
+        if (hamburgerElement && !hamburgerElement.contains(event.target as Node) && menuElement && !menuElement.contains(event.target as Node)) {
           hamburgerElement.style.display = 'block'
           menuElement.classList.remove('show-mobile')
           document.removeEventListener('click', this.hide_menu)
@@ -199,11 +271,11 @@
     text-decoration: none;
   }
 
-  #app-vue a:hover {
+  #app-vue a:hover, #settings-header:hover, #profile-header:hover {
     text-decoration: underline;
   }
 
-  #app-vue #dark a {
+  #app-vue #dark .link {
     color: white;
   }
 
@@ -222,6 +294,14 @@
 
   #app-vue input:focus {
     background-color: white;
+  }
+
+  #settings-header:hover, #profile-header:hover {
+    cursor: pointer;
+  }
+
+  #dark #settings-header, #dark #profile-header {
+    color: white;
   }
 
   #app-vue #search-div button {
@@ -274,15 +354,53 @@
 
   #settings {
     position: absolute;
+    top: -11rem;
+    right: -4rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    background-color: #D9D9D9;
+    border-radius: 0.5rem;
+    transition: 0.5s ease;
+  }
+
+  #item4 #settings-mobile {
+    position: absolute;
+    top: -17rem;
+    right: 6.5rem;
+    display: flex;
+    flex-direction: column;
+    background-color: #D9D9D9;
+    border-radius: 0.5rem;
+    transition: top 0.5s ease;
+  }
+
+  .show-settings {
+    top: 0rem;
+    margin-top: 13.3rem;
+  }
+  
+  #item4 .show-settings {
+    top: 0rem;
+    margin-top: 15.3rem;
+  }
+
+  #dark #settings {
+    color: black;
+  }
+
+  #theme, #currency {
+    border-bottom: 0.1rem solid white;
+  }
+
+  #dark #theme, #dark #currency {
+    border-bottom: 0.1rem solid darkgray;
   }
 
   .setting {
     display: flex;
     align-items: center;
     gap: 2rem;
+    padding: 0.5rem;
   }
 
   .setting label {
@@ -330,6 +448,63 @@
     background-color: rgb(245, 245, 245);
   }
 
+  #profile-nav {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    background-color: #D9D9D9;
+    border-radius: 0.5rem;
+    align-items: center;
+    top: -13rem;
+    right: -2.5rem;
+    opacity: 0;
+  }
+
+  .profile-nav-mobile {
+    top: 2.3rem !important;
+    right: 6rem;
+    opacity: 1 !important;
+    transition: opacity 0.4s ease;
+  }
+  
+  #item2 #profile-nav {
+    top: 0.3rem;
+    right: 2rem;
+    opacity: 100%;
+  }
+
+  #item2 .profile-nav-mobile {
+    /* right: 6.2rem !important; */
+    right: 10rem !important;
+  }
+
+  #light .border-bottom {
+    border-bottom: 0.1rem solid darkgray;
+  }
+
+  #dark .border-bottom {
+    border-bottom: 0.1rem solid darkgray;
+  }
+
+  .profile-item {
+    width: 6rem;
+    text-align: center;
+    padding: 0.6rem;
+  }
+
+  .rounded-bottom {
+    border-bottom-right-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
+  }
+
+  .rounded-top {
+    border-top-right-radius: 0.5rem;
+    border-top-left-radius: 0.5rem;
+  }
+
+  .profile-item:hover {
+    background-color: #0DCAF0;
+  }
 
   /* Responsive Design */
   @media (min-width: 1110px) {
@@ -393,9 +568,12 @@
     #item1 {
       grid-column: 3;
       grid-row: 1;
+      border-top-right-radius: 0.5rem;
+      border-top-left-radius: 0.5rem;
     }
 
     #item2 {
+      position: relative;
       grid-column: 3;
       grid-row: 2;
     }
@@ -406,6 +584,7 @@
     }
 
     #item4 {
+      position: relative;
       grid-column: 3;
       grid-row: 4;
     }
@@ -432,5 +611,25 @@
     .hide-on-mobile {
       display: none;
     }
+  }
+
+  ::-webkit-scrollbar {
+      width: 0.5rem;
+      height: 0.5rem;
+  }
+
+  ::-webkit-scrollbar-track {
+      background: lightgray;
+      border-radius: 1rem;
+  }
+
+  ::-webkit-scrollbar-thumb {
+      background: darkgrey;
+      border-radius: 1rem;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+      background:rgb(50, 55, 56);
+      margin-left: 1rem;
   }
 </style>

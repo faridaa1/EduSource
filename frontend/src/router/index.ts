@@ -1,4 +1,5 @@
 import AuthBuyerHome from '@/components/AuthBuyerHome.vue'
+import Details from '@/components/Details.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -8,6 +9,11 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: AuthBuyerHome,
+    },
+    {
+      path: '/details',
+      name: 'details',
+      component: Details,
     },
   ],
 })

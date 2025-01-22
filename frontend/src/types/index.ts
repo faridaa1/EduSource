@@ -10,4 +10,8 @@ export interface User {
     theme_preference: 'light' | 'dark';
     mode: 'buyer' | 'seller';
     currency: 'USD' | 'GBP' | 'EUR';
+    address_line_one: string;
+    address_second_line: string;
+    city: string;
+    postcode: string;
 }
