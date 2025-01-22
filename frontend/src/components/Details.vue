@@ -1,6 +1,6 @@
 <template>
     <div id="details">
-        <form ref="detailsForm" @submit.prevent="validate('details')">
+        <form ref="detailsForm" id="detailsForm" @submit.prevent="validate('details')">
             <h1>Account Details</h1>
             <div class="form-item">
                 <label for="">Email</label>
@@ -14,9 +14,9 @@
                 <button id="username-save" class="save" type="submit" v-if="editingUsername" @click="validate_username(true)"><i class="bi bi-floppy-fill"></i></button>
                 <button id="username-cancel" type="button" class="cancel" v-if="editingUsername" @click="editingUsername = false; username = user.username"><i class="bi bi-x"></i></button>
             </div>
-            <div id="password-item" class="form-item">
+            <div id="password-item">
                 <div id="passwords">
-                    <div>
+                    <div class="form-item">
                         <label for="">Password</label>
                         <input id="pass" v-if="editingPassword" type="password" autocomplete="current-password" v-model="password" @input="validate_password(false)">
                         <input v-if="!editingPassword" type="password" value="************" disabled>
@@ -24,13 +24,13 @@
                         <button type="button" class="edit see" v-if="editingPassword && show_pass" @click="toggle_password('password', false)"><i class="bi bi-eye-slash-fill"></i></button>
                         <button class="edit" v-if="!editingPassword" @click="editingPassword=true"><i class="bi bi-pencil-fill"></i></button>
                     </div>
-                    <div v-if="editingPassword">
+                    <div class="form-item" v-if="editingPassword">
                         <label for="">New Password</label>
                         <input required id="new_pass" type="password" autocomplete="new-password" v-model="new_password" @input="validate_password(false)">
                         <button type="button" class="edit see" v-if="editingPassword && !show_new_pass" @click="toggle_password('new-password', true)"><i class="bi bi-eye"></i></button>
                         <button type="button" class="edit see" v-if="editingPassword && show_new_pass" @click="toggle_password('new-password', false)"><i class="bi bi-eye-slash-fill"></i></button>
                     </div>
-                    <div v-if="editingPassword">
+                    <div class="form-item" v-if="editingPassword">
                         <label for="">Re-enter New Password</label>
                         <input required id="re_pass" type="password" autocomplete="new-password" v-model="re_password" @input="validate_password(false)">
                         <button type="button" class="edit see" v-if="editingPassword && !show_re_pass" @click="toggle_password('re-password', true)"><i class="bi bi-eye"></i></button>
@@ -60,7 +60,7 @@
                 <button id="number-save" class="save" type="submit" v-if="editingPhoneNumber" @click="validate_number(true)"><i class="bi bi-floppy-fill"></i></button>
                 <button id="number-cancel" type="button" class="cancel" v-if="editingPhoneNumber" @click="editingPhoneNumber = false; phone_number = user.phone_number"><i class="bi bi-x"></i></button>
             </div>
-            <div id="description-item" class="form-item" >
+            <div v-if="user.mode === 'seller'" id="description-item" class="form-item" >
                 <label for="">Seller Description</label>
                 <div id="description-input">
                     <textarea name="" id="description" v-model="description" @input="validate_description(false)"></textarea>
@@ -781,28 +781,19 @@
         display: flex;
         flex-direction: column;
         align-items: start;
+        gap: 0.5rem;
     }
 
     #passwords {
         display: flex;
         flex-direction: column;
-        align-items: start;
         gap: 1rem;
-    }
-
-    #passwords div {
-        display: flex;
-        align-items: center;
-    }
-
-    #passwords div label {
-        width: 9.5rem;
     }
 
     .buttons {
         display: flex;
         gap: 0.5rem;
-        margin-left: 22.6rem;
+        align-self: flex-end;
     }
 
     .see, .edit {
@@ -836,12 +827,52 @@
 
     #description-input {
         display: flex;
-        align-items: flex-end;
+        margin-right: auto;
     }
 
     #description-buttons {
         display: flex;
         gap: 0.5rem;
         margin-left: 0.4rem;
+        align-self: flex-end;
     }
+
+    @media (max-width: 320px) {
+    }
+
+    @media (min-width: 320px) and (max-width: 450px) {
+        #details {
+            flex-direction: column;
+            margin: 0.5rem;
+            gap: 1rem;
+            justify-content: center;
+            width: 100%;
+        }
+
+        #description-item textarea {
+            width: 18rem !important;
+        }
+
+        #password-item {
+            gap: 0;
+        }
+    }
+
+    /* Responsive design */
+    @media (max-width: 973px) {
+    #details {
+        flex-direction: column;
+        width: 26.7rem;
+        margin: auto;
+        margin-top: 3rem;
+    }
+
+    form {
+        gap: 1rem;
+    }
+
+    .form-item {
+        width: 30rem;
+    }
+  }
 </style>

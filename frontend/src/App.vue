@@ -8,9 +8,11 @@
           <p id="profile-header">Profile</p>
           <div id="profile-nav">
             <RouterLink class="profile-item border-bottom rounded-top" to="/details" >Details</RouterLink>
-            <RouterLink class="profile-item border-bottom" to="/">Orders</RouterLink>
-            <RouterLink class="profile-item border-bottom" to="/">Cart</RouterLink>
-            <RouterLink class="profile-item rounded-bottom" to="/">Wishlist</RouterLink>
+            <RouterLink class="profile-item border-bottom" to="/" v-if="user.mode==='buyer'">Orders</RouterLink>
+            <RouterLink class="profile-item border-bottom" to="/" v-if="user.mode==='buyer'">Cart</RouterLink>
+            <RouterLink class="profile-item rounded-bottom" to="/" v-if="user.mode==='buyer'">Wishlist</RouterLink>
+            <RouterLink class="profile-item border-bottom" to="/listings" v-if="user.mode==='seller'">Listings</RouterLink>
+            <RouterLink class="profile-item rounded-bottom" to="/" v-if="user.mode==='seller'">Orders</RouterLink>
           </div>
         </div>
         <div id="search-div">
@@ -154,7 +156,13 @@
               return
             }
             let userUpdateData: User = await updateResponse.json()
-            useUserStore().user.theme_preference = userUpdateData.theme_preference
+            if (called_by === 'currency') {
+              useUserStore().user.currency = userUpdateData.currency
+            } else if (called_by === 'mode') {
+              useUserStore().user.mode = userUpdateData.mode
+            } else {
+              useUserStore().user.theme_preference = userUpdateData.theme_preference
+            }
       },
       async toggle_theme(called_by: string, event?: Event): Promise<void> {
         const div = document.getElementById('app-vue')
