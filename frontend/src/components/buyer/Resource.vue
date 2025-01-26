@@ -32,7 +32,7 @@
             </div>
             <div class="displays">
                 <div v-for="listing in notes">
-                    <div class="listed" @click="showResourcePage(listing.id)">
+                    <div class="listed">
                         <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
                         {{ listing.price }}
                     </div>
@@ -44,7 +44,7 @@
                 <p> Stationery</p>
                 <div class="displays">
                     <div v-for="listing in stationery">
-                        <div class="listed" @click="showResourcePage(listing.id)">
+                        <div class="listed">
                             <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
                             {{ listing.price }}
                         </div>
@@ -83,10 +83,11 @@ import { useResourcesStore } from '@/stores/resources';
                     }
                 })
                 let returnedPrice: {new_price: number} = await convertedPrice.json()
+                // resource.price = returnedPrice.new_price
                 return returnedPrice.new_price
             },
             showResourcePage(resourceId: number): void {
-                window.location.href = `/view-resource/${resourceId}`
+                window.location.href = `/resource/${resourceId}`
             },
         },
         computed: {

@@ -1,4 +1,5 @@
 import BuyerHome from '@/components/buyer/BuyerHome.vue'
+import BuyerResource from '@/components/buyer/Resource.vue'
 import Details from '@/components/Details.vue'
 import NewListing from '@/components/seller/NewListing.vue'
 import Resource from '@/components/seller/Resource.vue'
@@ -17,6 +18,7 @@ const router = createRouter({
     { path: '/new-listing/notes', name: 'new listing notes', component: NewListing },
     { path: '/new-listing/stationery', name: 'new listing stationery', component: NewListing },
     { path: '/resource/:id', name: 'resource', component: Resource },
+    { path: '/view-resource/:id', name: 'buyer resource', component: BuyerResource },
   ],
 })
 
