@@ -3,7 +3,8 @@
     <div id="light">
       <header>
         <img id='logo' src="/logo-light.svg" alt="EduSource" width="125" height="125" v-pre/>
-        <RouterLink to="/" class="hide-on-mobile link">Home</RouterLink>
+        <RouterLink v-if="user.mode === 'buyer'" to="/buyer-home" class="hide-on-mobile link">Home</RouterLink>
+        <RouterLink v-if="user.mode === 'seller'" to="/seller-home" class="hide-on-mobile link">Home</RouterLink>
         <div id="profile-div" class="hide-on-mobile" @click="show_profile('desktop')">
           <p id="profile-header">Profile</p>
           <div id="profile-nav">
@@ -11,7 +12,6 @@
             <RouterLink class="profile-item border-bottom" to="/" v-if="user.mode==='buyer'">Orders</RouterLink>
             <RouterLink class="profile-item border-bottom" to="/" v-if="user.mode==='buyer'">Cart</RouterLink>
             <RouterLink class="profile-item rounded-bottom" to="/" v-if="user.mode==='buyer'">Wishlist</RouterLink>
-            <RouterLink class="profile-item border-bottom" to="/listings" v-if="user.mode==='seller'">Listings</RouterLink>
             <RouterLink class="profile-item rounded-bottom" to="/" v-if="user.mode==='seller'">Orders</RouterLink>
           </div>
         </div>
@@ -102,8 +102,9 @@
 <script lang="ts">
   import { defineComponent } from 'vue';
   import { RouterLink, RouterView } from 'vue-router'
-  import type { User } from './types';
+  import type { Resource, User } from './types';
   import { useUserStore } from './stores/user';
+import { useResourcesStore } from './stores/resources';
   export default defineComponent({
     components: { RouterView },
     data(): { currency_setting: string, mode_setting: string } { return {
@@ -132,6 +133,20 @@
         this.toggle_theme('mounted')
         this.currency_setting = this.user.currency
         this.mode_setting = this.user.mode
+
+        let getResourcesStore: Response = await fetch(`http://localhost:8000/api/resources/`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'X-CSRFToken' : useUserStore().csrf
+          },
+        })
+        if (!getResourcesStore.ok) {
+          console.error('Error getting resources')
+          return
+        }
+        let resources: Resource[] = await getResourcesStore.json()
+        useResourcesStore().saveResources(resources)
       }
     },
     computed: {
@@ -160,6 +175,12 @@
               useUserStore().user.currency = userUpdateData.currency
             } else if (called_by === 'mode') {
               useUserStore().user.mode = userUpdateData.mode
+              if (data === 'seller') {
+                window.location.href = '/seller-home'
+                return
+              } else {
+                window.location.href = '/buyer-home'
+              }
             } else {
               useUserStore().user.theme_preference = userUpdateData.theme_preference
             }

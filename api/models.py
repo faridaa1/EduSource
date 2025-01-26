@@ -1,6 +1,8 @@
+import datetime
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
+from django.forms import ValidationError
 
 class User(AbstractUser):
     """Defining attrbiutes and methods for User model"""
@@ -8,7 +10,7 @@ class User(AbstractUser):
     first_name = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z ]+$', message='No special characters allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
     last_name = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z ]+$', message='No special characters allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
     phone_number = models.CharField(max_length=11 ,unique=True, null=False, blank=False, validators=[RegexValidator(r'^07(\d{8,9})$', message='Must be 10 or 11 digit number starting with 07')])
-    rating = models.FloatField(null=False, blank=True, default=0.0)
+    rating = models.DecimalField(null=False, blank=True, default=0.0, max_digits=2, decimal_places=1, validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
     description = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
     THEMES: list [tuple[str, str]] = [('light', 'light'), ('dark', 'dark')]
     theme_preference = models.CharField(max_length=5, choices=THEMES, default='light', null=False, blank=False)
@@ -44,7 +46,8 @@ class User(AbstractUser):
             'address_line_one': address.first_line,
             'address_second_line': address.second_line,
             'city': address.city,
-            'postcode': address.postcode
+            'postcode': address.postcode,
+            'listings': [listing.as_dict() for listing in self.listing.all()]
         }
 
 class Address(models.Model):
@@ -58,3 +61,101 @@ class Address(models.Model):
     def __str__(self) -> str:
         """Defining string representation of Address model"""
         return f"{self.first_line} {self.city} {self.postcode}"
+    
+class Resource(models.Model):
+    name = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*$', message='Invalid format')])
+    description = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*$', message='Invalid format')])
+    height = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
+    width = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
+    weight = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
+    price = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
+    stock = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
+    estimated_delivery_time = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
+    subject = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z]+( [a-zA-Z]+)*$', message='Invalid format')])
+    author = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z]+( [a-zA-Z]+)*$', message='Invalid format')])
+    self_made = models.BooleanField(null=False, blank=False)
+    is_draft = models.BooleanField(null=False, blank=False)
+    page_start = models.IntegerField(null=False, blank=True)
+    page_end = models.IntegerField(null=False, blank=True)
+    HEIGHT_UNITS: list [tuple[str, str]] = [('cm', 'cm'), ('m', 'm'), ('in', 'in')]
+    height_unit = models.CharField(max_length=2, choices=HEIGHT_UNITS, null=False, blank=False)
+    width_unit = models.CharField(max_length=2, choices=HEIGHT_UNITS, null=False, blank=False)
+    image1 = models.ImageField(null=False, blank=False, upload_to='resource_images/')
+    image2 = models.ImageField(null=False, blank=False, upload_to='resource_images/')
+    video = models.FileField(upload_to='resource_videos/')
+    upload_date = models.DateField(default=datetime.datetime.now)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='listing')
+
+    WEIGHT_UNITS: list [tuple[str, str]] = [('lb', 'lb'), ('kg', 'kg'), ('ml', 'ml'), ('L', 'L'), ('mg', 'mg'), ('oz', 'oz')]
+    weight_unit = models.CharField(max_length=2, choices=WEIGHT_UNITS, null=False, blank=False)
+    
+    def clean(self) -> None | ValidationError:
+        """Ensuring equal height and width units"""
+        super().clean()
+        if self.height_unit != self.width_unit:
+            raise ValidationError('Height and width units must be the same')
+   
+    CURRENCIES: list [tuple[str, str]] = [('USD', 'USD'), ('GBP', 'GBP'), ('EUR', 'EUR')]
+    price_currency = models.CharField(max_length=3, choices=CURRENCIES, default='GBP', null=False, blank=False)
+    
+    DELIVERY_UNITS: list [tuple[str, str]] = [('day', 'day'), ('days', 'days'), 
+                                          ('minute', 'minute'), ('minutes', 'minutes'), 
+                                          ('hour', 'hour'), ('hours', 'hours'),
+                                          ('week', 'week'), ('weeks', 'weeks'), 
+                                          ('month', 'month'), ('months', 'months')]
+    estimated_delivery_units = models.CharField(max_length=7, choices=DELIVERY_UNITS, null=False, blank=False)
+    
+    TYPES: list [tuple[str, str]] = [('Textbook', 'Textbook'), ('Notes', 'Notes'), ('Stationery', 'Stationery')]
+    type = models.CharField(max_length=10, choices=TYPES, null=False, blank=False)
+    
+    COLOURS: list [tuple[str, str]] = [('Black', 'Black'), ('Red', 'Red'), ('Yellow', 'Yellow'), 
+                                       ('Pink', 'Pink'), ('Purple', 'Purple'), ('Green', 'Green'), 
+                                       ('Blue', 'Blue'), ('White', 'White'), ('Orange', 'Orange'), 
+                                       ('Brown', 'Brown'), ('Grey', 'Grey')]
+    colour = models.CharField(max_length=6, choices=COLOURS, null=False, blank=False)
+    
+    SOURCES: list [tuple[str, str]] = [('AI', 'AI'), ('Internet', 'Internet'), ('None', 'None')]
+    source = models.CharField(max_length=8, choices=SOURCES, null=False, blank=True)
+
+    CONDITIONS: list [tuple[str, str]] = [('New', 'New'), ('Used', 'Used')]
+    condition = models.CharField(max_length=4, choices=CONDITIONS, null=False, blank=False)
+
+    MEDIUM: list [tuple[str, str]] = [('Online', 'Online'), ('Paper', 'Paper')]
+    media = models.CharField(max_length=6, choices=MEDIUM, null=False, blank=True)
+
+    DELIVERY_OPTIONS: list [tuple[str, str]] = [('Delivery', 'Delivery'), ('Collection', 'Collection')]
+    delivery_option = models.CharField(max_length=10, choices=DELIVERY_OPTIONS, null=False, blank=False)
+
+    def as_dict(self) -> str:
+        return {
+            'id' : self.id,
+            'name': self.name,
+            'description': self.description,
+            'height': self.height,
+            'width': self.width,
+            'weight': self.weight,
+            'price': self.price,
+            'stock': self.stock,
+            'estimated_delivery_time': self.estimated_delivery_time,
+            'subject': self.subject,
+            'author': self.author,
+            'self_made': self.self_made,
+            'is_draft': self.is_draft,
+            'page_start': self.page_start,
+            'page_end': self.page_end,
+            'height_unit': self.height_unit,
+            'width_unit': self.width_unit,
+            'image1': self.image1.url,
+            'image2': self.image2.url,
+            'video': self.video.url,
+            'weight_unit': self.weight_unit,
+            'price_currency': self.price_currency,
+            'estimated_delivery_units': self.estimated_delivery_units,
+            'type': self.type,
+            'colour': self.colour,
+            'source': self.source,
+            'condition': self.condition,
+            'media': self.media,
+            'delivery_option': self.delivery_option,
+            'user': self.user.id
+        }

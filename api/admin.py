@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Address
+from .models import Resource, User, Address
 from django.forms import BaseInlineFormSet, ValidationError
 
 
@@ -18,11 +18,13 @@ class AddressInline(admin.StackedInline):
     model = Address
     formset = AddressInlineFormSet
 
+class ResourceInline(admin.StackedInline):
+    model = Resource
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     """Defining User model appearance on django admin"""
     list_display: tuple[str] = ('first_name', 'last_name', 'email')
-    inlines = [AddressInline]
+    inlines = [AddressInline, ResourceInline]
 
 

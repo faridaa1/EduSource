@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { User } from '../types';
+import type { Resource, User } from '../types';
 
 export const useUserStore = defineStore('user', {
     state: (): { user: User, csrf: string} => ({
@@ -12,6 +12,18 @@ export const useUserStore = defineStore('user', {
         },
         saveCsrf(csrf: string): void {
             this.csrf = csrf
+        },
+        addListing(listing: Resource): void {
+            this.user.listings.push(listing)
+        },
+        updateListing(new_listing: Resource): void {
+            let resource = this.user.listings.find(listing => listing.id === new_listing.id) 
+            if (resource) {
+                Object.assign(resource, new_listing)
+            }
+        },
+        removeResource(id: number): void {
+            this.user.listings = this.user.listings.filter(resource => resource.id !== id)
         }
     }
 })

@@ -482,8 +482,8 @@
                 inputs.forEach(input => {
                     const element = input as HTMLInputElement | HTMLTextAreaElement
                     element.setCustomValidity('')
+                    // element.reportValidity()
                 })
-
             },
             async validate_email(submit : boolean): Promise<void> {
                 this.clear_details('details')
@@ -522,9 +522,7 @@
                 const saveButton: HTMLButtonElement = attribute === 'email' ? document.getElementById('email-save') as HTMLButtonElement : attribute === 'username' ? document.getElementById('username-save') as HTMLButtonElement : attribute === 'password' ? document.getElementById('password-save') as HTMLButtonElement : document.getElementById('number-save') as HTMLButtonElement 
                 const cancelButton: HTMLButtonElement = attribute === 'email' ? document.getElementById('email-cancel') as HTMLButtonElement : attribute === 'username' ? document.getElementById('username-cancel') as HTMLButtonElement : attribute === 'password' ? document.getElementById('password-cancel') as HTMLButtonElement : document.getElementById('number-cancel') as HTMLButtonElement
                 if (saveButton) {
-                    console.log(saveButton)
                     saveButton.disabled = true
-                    console.log(saveButton)
                 } 
                 if (cancelButton) {
                     cancelButton.disabled = true

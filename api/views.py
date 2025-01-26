@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate
 from django.contrib import auth
 from .forms import SignupForm, AddressForm, LoginForm
-from .models import User, Address
+from .models import Resource, User, Address
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 
@@ -66,15 +66,23 @@ def login(request: HttpRequest) -> HttpResponse:
     return render(request, 'api/login.html', {'login_form' : LoginForm()})
 
 
+def currency_conversion(request: HttpRequest, from_currency: str, price: str, to_currency: float) -> JsonResponse:
+    initial_value: Money = Money(float(price), from_currency)
+    return JsonResponse({'new_price': str(convert_money(initial_value, to_currency))})
+
+
 def user(request: HttpRequest) -> JsonResponse:
-    test = Money(100,'GBP')
-    print(convert_money(test, 'GBP'))
     if request.user.is_authenticated:
         return JsonResponse({'user' : User.objects.get(username=request.user.username).as_dict()})
     return JsonResponse({'user' : 'unauthenticated'})
 
 
+def resources(request: HttpRequest) -> JsonResponse:
+    return JsonResponse([resource.as_dict() for resource in Resource.objects.all()], safe=False)
+
+
 def user_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse | Http404:
+    """Defining PUT request handling"""
     if request.method == 'PUT':
         user: User | Http404 = get_object_or_404(User, id=id)
         address: Address | Http404 = get_object_or_404(Address, user=user)
@@ -112,10 +120,12 @@ def user_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse 
             user: User | None = authenticate(request, username=user.username, password=json.loads(request.body))
             if user:
                 auth.login(request, user)
-    return JsonResponse(user.as_dict())
+                return JsonResponse(user.as_dict())
+    return JsonResponse('no user', safe=False)
 
 
-def check_details(request: HttpRequest, id: int, attribute: str):
+def check_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse:
+    """Defining PUT request handling"""
     if request.method == 'PUT':
         if attribute == 'email':
             return JsonResponse(User.objects.filter(email=json.loads(request.body)).exists(), safe=False)
@@ -126,3 +136,86 @@ def check_details(request: HttpRequest, id: int, attribute: str):
             return JsonResponse(user.check_password(json.loads(request.body)), safe=False)
         elif attribute == 'number':
             return JsonResponse(User.objects.filter(phone_number=json.loads(request.body)).exists(), safe=False)
+    return JsonResponse(False)
+
+
+def new_listing(request: HttpRequest, id: int) -> JsonResponse:
+    """Defining POST, PUT and DELETE request handling"""
+    data: dict[str, any] = request.POST
+    media_data: dict[str, any] = request.FILES
+    user: User = get_object_or_404(User, id=id)
+    if request.method == 'DELETE':
+        resource: Resource = get_object_or_404(Resource, id=json.loads(request.body))
+        resource.delete()
+    if request.method == 'POST' and not data.get('id'):
+        resource: Resource = Resource.objects.create(
+            name=data.get('name'),
+            description=data.get('description'),
+            height=data.get('height'),
+            width=data.get('width'),
+            weight=data.get('weight'),
+            price=data.get('price'),
+            stock=data.get('stock'),
+            estimated_delivery_time=data.get('estimated_number'),
+            subject=data.get('subject'),
+            author=data.get('author'),
+            self_made=False if data.get('self_made') == 'false' else True,
+            is_draft=False if data.get('is_draft') == 'false' else True,
+            page_start=data.get('page_start'),
+            page_end=data.get('page_end'),
+            height_unit=data.get('height_unit'),
+            width_unit=data.get('width_unit'),
+            image1=media_data.get('image1'),
+            image2=media_data.get('image2'),
+            video=media_data.get('video'),
+            weight_unit=data.get('weight_unit'),
+            price_currency=data.get('price_currency'),
+            estimated_delivery_units=data.get('estimated_units'),
+            type=data.get('type'),
+            colour=data.get('colour'),
+            source=data.get('source'),
+            condition=data.get('condition'),
+            media=data.get('media'),
+            delivery_option=data.get('delivery'),
+            user=user
+        )
+        return JsonResponse(resource.as_dict())
+    if request.method == 'POST' and data.get('id'):
+        resource: Resource = get_object_or_404(Resource, id=data.get('id'))
+        resource.name=data.get('name')
+        resource.description=data.get('description')
+        resource.height=data.get('height')
+        resource.width=data.get('width')
+        resource.weight=data.get('weight')
+        resource.price=data.get('price')
+        resource.stock=data.get('stock')
+        resource.estimated_delivery_time=data.get('estimated_number')
+        resource.subject=data.get('subject')
+        resource.author=data.get('author')
+        resource.self_made=False if data.get('self_made') == 'false' else True
+        resource.is_draft=False if data.get('is_draft') == 'false' else True
+        resource.page_start=data.get('page_start')
+        resource.page_end=data.get('page_end')
+        resource.height_unit=data.get('height_unit')
+        resource.width_unit=data.get('width_unit')
+        print(resource.image1, media_data.get('image1'))
+        if media_data.get('image1'):
+            resource.image1=media_data.get('image1')
+        if media_data.get('image2'):
+            resource.image2=media_data.get('image2')
+        if media_data.get('video'):
+            resource.video=media_data.get('video')
+        resource.weight_unit=data.get('weight_unit')
+        resource.price_currency=data.get('price_currency')
+        resource.estimated_delivery_units=data.get('estimated_units')
+        resource.type=data.get('type')
+        resource.colour=data.get('colour')
+        resource.source=data.get('source')
+        resource.condition=data.get('condition')
+        resource.media=data.get('media')
+        resource.delivery_option=data.get('delivery')
+        resource.user=user
+        resource.save()
+        print(resource.image1, media_data.get('image1'))
+        return JsonResponse(resource.as_dict())
+    return JsonResponse({})
