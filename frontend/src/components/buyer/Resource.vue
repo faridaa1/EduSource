@@ -64,7 +64,7 @@
         </div>
         <div id="stars">
             <div>
-                <p>Reviews</p>
+                <p id="reviews-p">Reviews</p>
             </div>
             <Stars />
         </div>
@@ -1032,5 +1032,9 @@
 
     .text-desc {
         margin-bottom: 0.5rem;
+    }
+
+    #reviews-p {
+        margin-bottom: 1rem;
     }
 </style>
