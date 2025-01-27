@@ -18,7 +18,7 @@ const router = createRouter({
     { path: '/new-listing/notes', name: 'new listing notes', component: NewListing },
     { path: '/new-listing/stationery', name: 'new listing stationery', component: NewListing },
     { path: '/resource/:id', name: 'resource', component: Resource },
-    { path: '/view-resource/:id', name: 'buyer resource', component: BuyerResource },
+    { path: '/view-resource/:name', name: 'buyer resource', component: BuyerResource },
   ],
 })
 

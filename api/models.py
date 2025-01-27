@@ -50,6 +50,7 @@ class User(AbstractUser):
             'listings': [listing.as_dict() for listing in self.listing.all()]
         }
 
+
 class Address(models.Model):
     """Defining attributes and methods for Address model"""
     first_line = models.CharField(max_length=255, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$', message='No special characters allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
@@ -62,7 +63,9 @@ class Address(models.Model):
         """Defining string representation of Address model"""
         return f"{self.first_line} {self.city} {self.postcode}"
     
+
 class Resource(models.Model):
+    """Defining attributes and methods for Resource model"""
     name = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*$', message='Invalid format')])
     description = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*$', message='Invalid format')])
     height = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
@@ -84,6 +87,7 @@ class Resource(models.Model):
     image2 = models.ImageField(null=False, blank=False, upload_to='resource_images/')
     video = models.FileField(upload_to='resource_videos/')
     upload_date = models.DateField(default=datetime.datetime.now)
+    rating = models.DecimalField(null=False, blank=True, default=0.0, max_digits=2, decimal_places=1, validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='listing')
 
     WEIGHT_UNITS: list [tuple[str, str]] = [('lb', 'lb'), ('kg', 'kg'), ('ml', 'ml'), ('L', 'L'), ('mg', 'mg'), ('oz', 'oz')]
@@ -98,11 +102,9 @@ class Resource(models.Model):
     CURRENCIES: list [tuple[str, str]] = [('USD', 'USD'), ('GBP', 'GBP'), ('EUR', 'EUR')]
     price_currency = models.CharField(max_length=3, choices=CURRENCIES, default='GBP', null=False, blank=False)
     
-    DELIVERY_UNITS: list [tuple[str, str]] = [('day', 'day'), ('days', 'days'), 
-                                          ('minute', 'minute'), ('minutes', 'minutes'), 
-                                          ('hour', 'hour'), ('hours', 'hours'),
-                                          ('week', 'week'), ('weeks', 'weeks'), 
-                                          ('month', 'month'), ('months', 'months')]
+    DELIVERY_UNITS: list [tuple[str, str]] = [('day', 'day'), ('minute', 'minute'),  
+                                          ('hour', 'hour'), ('week', 'week'), 
+                                          ('month', 'month')]
     estimated_delivery_units = models.CharField(max_length=7, choices=DELIVERY_UNITS, null=False, blank=False)
     
     TYPES: list [tuple[str, str]] = [('Textbook', 'Textbook'), ('Notes', 'Notes'), ('Stationery', 'Stationery')]
@@ -127,6 +129,7 @@ class Resource(models.Model):
     delivery_option = models.CharField(max_length=10, choices=DELIVERY_OPTIONS, null=False, blank=False)
 
     def as_dict(self) -> str:
+        reviews = Review.objects.filter(resource=self.id)
         return {
             'id' : self.id,
             'name': self.name,
@@ -152,10 +155,37 @@ class Resource(models.Model):
             'price_currency': self.price_currency,
             'estimated_delivery_units': self.estimated_delivery_units,
             'type': self.type,
+            'rating': self.rating,
             'colour': self.colour,
             'source': self.source,
             'condition': self.condition,
             'media': self.media,
             'delivery_option': self.delivery_option,
-            'user': self.user.id
+            'user': self.user.id,
+            'reviews': [review.as_dict() for review in reviews]
+        }
+    
+
+class Review(models.Model):
+    """Defining attributes and methods for Review model"""
+    resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name='review')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='review')
+    rating = models.DecimalField(null=False, blank=True, default=0.0, max_digits=2, decimal_places=1, validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
+    title = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*[\.!\?]*$', message='Invalid format')])
+    review = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*[\.!\?]*$', message='Invalid format')])
+    upload_date = models.DateField(default=datetime.datetime.now)
+    image = models.ImageField(null=False, blank=True, upload_to='review_images/')
+    video = models.FileField(null=False, blank=True, upload_to='review_videos/')
+
+    def as_dict(self) -> str:
+        return {
+            'id': self.id,
+            'resource': self.resource.id,
+            'user': self.user.id,
+            'title' : self.title,
+            'review': self.review,
+            'rating': self.rating,
+            'upload_date': self.upload_date,
+            'image': self.image.url if self.image else None,
+            'video': self.video.url if self.video else None,
         }

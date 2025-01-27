@@ -40,12 +40,26 @@ export interface Resource {
     video: string,
     weight_unit: 'kg' | 'ml' | 'L' | 'oz' | 'mg' | 'lb',
     price_currency: 'EUR' | 'GBP' | 'USD',
-    estimated_delivery_units: 'days' | 'minutes' | 'hours' | 'months' | 'weeks',
+    estimated_delivery_units: 'day' | 'minute' | 'hour' | 'month' | 'week',
     type: 'Textbook' | 'Notes' | 'Stationery',
+    rating: number,
     colour: 'Black' | 'Red' | 'Yellow' | 'Pink' | 'Purple' | 'Green' | 'Blue' | 'White' | 'Orange' | 'Brown' | 'Grey',
     source: 'AI' | 'Internet' | 'None',
     condition: 'New' | 'Used',
     media: 'Online' | 'Paper',
     delivery_option: 'Delivery' | 'Collection',
-    user: number
+    user: number,
+    reviews: Review[]
+}
+
+export interface Review {
+    id: number,
+    resource: number,
+    user: number,
+    title: string,
+    review: string,
+    rating: number,
+    upload_date: string,
+    image: string,
+    video: string,
 }

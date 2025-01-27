@@ -110,7 +110,7 @@
                 <input type="text" v-model="author" id="author-field">
                 <div id="author-div">
                     <label for="">Resource was self-made</label>
-                    <input type="checkbox" name="" @click="self_made = !self_made">
+                    <input type="checkbox" :checked="self_made" name="" @click="self_made = !self_made">
                 </div>
                 <p v-if="self_made">Author will show up as <span>{{ user.username }}</span></p>
             </div>
@@ -156,11 +156,11 @@
                 <div id="price-flex">
                     <input required type="number" max="9999.00" min="1" step="1" v-model="estimated_delivery_number">
                     <select name="" id="estimated-delivery-field" v-model="estimated_delivery_units">
-                        <option value="minutes">{{ estimated_delivery_number === 1 ? 'minute' : 'minutes' }}</option>
-                        <option value="hours">{{ estimated_delivery_number === 1 ? 'hour' : 'hours' }}</option>
-                        <option value="days">{{ estimated_delivery_number === 1 ? 'day' : 'days' }}</option>
-                        <option value="weeks">{{ estimated_delivery_number === 1 ? 'week' : 'weeks' }}</option>
-                        <option value="months">{{ estimated_delivery_number === 1 ? 'month' : 'months' }}</option>
+                        <option value="minute">{{ estimated_delivery_number === 1.00 ? 'minute' : 'minutes' }}</option>
+                        <option value="hour">{{ estimated_delivery_number === 1.00 ? 'hour' : 'hours' }}</option>
+                        <option value="day">{{ estimated_delivery_number === 1.00 ? 'day' : 'days' }}</option>
+                        <option value="week">{{ estimated_delivery_number === 1.00 ? 'week' : 'weeks' }}</option>
+                        <option value="month">{{ estimated_delivery_number === 1.00 ? 'month' : 'months' }}</option>
                     </select>
                 </div>
             </div>
@@ -236,7 +236,7 @@
             image2: File,
             video1: File,
             estimated_delivery_number: number,
-            estimated_delivery_units: 'days' | 'minutes' | 'hours' | 'months' | 'weeks',
+            estimated_delivery_units: 'day' | 'minute' | 'hour' | 'month' | 'week',
             delivery_options: 'Delivery' | 'Collection',
             stock: number,
             is_draft: boolean,
@@ -268,8 +268,8 @@
             image1: new File([''], ''),
             image2: new File([''], ''),
             video1: new File([''], ''),
-            estimated_delivery_number: 1,
-            estimated_delivery_units: 'days',
+            estimated_delivery_number: 1.00,
+            estimated_delivery_units: 'day',
             delivery_options: 'Delivery',
             stock: 0,
             is_draft: true,
@@ -377,7 +377,7 @@
                     authorInputField.setCustomValidity('Name must be less than 150 characters')
                     authorInputField.reportValidity()
                     return
-                } else if (!this.author.match(/^[a-zA-Z]+( [a-zA-Z]+)*$/)) {
+                } else if ((!(this.author === this.user.username)) && !this.author.match(/^[a-zA-Z]+( [a-zA-Z]+)*$/)) {
                     if (!this.author.match(/^\S/)) {
                         authorInputField.setCustomValidity('Cannot start with space')
                     } else if (!this.author.match(/\S$/)) {
@@ -441,7 +441,7 @@
                 data.append('page_end', this.page_end.toString())
                 data.append('subject', this.subject)
                 data.append('colour', this.colour)
-                data.append('author', this.author)
+                data.append('author', this.self_made ? this.user.username : this.author)
                 data.append('self_made', this.self_made.toString())
                 data.append('price', this.price.toString())
                 data.append('price_currency', this.currency)
@@ -495,7 +495,7 @@
                 this.video1 = video
                 this.videoChanged = true
             },
-            remove_image(event:Event, image_number: number): void {
+            remove_image(event: Event, image_number: number): void {
                 event.preventDefault()
                 const img: HTMLImageElement = document.getElementById(image_number === 1 ? 'img1' : 'img2') as HTMLImageElement
                 const image: HTMLInputElement = document.getElementById(image_number === 1 ? 'image1' : 'image2') as HTMLInputElement
@@ -540,6 +540,7 @@
                 const emptyResource: Resource = {
                     id: -1,
                     name: '',
+                    reviews: [],
                     description: '',
                     height: -1,
                     width: -1,
@@ -560,9 +561,10 @@
                     video: '',
                     weight_unit: 'kg',
                     price_currency: 'GBP',
-                    estimated_delivery_units: 'days',
+                    estimated_delivery_units: 'day',
                     type: 'Textbook',
                     colour: 'Black',
+                    rating: -1,
                     source: 'None',
                     condition: 'New',
                     media: 'Online',
@@ -607,7 +609,7 @@
                 this.stock = new_resource.stock
                 this.is_draft = new_resource.is_draft
                 this.delivery_options = new_resource.delivery_option
-                this.estimated_delivery_number = new_resource.estimated_delivery_time
+                this.estimated_delivery_number = parseFloat(new_resource.estimated_delivery_time.toString())
                 this.estimated_delivery_units = new_resource.estimated_delivery_units
                 const image1: HTMLImageElement = document.getElementById('img1') as HTMLImageElement
                 image1.src = `http://localhost:8000${new_resource.image1}`
@@ -792,7 +794,6 @@
         display: none;
         max-height: 100%;
         width: 100%;
-        background-color: yellow;
     }
 
     #header {

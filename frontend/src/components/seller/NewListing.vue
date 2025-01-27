@@ -155,11 +155,11 @@
                 <div id="price-flex">
                     <input required type="number" max="9999.00" min="1" step="1" v-model="estimated_delivery_number">
                     <select name="" id="estimated-delivery-field" v-model="estimated_delivery_units">
-                        <option value="minutes">{{ estimated_delivery_number === 1 ? 'minute' : 'minutes' }}</option>
-                        <option value="hours">{{ estimated_delivery_number === 1 ? 'hour' : 'hours' }}</option>
-                        <option value="days">{{ estimated_delivery_number === 1 ? 'day' : 'days' }}</option>
-                        <option value="weeks">{{ estimated_delivery_number === 1 ? 'week' : 'weeks' }}</option>
-                        <option value="months">{{ estimated_delivery_number === 1 ? 'month' : 'months' }}</option>
+                        <option value="minute">{{ estimated_delivery_number === 1 ? 'minute' : 'minutes' }}</option>
+                        <option value="hour">{{ estimated_delivery_number === 1 ? 'hour' : 'hours' }}</option>
+                        <option value="day">{{ estimated_delivery_number === 1 ? 'day' : 'days' }}</option>
+                        <option value="week">{{ estimated_delivery_number === 1 ? 'week' : 'weeks' }}</option>
+                        <option value="month">{{ estimated_delivery_number === 1 ? 'month' : 'months' }}</option>
                     </select>
                 </div>
             </div>
@@ -233,7 +233,7 @@
             image2: File,
             video1: File,
             estimated_delivery_number: number,
-            estimated_delivery_units: 'days' | 'minutes' | 'hours' | 'months' | 'weeks',
+            estimated_delivery_units: 'day' | 'minute' | 'hour' | 'month' | 'week',
             delivery_options: 'Delivery' | 'Collection',
             stock: number,
             is_draft: boolean,
@@ -263,7 +263,7 @@
             image2: new File([''], ''),
             video1: new File([''], ''),
             estimated_delivery_number: 1,
-            estimated_delivery_units: 'days',
+            estimated_delivery_units: 'day',
             delivery_options: 'Delivery',
             stock: 0,
             is_draft: true,
@@ -411,7 +411,7 @@
                 data.append('page_end', this.page_end.toString())
                 data.append('subject', this.subject)
                 data.append('colour', this.colour)
-                data.append('author', this.author)
+                data.append('author', this.self_made ? this.user.username : this.author)
                 data.append('self_made', this.self_made.toString())
                 data.append('price', this.price.toString())
                 data.append('price_currency', this.currency)

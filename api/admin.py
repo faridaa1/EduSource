@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Resource, User, Address
+from .models import Resource, Review, User, Address
 from django.forms import BaseInlineFormSet, ValidationError
 
 
@@ -20,6 +20,17 @@ class AddressInline(admin.StackedInline):
 
 class ResourceInline(admin.StackedInline):
     model = Resource
+
+
+class ReviewInline(admin.StackedInline):
+    model = Review
+    extra = 1
+
+@admin.register(Resource)
+class ResourceAdmin(admin.ModelAdmin):
+    """Defining Resource model appearance on django admin"""
+    list_display: tuple[str] = ('name', 'author', 'type')
+    inlines = [ReviewInline,]
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):

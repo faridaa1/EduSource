@@ -206,11 +206,11 @@ import { textChangeRangeIsUnchanged } from 'typescript';
                 const star4: HTMLElement = document.getElementById('four') as HTMLElement
                 const star5: HTMLElement = document.getElementById('five') as HTMLElement
                 if (star1 && star2 && star3 && star4 && star5) {
-                    star1.style.color = this.user.rating >= 1 ? 'orange' : 'none'
-                    star2.style.color = this.user.rating >= 2 ? 'orange' : 'none'
-                    star3.style.color = this.user.rating >= 3 ? 'orange' : 'none'
-                    star4.style.color = this.user.rating >= 4 ? 'orange' : 'none'
-                    star5.style.color = this.user.rating === 5 ? 'orange' : 'none'
+                    star1.style.color = this.user.rating >= 1 ? 'orange' : ''
+                    star2.style.color = this.user.rating >= 2 ? 'orange' : ''
+                    star3.style.color = this.user.rating >= 3 ? 'orange' : ''
+                    star4.style.color = this.user.rating >= 4 ? 'orange' : ''
+                    star5.style.color = this.user.rating == 5 ? 'orange' : ''
                 }
             }
         },

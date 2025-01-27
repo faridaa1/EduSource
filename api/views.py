@@ -1,10 +1,11 @@
+import datetime
 import json
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate
 from django.contrib import auth
 from .forms import SignupForm, AddressForm, LoginForm
-from .models import Resource, User, Address
+from .models import Resource, Review, User, Address
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 
@@ -75,6 +76,51 @@ def user(request: HttpRequest) -> JsonResponse:
     if request.user.is_authenticated:
         return JsonResponse({'user' : User.objects.get(username=request.user.username).as_dict()})
     return JsonResponse({'user' : 'unauthenticated'})
+
+
+def review(request: HttpRequest, user: int, resource: int) -> JsonResponse:
+    if request.method == 'POST':
+        media = request.FILES
+        data = request.POST
+        review: Review = Review.objects.create(
+            resource=Resource.objects.get(id=resource),
+            user=User.objects.get(id=user),
+            rating=data.get('stars'),
+            title=data.get('title'),
+            review=data.get('description'),
+            image=media.get('image') if media.get('image') else None,
+            video=media.get('video') if media.get('video') else None,
+        )
+        return JsonResponse(review.as_dict())
+    if request.method == 'DELETE':
+        review: Review = Review.objects.get(id=resource)
+        review.delete()
+    return JsonResponse({})
+
+
+def edit_review(request: HttpRequest, user: int, id: int, resource: int) -> JsonResponse:
+    if request.method == 'POST':
+        media = request.FILES
+        data = request.POST
+        user: User = User.objects.get(id=user)
+        resource: Resource = Resource.objects.get(id=resource)
+        review: Review = Review.objects.get(id=id)
+        review.rating=data.get('stars')
+        review.title=data.get('title')
+        review.review=data.get('description')
+        review.resource = resource
+        if not media.get('image'):
+            review.image = None
+        elif media.get('image').name != review.image.name.split('/')[1]:
+            review.image=media.get('image')
+        if not media.get('video'):
+            review.video = None
+        elif media.get('video').name != review.video.name.split('/')[1]:
+            review.video=media.get('video')
+        review.upload_date = datetime.datetime.now()
+        review.save()
+        return JsonResponse(review.as_dict())
+    return JsonResponse({})
 
 
 def resources(request: HttpRequest) -> JsonResponse:
