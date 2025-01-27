@@ -8,7 +8,7 @@
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
             </div>
-            <p>%</p>
+            <p>{{ percent(1) }}%</p>
         </div>
         <div class="rating">
             <div class="stars">
@@ -18,7 +18,7 @@
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
             </div>
-            <p>%</p>
+            <p>{{ percent(2) }}%</p>
         </div>
         <div class="rating">
             <div class="stars">
@@ -28,7 +28,7 @@
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
             </div>
-            <p>%</p>
+            <p>{{ percent(3) }}%</p>
         </div>
         <div class="rating">
             <div class="stars">
@@ -38,7 +38,7 @@
                 <i id="four" class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
             </div>
-            <p>%</p>
+            <p>{{ percent(4) }}%</p>
         </div>
         <div class="rating">
             <div class="stars">
@@ -48,7 +48,7 @@
                 <i id="four" class="bi bi-star-fill"></i>
                 <i id="five" class="bi bi-star-fill"></i>
             </div>
-            <p>%</p>
+            <p>{{ percent(5) }}%</p>
         </div>
     </div>
 </template>
@@ -63,6 +63,19 @@
         } { return {
         }},
         methods: {
+            percent(rating: number): number {
+                let sum_of_rating: number = 0
+                let number_of_reviews: number = 0
+                this.allResources.forEach((resource) => {
+                    resource.reviews.forEach((review) => {
+                        number_of_reviews +=1
+                        if (review.rating == rating) {
+                            console.log(resource.rating, rating)
+                            sum_of_rating +=1
+                        }
+                })})
+                return (sum_of_rating/number_of_reviews) * 100
+            },
             fill_stars(): void {
                 const star1: HTMLElement = document.getElementById('one') as HTMLElement
                 const star2: HTMLElement = document.getElementById('two') as HTMLElement
@@ -86,6 +99,11 @@
                 const window_location: string[] = window.location.href.split('/')
                 const name: string = window_location[window_location.length-1]
                 return useResourcesStore().getResource(name)
+            },
+            allResources(): Resource[] {
+                const window_location: string[] = window.location.href.split('/')
+                const name: string = window_location[window_location.length-1]
+                return useResourcesStore().resources.filter(resource => resource.name === name)
             },
         },
         watch: {
