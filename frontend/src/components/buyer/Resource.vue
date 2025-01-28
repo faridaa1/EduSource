@@ -7,15 +7,19 @@
             <img id="resource-image" :src="`http://localhost:8000/${(resource as Resource).image1}`" :alt="`${(resource as Resource).type}`">
             <div id="resource-price-and-rating">
                 <div>{{ (resource as Resource).price }}</div>
-                <div id="rating">
+                <div id="rating" v-if="total_ratings > 0">
                     <i id="one" class="bi bi-star-fill"></i>
                     <i id="two" class="bi bi-star-fill"></i>
                     <i id="three" class="bi bi-star-fill"></i>
                     <i id="four" class="bi bi-star-fill"></i>
                     <i id="five" class="bi bi-star-fill"></i>
-                    <p>{{ (resource as Resource).rating }}</p>
-                </div>
-                <div id="add-review">Add Review</div>
+                    <p>{{ average_rating }}</p>
+                    <span v-if="total_ratings === 1">({{total_ratings}} rating)</span>
+                    <span v-if="total_ratings !== 1">({{total_ratings}} ratings)</span>
+            </div>
+                <span v-if="total_ratings === 0">0 ratings</span>
+                <div id="add-review" v-if="!written_review && total_ratings === 0" @click="add_review">Be the first to write a review</div>
+                <div id="add-review" v-if="!written_review && total_ratings > 0" @click="add_review">Add Review</div>
                 <div id="est-del">Estimated: {{ parseFloat((resource as Resource).estimated_delivery_time.toString()) }} {{ (resource as Resource).estimated_delivery_units }} {{ (resource as Resource).delivery_option }}</div>
             </div>
         </div>
@@ -28,7 +32,7 @@
             <div>Add to Wishlist</div>
         </div>
         <div id="view-sellers">
-            <p>View Sellers</p>
+            <p @click="viewing_sellers = true">View Sellers</p>
         </div>
         <div id="resource-details">
             <div>Product Details</div>
@@ -220,6 +224,7 @@
         data(): {
             addingReview: boolean,
             rating_error: boolean,
+            viewing_sellers: boolean,
             editing: boolean,
             rating: number,
             image: File,
@@ -227,6 +232,7 @@
         } { return {
             addingReview: false,
             rating: 0,
+            viewing_sellers: false,
             editing: false,
             rating_error: false,
             video: new File([''], ''),
@@ -243,9 +249,17 @@
                 const reviews: HTMLDivElement = document.getElementById('reviews') as HTMLDivElement
                 const img: HTMLImageElement = reviews.querySelector('img') as HTMLImageElement
                 const vid: HTMLVideoElement = reviews.querySelector('video') as HTMLVideoElement
-                if (!img && !vid) return
-                this.image = new File([], img.src)
-                this.video = new File([], vid.src)
+                if (img) {
+                    this.image = new File([], img.src)
+                    if (this.image.name === '') {
+                        img.style.display = 'none'
+                    }
+                } else {
+                    console.log(reviews.querySelector('img'))
+                }
+                if (vid){
+                    this.video = new File([], vid.src)
+                }
                 this.editing = true
                 document.getElementById('review-review')?.classList.add('review-review-desc')
                 document.getElementById('review-heading-one')?.classList.remove('review-heading-one-height')
@@ -477,16 +491,37 @@
                 const star3: HTMLElement = document.getElementById('three') as HTMLElement
                 const star4: HTMLElement = document.getElementById('four') as HTMLElement
                 const star5: HTMLElement = document.getElementById('five') as HTMLElement
+                console.log(star1)
                 if (star1 && star2 && star3 && star4 && star5) {
-                    star1.style.color = (this.resource as Resource).rating >= 1 ? 'orange' : 'none'
-                    star2.style.color = (this.resource as Resource).rating >= 2 ? 'orange' : 'none'
-                    star3.style.color = (this.resource as Resource).rating >= 3 ? 'orange' : 'none'
-                    star4.style.color = (this.resource as Resource).rating >= 4 ? 'orange' : 'none'
-                    star5.style.color = (this.resource as Resource).rating == 5 ? 'orange' : 'none'
+                    console.log(this.average_rating)
+                    star1.style.color = this.average_rating >= 1 ? 'orange' : 'none'
+                    star2.style.color = this.average_rating >= 2 ? 'orange' : 'none'
+                    star3.style.color = this.average_rating >= 3 ? 'orange' : 'none'
+                    star4.style.color = this.average_rating >= 4 ? 'orange' : 'none'
+                    star5.style.color = this.average_rating == 5 ? 'orange' : 'none'
                 }
             }
         },
         computed: {
+            total_ratings(): number {
+                let number_of_reviews: number = 0
+                this.allResources.forEach((resource) => {
+                    resource.reviews.forEach((review) => {
+                        number_of_reviews += 1
+                })})
+                this.fill_stars()
+                return number_of_reviews
+            },
+            average_rating(): number {
+                let sum_of_rating: number = 0
+                this.allResources.forEach((resource) => {
+                    resource.reviews.forEach((review) => {
+                        sum_of_rating += review.rating
+                })})
+                this.fill_stars()
+                if (this.total_ratings === 0) return 0
+                return (sum_of_rating/this.total_ratings)
+            },
             written_review(): boolean {
                 return this.all_reviews.find(review => review.user === this.user.id) !== undefined
             },
@@ -523,7 +558,7 @@
                 resource.price = await this.listedprice(resource)
             }
         },
-        async mounted(): Promise<void> {
+        mounted(): void {
             this.fill_stars()
         }
     })
