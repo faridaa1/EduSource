@@ -49,7 +49,8 @@ export interface Resource {
     media: 'Online' | 'Paper',
     delivery_option: 'Delivery' | 'Collection',
     user: number,
-    reviews: Review[]
+    reviews: Review[],
+    upload: string
 }
 
 export interface Review {

@@ -27,7 +27,12 @@ export const useResourcesStore = defineStore('resources', {
            return resource
         },
         addResoureReview(review: Review): void {
-            this.resources.find(resource => resource.id === review.resource)?.reviews.push(review)
+            const target_resource: Resource | undefined = this.resources.find(resource => resource.id === review.resource)
+            if (target_resource) {
+                target_resource.reviews.push(review)
+                const temp_resources = this.resources.map(resource => resource.id === review.resource ? target_resource : resource)
+                this.resources = temp_resources
+            }
         },
         editResoureReview(review: Review, oldResourceId: number): void {
             const resource = this.resources.find(resource => resource.id === review.resource)
@@ -50,9 +55,11 @@ export const useResourcesStore = defineStore('resources', {
             }
         },
         removeReview(deletedReview: Review): void {
-            const resource =  this.resources.find(resource => resource.id === deletedReview.resource)
-            if (resource) {
-                resource.reviews = resource.reviews.filter(review => review.id !== deletedReview.id)
+            const target_resource =  this.resources.find(resource => resource.id === deletedReview.resource)
+            if (target_resource) {
+                target_resource.reviews = target_resource.reviews.filter(review => review.id !== deletedReview.id)
+                const temp_resources = this.resources.map(resource => resource.id === deletedReview.resource ? target_resource : resource)
+                this.resources = temp_resources
             }
         },
     }

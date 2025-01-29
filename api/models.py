@@ -162,7 +162,8 @@ class Resource(models.Model):
             'media': self.media,
             'delivery_option': self.delivery_option,
             'user': self.user.id,
-            'reviews': [review.as_dict() for review in reviews]
+            'reviews': [review.as_dict() for review in reviews],
+            'upload': self.upload_date
         }
     
 

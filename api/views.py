@@ -3,6 +3,8 @@ import json
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate
+from django.db.models.query import QuerySet
+from django.db.models import Avg
 from django.contrib import auth
 from .forms import SignupForm, AddressForm, LoginForm
 from .models import Resource, Review, User, Address
@@ -79,19 +81,27 @@ def user(request: HttpRequest) -> JsonResponse:
     return JsonResponse({'user' : 'unauthenticated'})
 
 
+def set_resource_rating(resource_id: int) -> float:
+    return Review.objects.filter(resource=resource_id).aggregate(Avg('rating'))['rating__avg']
+
+
 def review(request: HttpRequest, user: int, resource: int) -> JsonResponse:
     if request.method == 'POST':
+        resource: Resource = Resource.objects.get(id=resource)
         media = request.FILES
         data = request.POST
         review: Review = Review.objects.create(
-            resource=Resource.objects.get(id=resource),
+            resource=resource,
             user=User.objects.get(id=user),
-            rating=data.get('stars'),
             title=data.get('title'),
+            rating=data.get('stars'),
             review=data.get('description'),
             image=media.get('image') if media.get('image') else None,
             video=media.get('video') if media.get('video') else None,
         )
+        review.save()
+        resource.rating=set_resource_rating(resource.id)
+        resource.save()
         return JsonResponse(review.as_dict())
     if request.method == 'DELETE':
         review: Review = Review.objects.get(id=resource)
@@ -106,11 +116,10 @@ def edit_review(request: HttpRequest, user: int, id: int, resource: int) -> Json
         user: User = User.objects.get(id=user)
         resource: Resource = Resource.objects.get(id=resource)
         review: Review = Review.objects.get(id=id)
-        review.rating=data.get('stars')
         review.title=data.get('title')
+        review.rating=data.get('stars')
         review.review=data.get('description')
         review.resource = resource
-        print(media.get('image'))
         if not media.get('image'):
             review.image = None
         elif not review.image or (media.get('image').name != review.image.name.split('/')[1]):
@@ -121,6 +130,8 @@ def edit_review(request: HttpRequest, user: int, id: int, resource: int) -> Json
             review.video=media.get('video')
         review.upload_date = datetime.datetime.now()
         review.save()
+        resource.rating=set_resource_rating(resource.id)
+        resource.save()
         return JsonResponse(review.as_dict())
     return JsonResponse({})
 

@@ -7,7 +7,7 @@
             <img id="resource-image" :src="`http://localhost:8000/${(resource as Resource).image1}`" :alt="`${(resource as Resource).type}`">
             <div id="resource-price-and-rating">
                 <div>{{ (resource as Resource).price }}</div>
-                <div id="rating" v-if="total_ratings > 0">
+                <div id="rating">
                     <i id="one" class="bi bi-star-fill"></i>
                     <i id="two" class="bi bi-star-fill"></i>
                     <i id="three" class="bi bi-star-fill"></i>
@@ -16,7 +16,7 @@
                     <p>{{ average_rating }}</p>
                     <span v-if="total_ratings === 1">({{total_ratings}} rating)</span>
                     <span v-if="total_ratings !== 1">({{total_ratings}} ratings)</span>
-            </div>
+                </div>
                 <span v-if="total_ratings === 0">0 ratings</span>
                 <div id="add-review" v-if="!written_review && total_ratings === 0" @click="add_review">Be the first to write a review</div>
                 <div id="add-review" v-if="total_ratings > 0 && possible_sellers.length > 0" @click="add_review">Add Review</div>
@@ -34,6 +34,7 @@
         <div id="view-sellers">
             <p @click="viewing_sellers = true">View Sellers</p>
         </div>
+        <ViewSellers :resources="allResources" v-if="viewing_sellers" />
         <div id="resource-details">
             <div>Product Details</div>
             <div id="details">
@@ -216,11 +217,12 @@
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
     import { defineComponent, nextTick } from 'vue';
+    import ViewSellers from './ViewSellers.vue';
     import type { Resource, Review, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import Stars from './Stars.vue';
     export default defineComponent({
-        components: {Stars},
+        components: { Stars, ViewSellers },
         data(): {
             addingReview: boolean,
             rating_error: boolean,
@@ -278,6 +280,7 @@
                     },
                 })
                 useResourcesStore().removeReview(review)
+                this.fill_stars()
             },
             to_date(date: string): string {
                 const full_date: Date = new Date(date) 
@@ -498,12 +501,11 @@
                     const star4: HTMLElement = document.getElementById('four') as HTMLElement
                     const star5: HTMLElement = document.getElementById('five') as HTMLElement
                     if (star1 && star2 && star3 && star4 && star5) {
-                        console.log(this.average_rating)
-                        star1.style.color = this.average_rating >= 1 ? 'orange' : 'none'
-                        star2.style.color = this.average_rating >= 2 ? 'orange' : 'none'
-                        star3.style.color = this.average_rating >= 3 ? 'orange' : 'none'
-                        star4.style.color = this.average_rating >= 4 ? 'orange' : 'none'
-                        star5.style.color = this.average_rating == 5 ? 'orange' : 'none'
+                        star1.style.color = this.average_rating >= 1 ? 'orange' : ''
+                        star2.style.color = this.average_rating >= 2 ? 'orange' : ''
+                        star3.style.color = this.average_rating >= 3 ? 'orange' : ''
+                        star4.style.color = this.average_rating >= 4 ? 'orange' : ''
+                        star5.style.color = this.average_rating == 5 ? 'orange' : ''
                     }
                 })
             },
@@ -572,6 +574,9 @@
             async resource(resource: Resource): Promise<void> {
                 this.fill_stars()
                 resource.price = await this.listedprice(resource)
+            },
+            allResources(newResources: Resource[]) {
+                console.log('i am here bc iwas calle')
             }
         },
         mounted(): void {
