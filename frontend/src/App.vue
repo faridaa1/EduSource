@@ -104,7 +104,7 @@
   import { RouterLink, RouterView } from 'vue-router'
   import type { Resource, User } from './types';
   import { useUserStore } from './stores/user';
-import { useResourcesStore } from './stores/resources';
+  import { useResourcesStore } from './stores/resources';
   export default defineComponent({
     components: { RouterView },
     data(): { currency_setting: string, mode_setting: string } { return {
@@ -171,19 +171,15 @@ import { useResourcesStore } from './stores/resources';
               return
             }
             let userUpdateData: User = await updateResponse.json()
-            if (called_by === 'currency') {
-              useUserStore().user.currency = userUpdateData.currency
-            } else if (called_by === 'mode') {
-              useUserStore().user.mode = userUpdateData.mode
+            useUserStore().saveUser(userUpdateData)
+            if (called_by === 'mode') {
               if (data === 'seller') {
                 window.location.href = '/seller-home'
                 return
               } else {
                 window.location.href = '/buyer-home'
               }
-            } else {
-              useUserStore().user.theme_preference = userUpdateData.theme_preference
-            }
+            } 
       },
       async toggle_theme(called_by: string, event?: Event): Promise<void> {
         const div = document.getElementById('app-vue')

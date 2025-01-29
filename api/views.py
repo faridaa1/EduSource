@@ -67,9 +67,10 @@ def login(request: HttpRequest) -> HttpResponse:
     return render(request, 'api/login.html', {'login_form' : LoginForm()})
 
 
-def currency_conversion(request: HttpRequest, from_currency: str, price: str, to_currency: float) -> JsonResponse:
-    initial_value: Money = Money(float(price), from_currency)
-    return JsonResponse({'new_price': str(convert_money(initial_value, to_currency))})
+def currency_conversion(request: HttpRequest, id: int, from_currency: str, to_currency: float) -> JsonResponse:
+    resource: Resource = get_object_or_404(Resource, id=id)
+    initial_value: Money = Money(resource.price, to_currency)
+    return JsonResponse({'new_price': str(convert_money(initial_value, from_currency))})
 
 
 def user(request: HttpRequest) -> JsonResponse:
@@ -166,7 +167,7 @@ def user_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse 
             user: User | None = authenticate(request, username=user.username, password=json.loads(request.body))
             if user:
                 auth.login(request, user)
-                return JsonResponse(user.as_dict())
+        return JsonResponse(user.as_dict())
     return JsonResponse('no user', safe=False)
 
 

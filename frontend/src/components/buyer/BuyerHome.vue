@@ -59,7 +59,7 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent } from 'vue';
     import type { Resource, User } from '@/types';
-import { useResourcesStore } from '@/stores/resources';
+    import { useResourcesStore } from '@/stores/resources';
     export default defineComponent({
         data(): {
             editingDescription: boolean
@@ -74,8 +74,7 @@ import { useResourcesStore } from '@/stores/resources';
         }},
         methods: {
             async listedprice(resource: Resource): Promise<number> {
-                // console.log(resource, resource.price)
-                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${this.user.currency}/${resource.price}/${resource.price_currency}/`, {
+                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -110,16 +109,19 @@ import { useResourcesStore } from '@/stores/resources';
             }
         },
         watch: {
-            user(new_user: User): void {
+            async user(new_user: User): Promise<void> {
                 // this.user = new_user
+                for (const resource of this.resources) {
+                    resource.price = await this.listedprice(resource)
+                }
             },
             async resources(resources: Resource[]): Promise<void> {
-                for (const resource of this.resources) {
+                for (const resource of resources) {
                     resource.price = await this.listedprice(resource)
                 }
             }
         },
-        async mounted(): Promise<void> {
+        async mounted() {
             
         }
     })

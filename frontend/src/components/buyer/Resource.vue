@@ -254,9 +254,7 @@
                     if (this.image.name === '') {
                         img.style.display = 'none'
                     }
-                } else {
-                    console.log(reviews.querySelector('img'))
-                }
+                } 
                 if (vid){
                     this.video = new File([], vid.src)
                 }
@@ -475,7 +473,7 @@
                 this.rating = star === star1 ? 1 : star === star2 ? 2 : star === star3 ? 3 : star === star4 ? 4 : 5
             },
             async listedprice(resource: Resource): Promise<number> {
-                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${this.user.currency}/${resource.price}/${resource.price_currency}/`, {
+                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -491,7 +489,6 @@
                 const star3: HTMLElement = document.getElementById('three') as HTMLElement
                 const star4: HTMLElement = document.getElementById('four') as HTMLElement
                 const star5: HTMLElement = document.getElementById('five') as HTMLElement
-                console.log(star1)
                 if (star1 && star2 && star3 && star4 && star5) {
                     console.log(this.average_rating)
                     star1.style.color = this.average_rating >= 1 ? 'orange' : 'none'
@@ -550,8 +547,10 @@
             },
         },
         watch: {
-            user(new_user: User): void {
-                // this.user = new_user
+            async user(new_user: User): Promise<void> {
+                for (const resource of this.allResources) {
+                    resource.price = await this.listedprice(resource)
+                }
             },
             async resource(resource: Resource): Promise<void> {
                 this.fill_stars()

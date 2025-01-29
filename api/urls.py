@@ -6,7 +6,7 @@ from .views import signup, login, edit_review, currency_conversion, user, review
 urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [
     path('signup/', signup, name='signup'),
     path('login/', login, name='login'),
-    path('api/currency-conversion/<str:from_currency>/<str:price>/<str:to_currency>/', currency_conversion, name='currency conversion'),
+    path('api/currency-conversion/<int:id>/<str:from_currency>/<str:to_currency>/', currency_conversion, name='currency conversion'),
     path('api/user/', user, name='user'),
     path('api/resources/', resources, name='resources'),
     path('api/user/<int:id>/new-listing/', new_listing, name='new listing'),

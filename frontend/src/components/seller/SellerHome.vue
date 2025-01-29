@@ -91,7 +91,6 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent } from 'vue';
     import type { Resource, User } from '@/types';
-import { textChangeRangeIsUnchanged } from 'typescript';
     export default defineComponent({
         data(): {
             editingDescription: boolean
@@ -158,6 +157,17 @@ import { textChangeRangeIsUnchanged } from 'typescript';
                 textarea.setCustomValidity('')
                 textarea.reportValidity()
             },
+            async listedprice(resource: Resource): Promise<number> {
+                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf
+                    }
+                })
+                let returnedPrice: {new_price: number} = await convertedPrice.json()
+                return returnedPrice.new_price
+            },
             async saveDescription(): Promise<void> {
                 const textarea: HTMLTextAreaElement = document.getElementById('desc') as HTMLTextAreaElement
                 if (textarea.value.length === 0) {
@@ -187,6 +197,7 @@ import { textChangeRangeIsUnchanged } from 'typescript';
                     return
                 }
                 const updatedUser: User = await updateDecriptionResponse.json()
+                useUserStore().saveUser(updatedUser)
                 this.editingDescription = false
             },
             revert(): void {
@@ -220,18 +231,19 @@ import { textChangeRangeIsUnchanged } from 'typescript';
                 return user
             },
             all_textbooks(): Resource[] {
+                if (!this.user || !this.user.listings) return []
                 return this.user.listings.filter(listing => listing.type === 'Textbook')
             },
             all_notes(): Resource[] {
+                if (!this.user || !this.user.listings) return []
                 return this.user.listings.filter(listing => listing.type === 'Notes')
             },
             all_stationery(): Resource[] {
+                if (!this.user || !this.user.listings) return []
                 return this.user.listings.filter(listing => listing.type === 'Stationery')
             },
             textbooks(): Resource[] {
-                if (!this.user.listings) {
-                    return []
-                }
+                if (!this.user || !this.user.listings) return []
                 if (this.textbookMessage === 'All') {
                     return this.user.listings.filter(listing => listing.type === 'Textbook')
                 } else if (this.textbookMessage === 'Sold') {
@@ -240,9 +252,7 @@ import { textChangeRangeIsUnchanged } from 'typescript';
                 return this.user.listings.filter(listing => listing.type === 'Textbook' && listing.is_draft)
             },
             notes(): Resource[] {
-                if (!this.user.listings) {
-                    return []
-                }
+                if (!this.user || !this.user.listings) return []
                 if (this.notesMessage === 'All') {
                     return this.user.listings.filter(listing => listing.type === 'Notes')
                 } else if (this.notesMessage === 'Sold') {
@@ -251,9 +261,7 @@ import { textChangeRangeIsUnchanged } from 'typescript';
                 return this.user.listings.filter(listing => listing.type === 'Notes' && listing.is_draft)
             },
             stationery(): Resource[] {
-                if (!this.user.listings) {
-                    return []
-                }
+                if (!this.user || !this.user.listings) return []
                 if (this.stationeryMessage === 'All') {
                     return this.user.listings.filter(listing => listing.type === 'Stationery')
                 } else if (this.stationeryMessage === 'Sold') {
@@ -263,12 +271,20 @@ import { textChangeRangeIsUnchanged } from 'typescript';
             }
         },
         watch: {
-            user(new_user: User): void {
+            async user(new_user: User): Promise<void> {
                 // this.user = new_user
                 this.fill_stars()
+                for (const resource of this.user.listings) {
+                    resource.price = await this.listedprice(resource)
+                }
+            },
+            async resources(resources: Resource[]): Promise<void> {
+                for (const resource of resources) {
+                    resource.price = await this.listedprice(resource)
+                }
             }
         },
-        mounted(): void {
+        async created(): Promise<void> {
             this.fill_stars()
         }
     })
