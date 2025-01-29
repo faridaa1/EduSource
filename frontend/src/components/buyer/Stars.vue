@@ -1,6 +1,7 @@
 <template>
     <div id="stars">
         <div class="rating">
+            1
             <div class="stars">
                 <i id="one" class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
@@ -11,6 +12,7 @@
             <p>{{ percent(1) }}%</p>
         </div>
         <div class="rating">
+            2
             <div class="stars">
                 <i id="one" class="bi bi-star-fill"></i>
                 <i id="two" class="bi bi-star-fill"></i>
@@ -21,6 +23,7 @@
             <p>{{ percent(2) }}%</p>
         </div>
         <div class="rating">
+            3
             <div class="stars">
                 <i id="one" class="bi bi-star-fill"></i>
                 <i id="two" class="bi bi-star-fill"></i>
@@ -31,6 +34,7 @@
             <p>{{ percent(3) }}%</p>
         </div>
         <div class="rating">
+            4
             <div class="stars">
                 <i id="one" class="bi bi-star-fill"></i>
                 <i id="two" class="bi bi-star-fill"></i>
@@ -41,6 +45,7 @@
             <p>{{ percent(4) }}%</p>
         </div>
         <div class="rating">
+            5
             <div class="stars">
                 <i id="one" class="bi bi-star-fill"></i>
                 <i id="two" class="bi bi-star-fill"></i>
