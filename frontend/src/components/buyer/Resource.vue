@@ -491,19 +491,21 @@
                 return returnedPrice.new_price
             },
             fill_stars(): void {
-                const star1: HTMLElement = document.getElementById('one') as HTMLElement
-                const star2: HTMLElement = document.getElementById('two') as HTMLElement
-                const star3: HTMLElement = document.getElementById('three') as HTMLElement
-                const star4: HTMLElement = document.getElementById('four') as HTMLElement
-                const star5: HTMLElement = document.getElementById('five') as HTMLElement
-                if (star1 && star2 && star3 && star4 && star5) {
-                    console.log(this.average_rating)
-                    star1.style.color = this.average_rating >= 1 ? 'orange' : 'none'
-                    star2.style.color = this.average_rating >= 2 ? 'orange' : 'none'
-                    star3.style.color = this.average_rating >= 3 ? 'orange' : 'none'
-                    star4.style.color = this.average_rating >= 4 ? 'orange' : 'none'
-                    star5.style.color = this.average_rating == 5 ? 'orange' : 'none'
-                }
+                nextTick(() => {
+                    const star1: HTMLElement = document.getElementById('one') as HTMLElement
+                    const star2: HTMLElement = document.getElementById('two') as HTMLElement
+                    const star3: HTMLElement = document.getElementById('three') as HTMLElement
+                    const star4: HTMLElement = document.getElementById('four') as HTMLElement
+                    const star5: HTMLElement = document.getElementById('five') as HTMLElement
+                    if (star1 && star2 && star3 && star4 && star5) {
+                        console.log(this.average_rating)
+                        star1.style.color = this.average_rating >= 1 ? 'orange' : 'none'
+                        star2.style.color = this.average_rating >= 2 ? 'orange' : 'none'
+                        star3.style.color = this.average_rating >= 3 ? 'orange' : 'none'
+                        star4.style.color = this.average_rating >= 4 ? 'orange' : 'none'
+                        star5.style.color = this.average_rating == 5 ? 'orange' : 'none'
+                    }
+                })
             },
             possible_sellers(editing: boolean): Resource[] {
                 // filter so that user cannot review seller twice; check who theyve reviewed and remove them
