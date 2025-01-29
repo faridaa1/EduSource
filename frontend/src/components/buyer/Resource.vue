@@ -19,7 +19,7 @@
             </div>
                 <span v-if="total_ratings === 0">0 ratings</span>
                 <div id="add-review" v-if="!written_review && total_ratings === 0" @click="add_review">Be the first to write a review</div>
-                <div id="add-review" v-if="!written_review && total_ratings > 0" @click="add_review">Add Review</div>
+                <div id="add-review" v-if="total_ratings > 0 && possible_sellers.length > 0" @click="add_review">Add Review</div>
                 <div id="est-del">Estimated: {{ parseFloat((resource as Resource).estimated_delivery_time.toString()) }} {{ (resource as Resource).estimated_delivery_units }} {{ (resource as Resource).delivery_option }}</div>
             </div>
         </div>
@@ -73,9 +73,9 @@
             <Stars />
         </div>
         <div id="my-review">
-            <button id="add-review" v-if="!written_review && !addingReview" @click="add_review">Click to add Review</button>
+            <button id="add-review" v-if="!addingReview && possible_sellers.length > 0" @click="add_review">Click to add Review</button>
             <div v-if="addingReview" class="item">
-                <p>Stars</p>
+                <p id="stars-text">Stars</p>
                 <div id="my-rating">
                     <i id="rating-one" class="bi bi-star-fill" @mouseenter="show_potential_rating"></i>
                     <i id="rating-two" class="bi bi-star-fill" @mouseenter="show_potential_rating"></i>
@@ -93,7 +93,7 @@
             <div v-if="addingReview" class="item">
                 <p>Seller</p>
                 <select id="seller">
-                    <option :value="resource.id" v-for="resource in allResources.filter(resource => resource.user !== user.id)">
+                    <option :value="resource.id" v-for="resource in possible_sellers(false)">
                         <p>{{ resource.author }}</p>
                     </option>
                 </select>
@@ -114,11 +114,11 @@
                 </div>
                 <div id="video">
                     <p>Video</p>
-                    <input id="video1" type="file" accept=".mp4" @change="show_video">
+                    <input id="video1" type="file" accept=".mp4" @change="(event: Event) => show_video(event, 0)">
                     <label for="video1" class="media-square">
                         <i v-if="video.name === ''" class="bi bi-plus-lg"></i>
                         <video controls id="vid"></video>
-                        <button v-if="!(video.name === '')" @click="remove_video"><i class="bi bi-x-lg delete"></i></button>
+                        <button v-if="!(video.name === '')" @click="(event: Event) => remove_video(event,0)"><i class="bi bi-x-lg delete"></i></button>
                     </label>
                 </div>
             </div>
@@ -155,7 +155,7 @@
                                 <i v-if="editing && review.rating == 5" id="rating-five" class="bi bi-star-fill" style="color: orange;" @mouseenter="show_potential_rating"></i>
                                 <i v-if="!editing && review.rating < 5" class="bi bi-star-fill"></i>
                                 <i v-if="editing && review.rating < 5" id="rating-five" class="bi bi-star-fill" @mouseenter="show_potential_rating"></i>
-                                <span v-if="editing">{{ rating }}</span>
+                                <span v-if="editing" id="stars-span">{{ parseFloat(rating.toString()) }}</span>
                             </div>
                             <p v-if="!editing" id="title">{{ review.title }} (Ordered from {{ allResources.find(resource => resource.id === review.resource)?.author }})</p>
                             <p v-if="!editing" class="date">{{ to_date(review.upload_date) }}</p>
@@ -174,7 +174,7 @@
                     <div class="item top-marg">
                         <p>Seller</p>
                         <select id="review-seller" :value="review.resource">
-                            <option :value="resource.id" v-for="resource in allResources.filter(resource => resource.user !== user.id)">
+                            <option :value="resource.id" v-for="resource in possible_sellers(true)">
                                 <p>{{ resource.author }}</p>
                             </option>
                         </select>
@@ -194,11 +194,11 @@
                     </div>
                     <div id="video">
                         <p>Video</p>
-                        <input id="video1" type="file" accept=".mp4" @change="show_video">
+                        <input id="video1" type="file" accept=".mp4" @change="(event: Event) => show_video(event,1)">
                         <label for="video1" class="media-square">
                             <i v-if="video.name === ''" class="bi bi-plus-lg"></i>
-                            <video controls id="vid" :src="`http://localhost:8000${review.video}`"></video>
-                            <button v-if="!(video.name === '')" @click="remove_video"><i class="bi bi-x-lg delete"></i></button>
+                            <video controls id="vid1" :src="`http://localhost:8000${review.video}`"></video>
+                            <button v-if="!(video.name === '')" @click="(event: Event) => remove_video(event,1)"><i class="bi bi-x-lg delete"></i></button>
                         </label>
                     </div>
                 </div>
@@ -215,7 +215,7 @@
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent } from 'vue';
+    import { defineComponent, nextTick } from 'vue';
     import type { Resource, Review, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import Stars from './Stars.vue';
@@ -225,6 +225,7 @@
             addingReview: boolean,
             rating_error: boolean,
             viewing_sellers: boolean,
+            review: number,
             editing: boolean,
             rating: number,
             image: File,
@@ -232,6 +233,7 @@
         } { return {
             addingReview: false,
             rating: 0,
+            review: -1,
             viewing_sellers: false,
             editing: false,
             rating_error: false,
@@ -244,25 +246,28 @@
                 document.getElementById('review-heading-one')?.classList.add('review-heading-one-height')
                 document.getElementById('review-heading-one')?.classList.remove('review-heading-one-reviewing-height')
                 this.editing = false
+                this.review = -1
             },
             edit_review(review: Review): void {
-                const reviews: HTMLDivElement = document.getElementById('reviews') as HTMLDivElement
-                const img: HTMLImageElement = reviews.querySelector('img') as HTMLImageElement
-                const vid: HTMLVideoElement = reviews.querySelector('video') as HTMLVideoElement
-                if (img) {
-                    this.image = new File([], img.src)
-                    if (this.image.name === '') {
-                        img.style.display = 'none'
-                    }
-                } 
-                if (vid){
-                    this.video = new File([], vid.src)
-                }
                 this.editing = true
-                document.getElementById('review-review')?.classList.add('review-review-desc')
-                document.getElementById('review-heading-one')?.classList.remove('review-heading-one-height')
-                document.getElementById('review-heading-one')?.classList.add('review-heading-one-reviewing-height')
-                this.rating = review.rating
+                nextTick(() => { 
+                    this.review = review.id
+                    const reviews: HTMLDivElement = document.getElementById('reviews') as HTMLDivElement
+                    const img: HTMLImageElement = reviews.querySelector('img') as HTMLImageElement
+                    const vid: HTMLVideoElement = document.getElementById('vid1') as HTMLVideoElement
+                    if (review.image) {
+                        this.image = new File([], img.src)
+                        img.style.display = 'block'
+                    } 
+                    if (review.video) {
+                        this.video = new File([], vid.src)
+                        vid.style.display = 'block'
+                    } 
+                    document.getElementById('review-review')?.classList.add('review-review-desc')
+                    document.getElementById('review-heading-one')?.classList.remove('review-heading-one-height')
+                    document.getElementById('review-heading-one')?.classList.add('review-heading-one-reviewing-height')
+                    this.rating = review.rating
+                })
             },
             async delete_review(review: Review) {
                 await fetch(`http://localhost:8000/api/user/${this.user.id}/review/${review.id}/`, {
@@ -294,9 +299,9 @@
                 : 'Dec'
                 return `${day} ${month} ${year}`
             },
-            remove_video(event:Event): void {
+            remove_video(event:Event, num: number): void {
                 event.preventDefault()
-                const vid: HTMLImageElement = document.getElementById('vid') as HTMLImageElement
+                const vid: HTMLImageElement = document.getElementById(num === 0 ? 'vid' : 'vid1') as HTMLImageElement
                 const video: HTMLInputElement = document.getElementById('video1') as HTMLInputElement
                 if (vid && video) {
                     vid.src = ''
@@ -305,12 +310,12 @@
                     video.value = ''
                 }
             },
-            show_video(event: Event): void {
+            show_video(event: Event, num: number): void {
                 const inputElement: HTMLInputElement = event.target as HTMLInputElement
                 if (!inputElement.files) return
                 const video: File = inputElement.files[0]
                 if (!video) return
-                const vid: HTMLImageElement = document.getElementById('vid') as HTMLImageElement
+                const vid: HTMLImageElement = document.getElementById(num === 0 ? 'vid' : 'vid1') as HTMLImageElement
                 if (!vid) return
                 vid.src = URL.createObjectURL(video)
                 vid.style.display = 'block'
@@ -340,7 +345,9 @@
             },
             add_review(): void {
                 this.addingReview = true
-                window.scrollTo(0, document.body.scrollHeight)
+                nextTick(() => {
+                    document.getElementById('stars-text')?.scrollIntoView()
+                })
             },
             reset_validity(number: number): void {
                 const title: HTMLInputElement = document.getElementById(number === 0 ? 'review-title' : 'specific-review-title') as HTMLInputElement
@@ -497,7 +504,15 @@
                     star4.style.color = this.average_rating >= 4 ? 'orange' : 'none'
                     star5.style.color = this.average_rating == 5 ? 'orange' : 'none'
                 }
-            }
+            },
+            possible_sellers(editing: boolean): Resource[] {
+                // filter so that user cannot review seller twice; check who theyve reviewed and remove them
+                let resources = this.allResources.filter(resource =>  resource.user !== this.user.id)
+                if (editing) {
+                    return resources.filter(resource => resource.reviews.length === 0 || resource.reviews.some(review => this.review === review.id || review.user !== this.user.id))
+                }
+                return resources = resources.filter(resource => resource.reviews.length === 0 || resource.reviews.some(review => review.user !== this.user.id))
+            },
         },
         computed: {
             total_ratings(): number {
@@ -840,7 +855,7 @@
         gap: 2rem;
     }
 
-    #image1, #img, #vid, #video1 { 
+    #image1, #img, #vid, #vid1, #video1 { 
         display: none;
     }
 
@@ -874,7 +889,7 @@
         background-color: #0DCAF0;
     }
 
-    #img, #vid {
+    #img, #vid, #vid1 {
         max-height: 100%;
         max-width: 100%;
     }
@@ -1048,10 +1063,6 @@
         background-color: rgb(113, 22, 22);
     }
 
-    #reviews #img ,#reviews #vid {
-        display: block;
-    }
-
     #reviews #media {
         margin-top: 1rem;
     }
@@ -1070,5 +1081,9 @@
 
     #reviews-p {
         margin-bottom: 1rem;
+    }
+
+    #stars-span {
+        margin-left: 0.4rem;
     }
 </style>

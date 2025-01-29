@@ -110,13 +110,14 @@ def edit_review(request: HttpRequest, user: int, id: int, resource: int) -> Json
         review.title=data.get('title')
         review.review=data.get('description')
         review.resource = resource
+        print(media.get('image'))
         if not media.get('image'):
             review.image = None
-        elif media.get('image').name != review.image.name.split('/')[1]:
+        elif not review.image or (media.get('image').name != review.image.name.split('/')[1]):
             review.image=media.get('image')
         if not media.get('video'):
             review.video = None
-        elif media.get('video').name != review.video.name.split('/')[1]:
+        elif not review.video or (media.get('video').name != review.video.name.split('/')[1]):
             review.video=media.get('video')
         review.upload_date = datetime.datetime.now()
         review.save()
