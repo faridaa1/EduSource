@@ -19,7 +19,7 @@
                 </div>
                 <span v-if="total_ratings === 0">0 ratings</span>
                 <div id="add-review" v-if="!written_review && total_ratings === 0" @click="add_review">Be the first to write a review</div>
-                <div id="add-review" v-if="total_ratings > 0 && possible_sellers.length > 0" @click="add_review">Add Review</div>
+                <div id="add-review" v-if="total_ratings > 0 && possible_sellers(false).length > 0" @click="add_review">Add Review</div>
                 <div id="est-del">Estimated: {{ parseFloat((resource as Resource).estimated_delivery_time.toString()) }} {{ (resource as Resource).estimated_delivery_units }} {{ (resource as Resource).delivery_option }}</div>
             </div>
         </div>
@@ -74,7 +74,29 @@
             <Stars />
         </div>
         <div id="my-review">
-            <button id="add-review" v-if="!addingReview && possible_sellers.length > 0" @click="add_review">Click to add Review</button>
+            <div id="filtering">
+                <button id="add-review" v-if="!addingReview && possible_sellers(false).length > 0" @click="add_review">Click to add Review</button>
+                <div class="filtering">
+                    <label>Sort By</label>
+                    <select v-model="sort_by">
+                        <option value="earliest">Date: Earliest to Latest</option>
+                        <option value="latest">Date: Latest to Earliest</option>
+                        <option value="low">Review: Low to High</option>
+                        <option value="high">Review: High to Low</option>
+                    </select>
+                </div>
+                <div class="filtering">
+                    <label>Filter</label>
+                    <select v-model="filter_by">
+                        <option value="all">Stars: All</option>
+                        <option value="1">Stars: 1</option>
+                        <option value="2">Stars: 2</option>
+                        <option value="3">Stars: 3</option>
+                        <option value="4">Stars: 4</option>
+                        <option value="5">Stars: 5</option>
+                    </select>
+                </div>
+            </div>
             <div v-if="addingReview" class="item">
                 <p id="stars-text">Stars</p>
                 <div id="my-rating">
@@ -129,7 +151,8 @@
             </div>
         </div>
         <div id="reviews">
-            <div class="reviews-review" v-for="review in all_reviews">
+            <p id="no-reviews-to-display" v-if="all_reviews.length === 0">No reviews to display</p>
+            <div id="showing-reviews" class="reviews-review" v-for="review in all_reviews">
                 <div class="review-heading">
                     <div id="review-heading-one" class="review-heading-one-height">
                         <div v-if="!editing || editing && editing_review !== review.id">
@@ -232,8 +255,12 @@
             rating: number,
             image: File,
             video: File,
-            editing_review: number
+            editing_review: number,
+            sort_by: 'earliest' | 'latest' | 'high' | 'low',
+            filter_by: 'all' | '1' | '2' | '3' | '4' | '5',
         } { return {
+            sort_by: 'latest',
+            filter_by: 'all',
             editing_review: -1,
             addingReview: false,
             rating: 0,
@@ -562,7 +589,31 @@
                 this.allResources.forEach((resource) =>
                     reviews.push(...resource.reviews)
                 )
-                return reviews
+                reviews = reviews.sort((review1, review2) => {
+                    if (this.sort_by === 'earliest') {
+                        if (review1.upload_date > review2.upload_date) {
+                            return 1
+                        }
+                        return -1
+                    } else if (this.sort_by === 'latest') {
+                        if (review1.upload_date > review2.upload_date) {
+                            return -1
+                        }
+                        return 1
+                    } else if (this.sort_by === 'low') {
+                        console.log(review1.rating, review2.rating,'here')
+                        if (review1.rating > review2.rating) {
+                            return 1
+                        }
+                        return -1
+                    } 
+                    if (review1.rating > review2.rating) {
+                        return -1
+                    }
+                    return 1
+                })
+                if (this.filter_by === 'all') return reviews
+                return reviews.filter(review => parseFloat(review.rating.toString()) === parseFloat(this.filter_by.toString()))
             },
             allResources(): Resource[] {
                 const window_location: string[] = window.location.href.split('/')
@@ -584,6 +635,12 @@
             async resource(resource: Resource): Promise<void> {
                 this.fill_stars()
                 resource.price = await this.listedprice(resource)
+            },
+            all_reviews(updated_all_reviews): void {
+                const allReviews: HTMLDivElement = document.getElementById('showing-reviews') as HTMLDivElement
+                if (allReviews) {
+                    allReviews.scrollIntoView()
+                }
             }
         },
         mounted(): void {
@@ -1098,5 +1155,20 @@
 
     #stars-span {
         margin-left: 0.4rem;
+    }
+
+    #filtering {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .filtering {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    #no-reviews-to-display {
+        align-self: center;
     }
 </style>
