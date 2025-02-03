@@ -76,50 +76,52 @@
         <div id="my-review">
             <div id="filtering">
                 <button id="add-review" v-if="!addingReview && possible_sellers(false).length > 0" @click="add_review">Click to add Review</button>
-                <div class="filtering">
-                    <label>Sort By</label>
-                    <select v-model="sort_by">
-                        <option value="earliest">Date: Earliest to Latest</option>
-                        <option value="latest">Date: Latest to Earliest</option>
-                        <option value="low">Review: Low to High</option>
-                        <option value="high">Review: High to Low</option>
-                    </select>
-                </div>
-                <div class="filtering" id="clickable">
-                    <div id="filtering-section">
-                        <div id="toggle-filter" @click="toggleFilter">
-                            <p id="clickable">Filter</p>
-                            <i id="clickable" v-if="!toggle_filter" class="bi bi-chevron-down"></i>
-                            <i id="clickable" v-if="toggle_filter" class="bi bi-chevron-up"></i>
-                        </div>
-                        <div id="filter-options" v-if="toggle_filter">
-                            <div class="filter-item border-top" @click="filter_one=!filter_one">
-                                <label>Stars: 1</label>
-                                <input v-model="filter_one" :checked="filter_one" type="checkbox">
+                <div id="filter-right">
+                    <div class="filtering">
+                        <label>Sort By</label>
+                        <select v-model="sort_by">
+                            <option value="earliest">Date: Earliest to Latest</option>
+                            <option value="latest">Date: Latest to Earliest</option>
+                            <option value="low">Review: Low to High</option>
+                            <option value="high">Review: High to Low</option>
+                        </select>
+                    </div>
+                    <div class="filtering" id="clickable">
+                        <div id="filtering-section">
+                            <div id="toggle-filter" @click="toggleFilter">
+                                <p id="clickable">Filter</p>
+                                <i id="clickable" v-if="!toggle_filter" class="bi bi-chevron-down"></i>
+                                <i id="clickable" v-if="toggle_filter" class="bi bi-chevron-up"></i>
                             </div>
-                            <div class="filter-item" @click="filter_two=!filter_two">
-                                <label>Stars: 2</label>
-                                <input v-model="filter_two" :checked="filter_two" type="checkbox">
-                            </div>
-                            <div class="filter-item" @click="filter_three=!filter_three">
-                                <label>Stars: 3</label>
-                                <input v-model="filter_three" :checked="filter_three" type="checkbox">
-                            </div>
-                            <div class="filter-item" @click="filter_four=!filter_four">
-                                <label>Stars: 4</label>
-                                <input v-model="filter_four" :checked="filter_four" type="checkbox">
-                            </div>
-                            <div class="filter-item" @click="filter_five=!filter_five">
-                                <label>Stars: 5</label>
-                                <input v-model="filter_five" :checked="filter_five" type="checkbox">
-                            </div>
-                            <div class="filter-item" @click="filter_images=!filter_images">
-                                <label>Images</label>
-                                <input v-model="filter_images" :checked="filter_images" type="checkbox">
-                            </div>
-                            <div class="filter-item border-bottom" @click="filter_video=!filter_video">
-                                <label>Video</label>
-                                <input v-model="filter_video" :checked="filter_video" type="checkbox">
+                            <div id="filter-options" v-if="toggle_filter">
+                                <div class="filter-item border-top" @click="filter_one=!filter_one">
+                                    <label>Stars: 1</label>
+                                    <input v-model="filter_one" :checked="filter_one" type="checkbox">
+                                </div>
+                                <div class="filter-item" @click="filter_two=!filter_two">
+                                    <label>Stars: 2</label>
+                                    <input v-model="filter_two" :checked="filter_two" type="checkbox">
+                                </div>
+                                <div class="filter-item" @click="filter_three=!filter_three">
+                                    <label>Stars: 3</label>
+                                    <input v-model="filter_three" :checked="filter_three" type="checkbox">
+                                </div>
+                                <div class="filter-item" @click="filter_four=!filter_four">
+                                    <label>Stars: 4</label>
+                                    <input v-model="filter_four" :checked="filter_four" type="checkbox">
+                                </div>
+                                <div class="filter-item" @click="filter_five=!filter_five">
+                                    <label>Stars: 5</label>
+                                    <input v-model="filter_five" :checked="filter_five" type="checkbox">
+                                </div>
+                                <div class="filter-item" @click="filter_images=!filter_images">
+                                    <label>Images</label>
+                                    <input v-model="filter_images" :checked="filter_images" type="checkbox">
+                                </div>
+                                <div class="filter-item border-bottom" @click="filter_video=!filter_video">
+                                    <label>Video</label>
+                                    <input v-model="filter_video" :checked="filter_video" type="checkbox">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1246,8 +1248,7 @@
 
     #filtering {
         display: flex;
-        gap: 1rem;
-        align-items: flex-start;
+        justify-content: space-between;
     }
 
     .filtering {
@@ -1264,7 +1265,7 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        background-color: #D9D9D9;
+        background-color: white;
         border-radius: 0.4rem;
         padding: 0.5rem;
         cursor: pointer;
@@ -1285,12 +1286,16 @@
         position: relative;
     }
 
+    #filtering select {
+        background-color: white !important;
+    }
+
     #filter-options {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 0.5rem;
-        background-color: #D9D9D9;
+        background-color: white;
         border-radius: 0.4rem;
         position: absolute;
         top: 2.5rem;
@@ -1323,5 +1328,10 @@
 
     .filter-item label {
         width: 11rem;
+    }
+
+    #filter-right {
+        display: flex;
+        gap: 2rem;
     }
 </style>
