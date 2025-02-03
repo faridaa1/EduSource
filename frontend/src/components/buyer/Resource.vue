@@ -85,16 +85,44 @@
                         <option value="high">Review: High to Low</option>
                     </select>
                 </div>
-                <div class="filtering">
-                    <label>Filter</label>
-                    <select v-model="filter_by">
-                        <option value="all">Stars: All</option>
-                        <option value="1">Stars: 1</option>
-                        <option value="2">Stars: 2</option>
-                        <option value="3">Stars: 3</option>
-                        <option value="4">Stars: 4</option>
-                        <option value="5">Stars: 5</option>
-                    </select>
+                <div class="filtering" id="clickable">
+                    <div id="filtering-section">
+                        <div id="toggle-filter" @click="toggleFilter">
+                            <p id="clickable">Filter</p>
+                            <i id="clickable" v-if="!toggle_filter" class="bi bi-chevron-down"></i>
+                            <i id="clickable" v-if="toggle_filter" class="bi bi-chevron-up"></i>
+                        </div>
+                        <div id="filter-options" v-if="toggle_filter">
+                            <div class="filter-item border-top" @click="filter_one=!filter_one">
+                                <label>Stars: 1</label>
+                                <input v-model="filter_one" :checked="filter_one" type="checkbox">
+                            </div>
+                            <div class="filter-item" @click="filter_two=!filter_two">
+                                <label>Stars: 2</label>
+                                <input v-model="filter_two" :checked="filter_two" type="checkbox">
+                            </div>
+                            <div class="filter-item" @click="filter_three=!filter_three">
+                                <label>Stars: 3</label>
+                                <input v-model="filter_three" :checked="filter_three" type="checkbox">
+                            </div>
+                            <div class="filter-item" @click="filter_four=!filter_four">
+                                <label>Stars: 4</label>
+                                <input v-model="filter_four" :checked="filter_four" type="checkbox">
+                            </div>
+                            <div class="filter-item" @click="filter_five=!filter_five">
+                                <label>Stars: 5</label>
+                                <input v-model="filter_five" :checked="filter_five" type="checkbox">
+                            </div>
+                            <div class="filter-item" @click="filter_images=!filter_images">
+                                <label>Images</label>
+                                <input v-model="filter_images" :checked="filter_images" type="checkbox">
+                            </div>
+                            <div class="filter-item border-bottom" @click="filter_video=!filter_video">
+                                <label>Video</label>
+                                <input v-model="filter_video" :checked="filter_video" type="checkbox">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div v-if="addingReview" class="item">
@@ -254,13 +282,27 @@
             editing: boolean,
             rating: number,
             image: File,
+            toggle_filter: boolean,
             video: File,
             editing_review: number,
             sort_by: 'earliest' | 'latest' | 'high' | 'low',
-            filter_by: 'all' | '1' | '2' | '3' | '4' | '5',
+            filter_one: boolean,
+            filter_two: boolean,
+            filter_three: boolean,
+            filter_four: boolean,
+            filter_five: boolean,
+            filter_images: boolean,
+            filter_video: boolean,
         } { return {
+            toggle_filter: false,
+            filter_one: true,
+            filter_five: true,
+            filter_four: true,
+            filter_images: true,
+            filter_three: true,
+            filter_two: true,
+            filter_video: true,
             sort_by: 'latest',
-            filter_by: 'all',
             editing_review: -1,
             addingReview: false,
             rating: 0,
@@ -272,6 +314,17 @@
             image: new File([''], ''),
         }},
         methods: {
+            toggleFilter(): void {
+                this.toggle_filter = !this.toggle_filter
+                if (this.toggle_filter) {
+                    document.addEventListener('click', (event: Event) => {
+                        const target: HTMLElement = event.target as HTMLElement
+                        if (!(target.id === 'filtering-section' || target.id === 'clickable' || target.id === 'toggle-filter')) {
+                            this.toggle_filter=false
+                        }
+                    })
+                } 
+            },
             close_review(): void {
                 document.getElementById('review-review')?.classList.remove('review-review-desc')
                 document.getElementById('review-heading-one')?.classList.add('review-heading-one-height')
@@ -484,7 +537,6 @@
                 this.reset_validity(0)
                 const seller_element: HTMLSelectElement = document.getElementById('resource-add-seller') as HTMLSelectElement
                 const seller = seller_element.value
-                console.log(seller_element)
                 const data: FormData = new FormData()
                 data.append('stars', this.rating.toString())
                 data.append('title', title.value)
@@ -554,6 +606,12 @@
                 }
                 return resources.filter(resource => resource.reviews.length === 0 || resource.reviews.some(review => review.user !== this.user.id))
             },
+            scrollReviewsIntoView(): void {
+                const allReviews: HTMLDivElement = document.getElementById('showing-reviews') as HTMLDivElement
+                if (allReviews) {
+                    allReviews.scrollIntoView()
+                }
+            }
         },
         computed: {
             total_ratings(): number {
@@ -601,7 +659,6 @@
                         }
                         return 1
                     } else if (this.sort_by === 'low') {
-                        console.log(review1.rating, review2.rating,'here')
                         if (review1.rating > review2.rating) {
                             return 1
                         }
@@ -612,8 +669,20 @@
                     }
                     return 1
                 })
-                if (this.filter_by === 'all') return reviews
-                return reviews.filter(review => parseFloat(review.rating.toString()) === parseFloat(this.filter_by.toString()))
+                return reviews.filter(review => {
+                        if ( this.filter_one && parseFloat(review.rating.toString()) === 1 
+                            || this.filter_two && parseFloat(review.rating.toString()) === 2
+                            || this.filter_three && parseFloat(review.rating.toString()) === 3
+                            || this.filter_four && parseFloat(review.rating.toString()) === 4
+                            || this.filter_five && parseFloat(review.rating.toString()) === 5
+                            || (this.filter_images && review.image !== null)
+                            || (this.filter_video && review.video !== null)
+                        ) {
+                            return true
+                        }
+                        return false
+                    }
+                )
             },
             allResources(): Resource[] {
                 const window_location: string[] = window.location.href.split('/')
@@ -637,10 +706,28 @@
                 resource.price = await this.listedprice(resource)
             },
             all_reviews(updated_all_reviews): void {
-                const allReviews: HTMLDivElement = document.getElementById('showing-reviews') as HTMLDivElement
-                if (allReviews) {
-                    allReviews.scrollIntoView()
-                }
+                this.scrollReviewsIntoView()
+            },
+            filter_one(): void {
+                this.scrollReviewsIntoView()
+            },
+            filter_two(): void {
+                this.scrollReviewsIntoView()
+            },
+            filter_three(): void {
+                this.scrollReviewsIntoView()
+            },
+            filter_four(): void {
+                this.scrollReviewsIntoView()
+            },
+            filter_five(): void {
+                this.scrollReviewsIntoView()
+            },
+            filter_images(): void {
+                this.scrollReviewsIntoView()
+            },
+            filter_video(): void {
+                this.scrollReviewsIntoView()
             }
         },
         mounted(): void {
@@ -1160,15 +1247,81 @@
     #filtering {
         display: flex;
         gap: 1rem;
+        align-items: flex-start;
     }
 
     .filtering {
         display: flex;
-        align-items: center;
         gap: 0.5rem;
+        align-items: center;
     }
 
     #no-reviews-to-display {
         align-self: center;
+    }
+
+    #toggle-filter {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background-color: #D9D9D9;
+        border-radius: 0.4rem;
+        padding: 0.5rem;
+        cursor: pointer;
+        width: 6.4rem;
+        justify-content: center;
+        height: 1.3rem;
+        border: 0.1rem solid #7f7f7f;
+    }
+
+    #toggle-filter:hover {
+        background-color: darkgray;
+    }
+
+    #filtering-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+        position: relative;
+    }
+
+    #filter-options {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        background-color: #D9D9D9;
+        border-radius: 0.4rem;
+        position: absolute;
+        top: 2.5rem;
+        left: 0.1rem;
+    }
+
+    .filter-item {
+        display: flex;
+        align-items: center;
+        width: 6rem;
+        padding: 0.5rem;
+        padding-left: 0.7rem;
+        padding-right: 0.7rem;
+    }
+
+    .border-top {
+        border-top-right-radius: 0.4rem;
+        border-top-left-radius: 0.4rem;
+    }
+
+    .border-bottom {
+        border-bottom-right-radius: 0.4rem;
+        border-bottom-left-radius: 0.4rem;
+    }
+
+    .filter-item:hover {
+        background-color: rgb(0, 120, 215);
+        color: white;
+    }
+
+    .filter-item label {
+        width: 11rem;
     }
 </style>
