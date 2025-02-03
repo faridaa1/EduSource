@@ -3,8 +3,7 @@
     <div id="light">
       <header>
         <img id='logo' src="/logo-light.svg" alt="EduSource" width="125" height="125" v-pre/>
-        <RouterLink v-if="user.mode === 'buyer'" to="/buyer-home" class="hide-on-mobile link">Home</RouterLink>
-        <RouterLink v-if="user.mode === 'seller'" to="/seller-home" class="hide-on-mobile link">Home</RouterLink>
+        <RouterLink to="/" class="hide-on-mobile link">Home</RouterLink>
         <div id="profile-div" class="hide-on-mobile" @click="show_profile('desktop')">
           <p id="profile-header">Profile</p>
           <div id="profile-nav">
@@ -12,6 +11,7 @@
             <RouterLink class="profile-item border-bottom" to="/" v-if="user.mode==='buyer'">Orders</RouterLink>
             <RouterLink class="profile-item border-bottom" to="/" v-if="user.mode==='buyer'">Cart</RouterLink>
             <RouterLink class="profile-item rounded-bottom" to="/" v-if="user.mode==='buyer'">Wishlist</RouterLink>
+            <RouterLink class="profile-item border-bottom" to="/listings" v-if="user.mode==='seller'">Listings</RouterLink>
             <RouterLink class="profile-item rounded-bottom" to="/" v-if="user.mode==='seller'">Orders</RouterLink>
           </div>
         </div>

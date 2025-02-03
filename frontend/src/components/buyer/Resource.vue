@@ -93,7 +93,7 @@
             </div>
             <div v-if="addingReview" class="item">
                 <p>Seller</p>
-                <select id="seller">
+                <select id="resource-add-seller">
                     <option :value="resource.id" v-for="resource in possible_sellers(false)">
                         <p>{{ resource.author }}</p>
                     </option>
@@ -132,42 +132,42 @@
             <div class="reviews-review" v-for="review in all_reviews">
                 <div class="review-heading">
                     <div id="review-heading-one" class="review-heading-one-height">
-                        <div v-if="!editing">
+                        <div v-if="!editing || editing && editing_review !== review.id">
                             <i class="bi bi-person-circle icon"></i>
                         </div>
                         <div class="title-area">
-                            <p v-if="editing" style="font-weight: normal;">Stars</p>
+                            <p v-if="editing && editing_review === review.id" style="font-weight: normal;">Stars</p>
                             <div class="review-rating">
-                                <i v-if="!editing" class="bi bi-star-fill" style="color: orange;"></i>
-                                <i v-if="editing" class="bi bi-star-fill" id="rating-one" style="color: orange;" @mouseenter="show_potential_rating"></i>
-                                <i v-if="!editing && review.rating >= 2" class="bi bi-star-fill" style="color: orange;" ></i>
-                                <i v-if="editing && review.rating >= 2" id="rating-two" class="bi bi-star-fill" style="color: orange;" @mouseenter="show_potential_rating"></i>
-                                <i v-if="!editing && review.rating < 2"class="bi bi-star-fill"></i>
-                                <i v-if="editing && review.rating < 2" id="rating-two" class="bi bi-star-fill" @mouseenter="show_potential_rating"></i>
-                                <i v-if="!editing && review.rating >= 3" class="bi bi-star-fill" style="color: orange;"></i>
-                                <i v-if="editing && review.rating >= 3" id="rating-three" class="bi bi-star-fill" style="color: orange;" @mouseenter="show_potential_rating"></i>
-                                <i v-if="!editing && review.rating < 3" class="bi bi-star-fill"></i>
-                                <i v-if="editing && review.rating < 3" id="rating-three" class="bi bi-star-fill" @mouseenter="show_potential_rating"></i>
-                                <i v-if="!editing && review.rating >= 4" class="bi bi-star-fill" style="color: orange;"></i>
-                                <i v-if="editing && review.rating >= 4" id="rating-four" class="bi bi-star-fill" style="color: orange;" @mouseenter="show_potential_rating"></i>
-                                <i v-if="!editing && review.rating < 4" class="bi bi-star-fill"></i>
-                                <i v-if="editing && review.rating < 4" id="rating-four" class="bi bi-star-fill" @mouseenter="show_potential_rating"></i>
-                                <i v-if="!editing && review.rating == 5" class="bi bi-star-fill" style="color: orange;"></i>
-                                <i v-if="editing && review.rating == 5" id="rating-five" class="bi bi-star-fill" style="color: orange;" @mouseenter="show_potential_rating"></i>
-                                <i v-if="!editing && review.rating < 5" class="bi bi-star-fill"></i>
-                                <i v-if="editing && review.rating < 5" id="rating-five" class="bi bi-star-fill" @mouseenter="show_potential_rating"></i>
-                                <span v-if="editing" id="stars-span">{{ parseFloat(rating.toString()) }}</span>
+                                <i v-if="!editing || editing && editing_review !== review.id" class="bi bi-star-fill" style="color: orange;"></i>
+                                <i v-if="editing && editing_review === review.id" class="bi bi-star-fill" id="rating-one" style="color: orange;" @mouseenter="show_potential_rating"></i>
+                                <i v-if="(!editing || editing && editing_review !== review.id) && review.rating >= 2" class="bi bi-star-fill" style="color: orange;" ></i>
+                                <i v-if="editing && editing_review === review.id && review.rating >= 2" id="rating-two" class="bi bi-star-fill" style="color: orange;" @mouseenter="show_potential_rating"></i>
+                                <i v-if="(!editing || editing && editing_review !== review.id) && review.rating < 2"class="bi bi-star-fill"></i>
+                                <i v-if="editing && editing_review === review.id && review.rating < 2" id="rating-two" class="bi bi-star-fill" @mouseenter="show_potential_rating"></i>
+                                <i v-if="(!editing || editing && editing_review !== review.id) && review.rating >= 3" class="bi bi-star-fill" style="color: orange;"></i>
+                                <i v-if="editing && editing_review === review.id && review.rating >= 3" id="rating-three" class="bi bi-star-fill" style="color: orange;" @mouseenter="show_potential_rating"></i>
+                                <i v-if="(!editing || editing && editing_review !== review.id) && review.rating < 3" class="bi bi-star-fill"></i>
+                                <i v-if="editing && editing_review === review.id && review.rating < 3" id="rating-three" class="bi bi-star-fill" @mouseenter="show_potential_rating"></i>
+                                <i v-if="(!editing || editing && editing_review !== review.id) && review.rating >= 4" class="bi bi-star-fill" style="color: orange;"></i>
+                                <i v-if="editing && editing_review === review.id && review.rating >= 4" id="rating-four" class="bi bi-star-fill" style="color: orange;" @mouseenter="show_potential_rating"></i>
+                                <i v-if="(!editing || editing && editing_review !== review.id) && review.rating < 4" class="bi bi-star-fill"></i>
+                                <i v-if="editing && editing_review === review.id && review.rating < 4" id="rating-four" class="bi bi-star-fill" @mouseenter="show_potential_rating"></i>
+                                <i v-if="(!editing || editing && editing_review !== review.id) && review.rating == 5" class="bi bi-star-fill" style="color: orange;"></i>
+                                <i v-if="editing && editing_review === review.id && review.rating == 5" id="rating-five" class="bi bi-star-fill" style="color: orange;" @mouseenter="show_potential_rating"></i>
+                                <i v-if="(!editing || editing && editing_review !== review.id) && review.rating < 5" class="bi bi-star-fill"></i>
+                                <i v-if="editing && editing_review === review.id && review.rating < 5" id="rating-five" class="bi bi-star-fill" @mouseenter="show_potential_rating"></i>
+                                <span v-if="editing && editing_review === review.id" id="stars-span">{{ parseFloat(rating.toString()) }}</span>
                             </div>
-                            <p v-if="!editing" id="title">{{ review.title }} (Ordered from {{ allResources.find(resource => resource.id === review.resource)?.author }})</p>
-                            <p v-if="!editing" class="date">{{ to_date(review.upload_date) }}</p>
+                            <p v-if="!editing || editing_review !== review.id" id="title">{{ review.title }} (Ordered from {{ allResources.find(resource => resource.id === review.resource)?.author }})</p>
+                            <p v-if="!editing || editing && editing_review !== review.id" class="date">{{ to_date(review.upload_date) }}</p>
                         </div>
                     </div>
-                    <div v-if="!editing" class="review-media">
+                    <div v-if="!editing || editing && editing_review !== review.id" class="review-media">
                         <img class="review-image" v-if="review.image" :src="`http://localhost:8000${review.image}`" alt="image">
                         <video class="review-video" v-if="review.video" :src="`http://localhost:8000${review.video}`" controls></video>
                     </div>
                 </div>
-                <div v-if="editing">
+                <div v-if="editing && editing_review === review.id">
                     <div class="item">
                         <p>Title</p>
                         <input type="text" id="specific-review-title" :value="review.title" @input="reset_validity(1)">
@@ -181,9 +181,9 @@
                         </select>
                     </div>
                 </div>
-                <p class="top-marg text-desc" v-if="editing">Review</p>
-                <textarea :disabled="!editing" id="review-review" @input="reset_validity(1)">{{ review.review }}</textarea>
-                <div id="media" v-if="editing">
+                <p class="top-marg text-desc" v-if="editing && editing_review === review.id">Review</p>
+                <textarea :disabled="!editing || editing && editing_review !== review.id" id="review-review" @input="reset_validity(1)">{{ review.review }}</textarea>
+                <div id="media" v-if="editing && editing_review === review.id">
                     <div id="image">
                         <p>Image</p>
                         <input id="image1" type="file" accept=".png" @change="show_image">
@@ -204,9 +204,9 @@
                     </div>
                 </div>
                 <div v-if="review.user === user.id" id="edit-review">
-                    <button v-if="!editing" class="edit" @click="edit_review(review)"><i class="bi bi-pencil-fill"></i></button>
-                    <button v-if="editing" class="save" @click="save_edited_review(review)"><i class="bi bi-floppy-fill"></i></button>
-                    <button v-if="editing" class="rewind" @click="close_review"><i class="bi bi-arrow-counterclockwise"></i></button>
+                    <button v-if="!editing || editing && editing_review !== review.id" class="edit" @click="edit_review(review)"><i class="bi bi-pencil-fill"></i></button>
+                    <button v-if="editing && editing_review === review.id" class="save" @click="save_edited_review(review)"><i class="bi bi-floppy-fill"></i></button>
+                    <button v-if="editing && editing_review === review.id" class="rewind" @click="close_review"><i class="bi bi-arrow-counterclockwise"></i></button>
                     <button class="trash" @click="delete_review(review)"><i class="bi bi-trash3-fill"></i></button>
                 </div>
             </div>
@@ -231,8 +231,10 @@
             editing: boolean,
             rating: number,
             image: File,
-            video: File
+            video: File,
+            editing_review: number
         } { return {
+            editing_review: -1,
             addingReview: false,
             rating: 0,
             review: -1,
@@ -251,6 +253,7 @@
                 this.review = -1
             },
             edit_review(review: Review): void {
+                this.editing_review = review.id
                 this.editing = true
                 nextTick(() => { 
                     this.review = review.id
@@ -272,14 +275,19 @@
                 })
             },
             async delete_review(review: Review) {
-                await fetch(`http://localhost:8000/api/user/${this.user.id}/review/${review.id}/`, {
+                const response: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/review/${review.id}/`, {
                     method: 'DELETE',
                     credentials: 'include',
                     headers: {
                         'X-CSRFToken' : useUserStore().csrf
                     },
                 })
-                useResourcesStore().removeReview(review)
+                if (!response.ok) {
+                    console.error('Error deleting review')
+                    return
+                }
+                const resource: Resource = await response.json()
+                useResourcesStore().updateResource(resource)
                 this.fill_stars()
             },
             to_date(date: string): string {
@@ -395,6 +403,7 @@
                 data.append('description', description.value)
                 data.append('image', this.image)
                 data.append('video', this.video)
+                data.append('old_resource', review.resource.toString())
                 let savedReview: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/edit-review/${review.id}/${seller}/`, {
                     method: 'POST',
                     credentials: 'include',
@@ -408,8 +417,8 @@
                     alert('Error saving review')
                     return
                 }
-                let reviewData: Review = await savedReview.json()
-                useResourcesStore().editResoureReview(reviewData, review.resource)
+                let reviewData: {old_resource: Resource, new_resource : Resource} = await savedReview.json()
+                useResourcesStore().editResource(reviewData.old_resource, reviewData.new_resource)
                 this.close_review()
             },
             async save_review(): Promise<void> {
@@ -446,8 +455,9 @@
 
                 this.rating_error = false
                 this.reset_validity(0)
-                const seller_element: HTMLSelectElement = document.getElementById('seller') as HTMLSelectElement
+                const seller_element: HTMLSelectElement = document.getElementById('resource-add-seller') as HTMLSelectElement
                 const seller = seller_element.value
+                console.log(seller_element)
                 const data: FormData = new FormData()
                 data.append('stars', this.rating.toString())
                 data.append('title', title.value)
@@ -462,8 +472,8 @@
                     },
                     body: data
                 })
-                let review: Review = await savedReview.json()
-                useResourcesStore().addResoureReview(review)
+                let resource: Resource = await savedReview.json()
+                useResourcesStore().updateResource(resource)
                 this.addingReview = false
             },
             show_potential_rating(event: Event): void {
@@ -515,7 +525,7 @@
                 if (editing) {
                     return resources.filter(resource => resource.reviews.length === 0 || resource.reviews.some(review => this.review === review.id || review.user !== this.user.id))
                 }
-                return resources = resources.filter(resource => resource.reviews.length === 0 || resource.reviews.some(review => review.user !== this.user.id))
+                return resources.filter(resource => resource.reviews.length === 0 || resource.reviews.some(review => review.user !== this.user.id))
             },
         },
         computed: {
@@ -532,7 +542,7 @@
                 let sum_of_rating: number = 0
                 this.allResources.forEach((resource) => {
                     resource.reviews.forEach((review) => {
-                        sum_of_rating += review.rating
+                        sum_of_rating += parseFloat(review.rating.toString())
                 })})
                 this.fill_stars()
                 if (this.total_ratings === 0) return 0
@@ -574,9 +584,6 @@
             async resource(resource: Resource): Promise<void> {
                 this.fill_stars()
                 resource.price = await this.listedprice(resource)
-            },
-            allResources(newResources: Resource[]) {
-                console.log('i am here bc iwas calle')
             }
         },
         mounted(): void {
@@ -999,7 +1006,6 @@
         margin-top: 1rem;
         display: flex;
         gap: 1rem;
-        justify-content: flex-end;
     }
 
     .edit, .trash, .save, .rewind {

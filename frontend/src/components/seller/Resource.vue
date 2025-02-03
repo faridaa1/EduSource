@@ -470,7 +470,7 @@
                 }
                 const putListingData: Resource = await putListingResponse.json()
                 useUserStore().updateListing(putListingData)
-                useResourcesStore().updateResorce(putListingData)
+                useResourcesStore().updateResource(putListingData)
             },
             remove_video(event:Event): void {
                 event.preventDefault()
@@ -569,6 +569,7 @@
                     condition: 'New',
                     media: 'Online',
                     delivery_option: 'Delivery',
+                    upload: '',
                     user: this.user.id
                 }
                 const url: string | undefined = window.location.href

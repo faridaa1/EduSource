@@ -85,7 +85,7 @@
                 return returnedPrice.new_price
             },
             showResourcePage(resourceName: string): void {
-                window.location.href = `/view-resource/${resourceName}`
+                window.location.href = `/view/${resourceName}`
             },
         },
         computed: {

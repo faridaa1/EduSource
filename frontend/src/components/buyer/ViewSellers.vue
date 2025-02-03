@@ -2,7 +2,10 @@
     <div id="view-sellers">
         <div id="seller" v-for="resource in resources">
             <div id="profile-pic">
-                <i class="bi bi-person-circle icon"></i>
+                <div>
+                    <i class="bi bi-person-circle icon"></i>
+                    <p>{{ resource.author }}</p>
+                </div>
                 <p>{{ to_date(resource.upload) }}</p>
                 <div id="rating">
                     <div id="stars">
@@ -102,25 +105,16 @@
             reviews(): Review[] {
                 return []
             },
-            allResources(): Resource[] {
-                return useResourcesStore().resources
-                // const window_location: string[] = window.location.href.split('/')
-                // const name: string = window_location[window_location.length-1]
-                // return useResourcesStore().resources.filter(resource => resource.name === name)
-            },
         },
         watch: {
             async user(new_user: User): Promise<void> {
-                for (const resource of this.allResources) {
+                for (const resource of this.resources) {
                     resource.price = await this.listedprice(resource)
                 }
             },
-            allResources(newResources: Resource[]) {
-            }
         },
         mounted(): void {
-            console.log('hi')
-        },
+        }
     })
 </script>
 

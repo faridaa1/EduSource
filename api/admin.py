@@ -18,6 +18,7 @@ class AddressInline(admin.StackedInline):
     model = Address
     formset = AddressInlineFormSet
 
+
 class ResourceInline(admin.StackedInline):
     model = Resource
 
@@ -31,6 +32,7 @@ class ResourceAdmin(admin.ModelAdmin):
     """Defining Resource model appearance on django admin"""
     list_display: tuple[str] = ('name', 'author', 'type')
     inlines = [ReviewInline,]
+
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):

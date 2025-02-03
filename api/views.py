@@ -82,7 +82,8 @@ def user(request: HttpRequest) -> JsonResponse:
 
 
 def set_resource_rating(resource_id: int) -> float:
-    return Review.objects.filter(resource=resource_id).aggregate(Avg('rating'))['rating__avg']
+    average_rating = Review.objects.filter(resource=resource_id).aggregate(Avg('rating'))['rating__avg']
+    return average_rating if average_rating else 0.0
 
 
 def review(request: HttpRequest, user: int, resource: int) -> JsonResponse:
@@ -102,10 +103,14 @@ def review(request: HttpRequest, user: int, resource: int) -> JsonResponse:
         review.save()
         resource.rating=set_resource_rating(resource.id)
         resource.save()
-        return JsonResponse(review.as_dict())
+        return JsonResponse(resource.as_dict())
     if request.method == 'DELETE':
         review: Review = Review.objects.get(id=resource)
+        resource: Resource = Resource.objects.get(id=review.resource.id)
         review.delete()
+        resource.rating = set_resource_rating(resource.id)
+        resource.save()
+        return JsonResponse(resource.as_dict())
     return JsonResponse({})
 
 
@@ -116,9 +121,9 @@ def edit_review(request: HttpRequest, user: int, id: int, resource: int) -> Json
         user: User = User.objects.get(id=user)
         resource: Resource = Resource.objects.get(id=resource)
         review: Review = Review.objects.get(id=id)
-        review.title=data.get('title')
-        review.rating=data.get('stars')
-        review.review=data.get('description')
+        review.title = data.get('title')
+        review.rating = data.get('stars')
+        review.review = data.get('description')
         review.resource = resource
         if not media.get('image'):
             review.image = None
@@ -130,9 +135,13 @@ def edit_review(request: HttpRequest, user: int, id: int, resource: int) -> Json
             review.video=media.get('video')
         review.upload_date = datetime.datetime.now()
         review.save()
-        resource.rating=set_resource_rating(resource.id)
+        resource.rating = set_resource_rating(resource.id)
         resource.save()
-        return JsonResponse(review.as_dict())
+        old_resource: Resource = Resource.objects.get(id=data.get('old_resource'))
+        old_resource.rating = set_resource_rating(old_resource)
+        old_resource.save()
+        return JsonResponse({'old_resource' : old_resource.as_dict(),
+                             'new_resource' : resource.as_dict()})
     return JsonResponse({})
 
 

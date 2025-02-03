@@ -15,12 +15,6 @@ export const useResourcesStore = defineStore('resources', {
         removeResource(id: number): void {
             this.resources = this.resources.filter(resource => resource.id !== id)
         },
-        updateResorce(resource: Resource): void {
-            let old_resource = this.resources.find(resource => resource.id === resource.id) 
-            if (old_resource) {
-                Object.assign(old_resource, resource)
-            }
-        },
         getResource(name: string): Resource | {} {
            const resource = this.resources.find(resource => resource.name === name)
            if (!resource) return {}
@@ -34,33 +28,11 @@ export const useResourcesStore = defineStore('resources', {
                 this.resources = temp_resources
             }
         },
-        editResoureReview(review: Review, oldResourceId: number): void {
-            const resource = this.resources.find(resource => resource.id === review.resource)
-            if (resource) {
-                const old_review = resource.reviews.find(review => review.id === review.id)
-                if (old_review) {
-                    if (resource.id === old_review.resource) {
-                        // Updating resource
-                        Object.assign(old_review, review)
-                    } 
-                } else {
-                    // Adding review to new resource
-                    resource.reviews.push(review)
-                    const oldResource = this.resources.find(resource => resource.id === oldResourceId)
-                    if (oldResource) {
-                        const reviews_minus_old = oldResource.reviews.filter(review => review.id !== review.id)
-                        oldResource.reviews = reviews_minus_old
-                    }
-                }
-            }
+        editResource(old_resource: Resource, new_resource: Resource): void {
+            this.resources = this.resources.map(resource => resource.id === new_resource.id ? new_resource : resource.id === old_resource.id ? old_resource : resource)
         },
-        removeReview(deletedReview: Review): void {
-            const target_resource =  this.resources.find(resource => resource.id === deletedReview.resource)
-            if (target_resource) {
-                target_resource.reviews = target_resource.reviews.filter(review => review.id !== deletedReview.id)
-                const temp_resources = this.resources.map(resource => resource.id === deletedReview.resource ? target_resource : resource)
-                this.resources = temp_resources
-            }
+        updateResource(new_resource: Resource): void {
+            this.resources = this.resources.map(resource => resource.id === new_resource.id ? new_resource : resource)
         },
     }
 })
