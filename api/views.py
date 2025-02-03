@@ -287,3 +287,10 @@ def new_listing(request: HttpRequest, id: int) -> JsonResponse:
         print(resource.image1, media_data.get('image1'))
         return JsonResponse(resource.as_dict())
     return JsonResponse({})
+
+
+def sentiment_analysis(request: HttpRequest, resource: str) -> JsonResponse:
+    resources = Resource.objects.filter(name=resource)
+    reviews = Review.objects.filter(resource__in=resources)
+    print(reviews)
+    return JsonResponse({})

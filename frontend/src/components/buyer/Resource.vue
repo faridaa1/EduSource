@@ -1,4 +1,5 @@
 <template>
+    {{ resource_sentiment }}
     <div id="resource-view" v-if="resource && Object.keys(resource).length > 0">
         <div id="header">
             <p>{{ (resource as Resource).name }}</p>
@@ -616,6 +617,15 @@
             }
         },
         computed: {
+            async resource_sentiment(): Promise<void> {
+                const response: Response = await fetch(`http://localhost:8000/api/sentiment/${this.allResources[0].name}/`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf
+                    },
+                })
+            },
             total_ratings(): number {
                 let number_of_reviews: number = 0
                 this.allResources.forEach((resource) => {
