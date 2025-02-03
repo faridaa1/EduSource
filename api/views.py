@@ -10,6 +10,7 @@ from .forms import SignupForm, AddressForm, LoginForm
 from .models import Resource, Review, User, Address
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
+from transformers import pipeline
 
 
 def signup(request: HttpRequest) -> HttpResponse:
@@ -288,9 +289,11 @@ def new_listing(request: HttpRequest, id: int) -> JsonResponse:
         return JsonResponse(resource.as_dict())
     return JsonResponse({})
 
-
+import torch
 def sentiment_analysis(request: HttpRequest, resource: str) -> JsonResponse:
     resources = Resource.objects.filter(name=resource)
-    reviews = Review.objects.filter(resource__in=resources)
-    print(reviews)
+    reviews = list(Review.objects.filter(resource__in=resources).values_list('review', flat=True))
+    # https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment
+    bert = pipeline("text-classification", model="nlptown/bert-base-multilingual-uncased-sentiment")
+    print(bert(reviews))
     return JsonResponse({})

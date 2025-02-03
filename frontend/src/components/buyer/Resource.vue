@@ -1,6 +1,6 @@
 <template>
-    {{ resource_sentiment }}
     <div id="resource-view" v-if="resource && Object.keys(resource).length > 0">
+    {{ resource_sentiment }}
         <div id="header">
             <p>{{ (resource as Resource).name }}</p>
         </div>
@@ -344,13 +344,18 @@
                     const img: HTMLImageElement = reviews.querySelector('img') as HTMLImageElement
                     const vid: HTMLVideoElement = document.getElementById('vid1') as HTMLVideoElement
                     if (review.image) {
+                        console.log('here',img.src)
                         this.image = new File([], img.src)
                         img.style.display = 'block'
-                    } 
+                    } else {
+                        this.image = new File([], '')
+                    }
                     if (review.video) {
                         this.video = new File([], vid.src)
                         vid.style.display = 'block'
-                    } 
+                    } else {
+                        this.video = new File([], '')
+                    }
                     document.getElementById('review-review')?.classList.add('review-review-desc')
                     document.getElementById('review-heading-one')?.classList.remove('review-heading-one-height')
                     document.getElementById('review-heading-one')?.classList.add('review-heading-one-reviewing-height')
@@ -1337,7 +1342,7 @@
     }
 
     .filter-item label {
-        width: 11rem;
+        background-color: red !important;
     }
 
     #filter-right {
