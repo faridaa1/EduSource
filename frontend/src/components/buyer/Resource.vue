@@ -717,7 +717,7 @@
             allResources(): Resource[] {
                 const window_location: string[] = window.location.href.split('/')
                 const name: string = window_location[window_location.length-1]
-                return useResourcesStore().resources.filter(resource => resource.name === name)
+                return useResourcesStore().resources.filter(resource => resource.name === name && !resource.unique)
             },
             resource(): Resource | {} {
                 const window_location: string[] = window.location.href.split('/')

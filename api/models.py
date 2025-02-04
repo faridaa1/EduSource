@@ -75,9 +75,11 @@ class Resource(models.Model):
     stock = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
     estimated_delivery_time = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
     subject = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z]+( [a-zA-Z]+)*$', message='Invalid format')])
-    author = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z]+( [a-zA-Z]+)*$', message='Invalid format')])
+    # author = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z]+( [a-zA-Z]+)*$', message='Invalid format')])
+    author = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$', message='Invalid format')])
     self_made = models.BooleanField(null=False, blank=False)
     is_draft = models.BooleanField(null=False, blank=False)
+    unique = models.BooleanField(null=False, blank=False, default=True)
     page_start = models.IntegerField(null=False, blank=True)
     page_end = models.IntegerField(null=False, blank=True)
     HEIGHT_UNITS: list [tuple[str, str]] = [('cm', 'cm'), ('m', 'm'), ('in', 'in')]
@@ -163,7 +165,8 @@ class Resource(models.Model):
             'delivery_option': self.delivery_option,
             'user': self.user.id,
             'reviews': [review.as_dict() for review in reviews],
-            'upload': self.upload_date
+            'upload': self.upload_date,
+            'unique': self.unique
         }
     
 

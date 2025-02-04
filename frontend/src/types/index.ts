@@ -50,7 +50,8 @@ export interface Resource {
     delivery_option: 'Delivery' | 'Collection',
     user: number,
     reviews: Review[],
-    upload: string
+    upload: string,
+    unique: boolean
 }
 
 export interface Review {

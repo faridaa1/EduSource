@@ -4,7 +4,7 @@
             <div id="exit" @click="$emit('close-view')">
                 <i class="bi bi-x-lg"></i>
             </div>
-            <div id="seller" v-for="resource in resources">
+            <div id="seller" v-for="resource in resources.filter(resource => resource.author !== user.username)">
                 <div id="profile-pic">
                     <div id="profile-section">
                         <i class="bi bi-person-circle icon"></i>
