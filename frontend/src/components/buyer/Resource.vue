@@ -1274,6 +1274,7 @@
 
     #reviews-p {
         margin-bottom: 1rem;
+        font-size: 1.4rem;
     }
 
     #stars-span {
