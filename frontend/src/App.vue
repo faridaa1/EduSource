@@ -166,18 +166,18 @@
               body: JSON.stringify(data)
             })
             if (!updateResponse.ok) {
-              console.error(called_by === 'theme' ? 'Error updating theme' : 'Error updating currency')
-              alert(called_by === 'theme' ? 'Error updating theme' : 'Error updating currency')
+              console.error(called_by === 'theme' ? 'Error updating theme' : called_by === 'theme' ? 'Error updating currency' : 'Error updating mode')
+              alert(called_by === 'theme' ? 'Error updating theme' : called_by === 'theme' ? 'Error updating currency' : 'Error updating mode')
               return
             }
             let userUpdateData: User = await updateResponse.json()
             useUserStore().saveUser(userUpdateData)
             if (called_by === 'mode') {
               if (data === 'seller') {
-                window.location.href = '/seller-home'
+                window.location.href = '/listings'
                 return
               } else {
-                window.location.href = '/buyer-home'
+                window.location.href = '/'
               }
             } 
       },

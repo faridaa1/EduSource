@@ -3,6 +3,7 @@
         <div id="header">
             <p>{{ (resource as Resource).name }}</p>
         </div>
+        i am {{ user.cart.total }}
         <div id="resource">
             <img id="resource-image" :src="`http://localhost:8000/${(resource as Resource).image1}`" :alt="`${(resource as Resource).type}`">
             <div id="resource-price-and-rating">

@@ -4,6 +4,44 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from django.forms import ValidationError
 
+
+class Cart(models.Model):
+    """Defining attributes and methods for Cart model"""
+    items = models.IntegerField(null=False, blank=False, default=0, validators=[MinValueValidator(0)])
+    total = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2, default=0.0, validators=[MinValueValidator(0.0)])
+
+    def as_dict(self) -> str:
+        """Dictionary representation of Cart"""
+        cart_resources = CartResource.objects.filter(cart=self.id)
+        return {
+            'id' : self.id,
+            'resources': [resource.as_dict() for resource in cart_resources],
+            'items' : self.items,
+            'total' : self.total
+        }
+
+class Wishlist(models.Model):
+    """Defining attributes and methods for Wishlist model"""
+    items = models.IntegerField(null=False, blank=False, default=0, validators=[MinValueValidator(0)])
+    total = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2, default=0.0, validators=[MinValueValidator(0.0)])
+
+    def as_dict(self) -> str:
+        """Dictionary representation of Wishlist"""
+        wishlist_resources = WishlistResource.objects.filter(wishlist=self.id)
+        return {
+            'id' : self.id,
+            'resources': [resource.as_dict() for resource in wishlist_resources],
+            'items' : self.items,
+            'total' : self.total
+        }
+
+
+def create_cart(): 
+    return Cart.objects.create()
+
+def create_wishlist(): 
+    return Wishlist.objects.create()
+
 class User(AbstractUser):
     """Defining attrbiutes and methods for User model"""
     email = models.EmailField(unique=True, null=False, blank=False)
@@ -13,6 +51,8 @@ class User(AbstractUser):
     rating = models.DecimalField(null=False, blank=True, default=0.0, max_digits=2, decimal_places=1, validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
     description = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
     THEMES: list [tuple[str, str]] = [('light', 'light'), ('dark', 'dark')]
+    cart = models.OneToOneField(Cart, on_delete=models.CASCADE, related_name='user', default=create_cart)
+    wishlist = models.OneToOneField(Wishlist, on_delete=models.CASCADE, related_name='user', default=create_wishlist)
     theme_preference = models.CharField(max_length=5, choices=THEMES, default='light', null=False, blank=False)
     
     MODES: list [tuple[str, str]] = [('buyer', 'buyer'), ('seller', 'seller')]
@@ -171,54 +211,6 @@ class Resource(models.Model):
             'unique': self.unique
         }    
 
-
-class Cart(models.Model):
-    """Defining attributes and methods for Cart model"""
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
-    total = models.IntegerField(null=False, blank=False)
-
-    def as_dict(self) -> str:
-        """Dictionary representation of Cart"""
-        cart_resources = CartResource.objects.filter(cart=self.id)
-        return {
-            'id' : self.id,
-            'user' : self.user.id,
-            'resources': [resource.as_dict() for resource in cart_resources],
-            'total' : self.total
-        }
-
-
-class CartResource(models.Model):
-    """Defining attributes and methods for CartResource model"""
-    resource = models.OneToOneField(Resource, on_delete=models.CASCADE, related_name='cart_resource')
-    number = models.IntegerField(null=False, blank=False)
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='cart_resource')
-    
-    def as_dict(self) -> str:
-        """Dictionary representation of CartResource"""
-        return {
-            'id' : self.id,
-            'resource' : self.resource.id,
-            'number' : self.number,
-        }
-
-
-class Wishlist(models.Model):
-    """Defining attributes and methods for Wishlist model"""
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='wishlist')
-    total = models.IntegerField(null=False, blank=False)
-
-    def as_dict(self) -> str:
-        """Dictionary representation of Wishlist"""
-        wishlist_resources = WishlistResource.objects.filter(wishlist=self.id)
-        return {
-            'id' : self.id,
-            'user' : self.user.id,
-            'resources': [resource.as_dict() for resource in wishlist_resources],
-            'total' : self.total
-        }
-
-
 class WishlistResource(models.Model):
     """Defining attributes and methods for WishlistResource model"""
     resource = models.OneToOneField(Resource, on_delete=models.CASCADE, related_name='wishlist_resource')
@@ -227,6 +219,21 @@ class WishlistResource(models.Model):
     
     def as_dict(self) -> str:
         """Dictionary representation of WishlistResource"""
+        return {
+            'id' : self.id,
+            'resource' : self.resource.id,
+            'number' : self.number,
+        }
+    
+    
+class CartResource(models.Model):
+    """Defining attributes and methods for CartResource model"""
+    resource = models.OneToOneField(Resource, on_delete=models.CASCADE, related_name='cart_resource')
+    number = models.IntegerField(null=False, blank=False)
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='cart_resource')
+    
+    def as_dict(self) -> str:
+        """Dictionary representation of CartResource"""
         return {
             'id' : self.id,
             'resource' : self.resource.id,

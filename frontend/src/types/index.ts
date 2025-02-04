@@ -70,15 +70,15 @@ export interface Review {
 
 export interface Cart {
     id: number,
-    user: number,
     resources: Resource[],
+    items: number,
     total: number
 }
 
 export interface Wishlist {
     id: number,
-    user: number,
     resources: Resource[],
+    items: number,
     total: number
 }
 

@@ -440,7 +440,7 @@
                 }
                 const postListingData: Resource = await postListingResponse.json()
                 useUserStore().addListing(postListingData)
-                window.location.href = '/seller-home'
+                window.location.href = '/listings'
             },
             remove_video(event:Event): void {
                 event.preventDefault()

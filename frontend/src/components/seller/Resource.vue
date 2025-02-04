@@ -300,7 +300,7 @@
                     }
                     useResourcesStore().removeResource(this.resource.id)
                     useUserStore().removeResource(this.resource.id)
-                    window.location.href = '/seller-home'
+                    window.location.href = '/listings'
                 }
             },
             clear_errors(): void {
@@ -570,7 +570,8 @@
                     media: 'Online',
                     delivery_option: 'Delivery',
                     upload: '',
-                    user: this.user.id
+                    user: this.user.id,
+                    unique: true
                 }
                 const url: string | undefined = window.location.href
                 if (url === undefined) return emptyResource
