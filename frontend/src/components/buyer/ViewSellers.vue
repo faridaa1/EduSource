@@ -117,8 +117,16 @@
                     resource.price = await this.listedprice(resource)
                 }
             },
+            async resources(): Promise<void> {
+                for (const resource of this.resources) {
+                    resource.price = await this.listedprice(resource)
+                }
+            }
         },
-        mounted(): void {
+        async mounted(): Promise<void> {
+            for (const resource of this.resources) {
+                resource.price = await this.listedprice(resource)
+            }
         }
     })
 </script>
