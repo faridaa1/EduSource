@@ -644,7 +644,6 @@
                 this.allResources.forEach((resource) =>
                     reviews.push(...resource.reviews)
                 )
-                console.log('mounted',reviews)
                 reviews = reviews.filter(review => {
                     if ( this.filter_one && parseFloat(review.rating.toString()) === 1 
                         || this.filter_two && parseFloat(review.rating.toString()) === 2
