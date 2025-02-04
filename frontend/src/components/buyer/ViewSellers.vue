@@ -47,7 +47,7 @@
                 </div>
                 <div id="buttons">
                     <button>Select</button>
-                    <button>Contact Seller</button>
+                    <button>Message</button>
                 </div>
                 <hr>
             </div>
