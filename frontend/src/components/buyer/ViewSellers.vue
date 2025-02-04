@@ -1,51 +1,53 @@
 <template>
-    <div id="view-sellers">
-        <div id="seller" v-for="resource in resources">
-            <div id="profile-pic">
-                <div>
-                    <i class="bi bi-person-circle icon"></i>
-                    <p>{{ resource.author }}</p>
-                </div>
-                <p>{{ to_date(resource.upload) }}</p>
-                <div id="rating">
-                    <div id="stars">
-                        <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) < 1"></i>
-                        <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) >= 1" style="color: orange;"></i>
-                        <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) >= 2" style="color: orange;"></i>
-                        <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) < 2"></i>
-                        <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) >= 3" style="color: orange;"></i>
-                        <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) < 3"></i>
-                        <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) >= 4" style="color: orange;"></i>
-                        <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) < 4"></i>
-                        <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) === 5" style="color: orange;"></i>
-                        <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) < 5"></i>
+    <div id="view-sellers-container">
+        <div id="view-sellers">
+            <div id="seller" v-for="resource in resources">
+                <div id="profile-pic">
+                    <div id="profile-section">
+                        <i class="bi bi-person-circle icon"></i>
+                        <p>{{ resource.author }}</p>
                     </div>
-                    <p>{{ parseFloat(resource.rating.toString()) }}</p>
+                    <p>{{ to_date(resource.upload) }}</p>
+                    <div id="rating">
+                        <div id="stars">
+                            <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) < 1"></i>
+                            <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) >= 1" style="color: orange;"></i>
+                            <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) >= 2" style="color: orange;"></i>
+                            <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) < 2"></i>
+                            <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) >= 3" style="color: orange;"></i>
+                            <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) < 3"></i>
+                            <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) >= 4" style="color: orange;"></i>
+                            <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) < 4"></i>
+                            <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) === 5" style="color: orange;"></i>
+                            <i class="bi bi-star-fill" v-if="parseFloat(resource.rating.toString()) < 5"></i>
+                        </div>
+                        <p>{{ parseFloat(resource.rating.toString()) }}</p>
+                    </div>
                 </div>
+                <div id="data">
+                    <div class="data-item">
+                        <label>Price</label>
+                        <p>{{ resource.price }}</p>
+                    </div>
+                    <div class="data-item">
+                        <label>Condition</label>
+                        <p>{{ resource.condition }}</p>
+                    </div>
+                    <div class="data-item">
+                        <label>Media</label>
+                        <p>{{ resource.media }}</p>
+                    </div>
+                    <div class="data-item" v-if="resource.self_made">
+                        <label>Assisted Sources</label>
+                        <p>{{ resource.source }}</p>
+                    </div>
+                </div>
+                <div id="buttons">
+                    <button>Select</button>
+                    <button>Contact Seller</button>
+                </div>
+                <hr>
             </div>
-            <div id="data">
-                <div>
-                    <label>Price</label>
-                    <p>{{ resource.price }}</p>
-                </div>
-                <div>
-                    <label>Condition</label>
-                    <p>{{ resource.condition }}</p>
-                </div>
-                <div>
-                    <label>Media</label>
-                    <p>{{ resource.media }}</p>
-                </div>
-                <div>
-                    <label>Source</label>
-                    <p>{{ resource.source }}</p>
-                </div>
-            </div>
-            <div id="buttons">
-                <button>Select</button>
-                <button>Contact Seller</button>
-            </div>
-            <hr>
         </div>
     </div>
 </template>
@@ -125,6 +127,12 @@
         gap: 0.5rem;
     }
 
+    #profile-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
     #stars {
         display: flex;
         gap: 0.2rem;
@@ -142,16 +150,33 @@
         margin-top: 0.5rem;
     }
 
+    .data-item {
+        display: flex;
+    }
+
+    .data-item label {
+        width: 11rem;
+    }
+    
+    #view-sellers-container {
+        z-index: 50;
+        background-color: rgba(0, 0, 0, 0.5);
+        position: absolute;
+        height: 100%;
+        width: 100%;
+    }
+
     #view-sellers {
+        margin-right: 1rem;
         background-color: #D9D9D9;
         position: absolute;
-        height: 95vh;
-        width: 50vw;
-        top: 1.8rem;
+        height: 89vh;
+        width: 50rem;
+        top: 1rem;
         right: 0;
-        border-radius: 1rem;
         padding: 0.5rem;
-        border: 0.1rem solid black;
+        border: 0.3rem solid #D9D9D9;
+        border-radius: 0.5rem;
         overflow-y: scroll;
     }
 
@@ -159,6 +184,8 @@
         display: grid;
         grid-template-areas: "profile-pic data buttons"
                              "hr hr hr";
+        column-gap: 3rem;
+        row-gap: 0.3rem;
     }
 
     #profile-pic {
@@ -171,14 +198,37 @@
     }
 
     #profile-pic i {
-        font-size: 3rem;
+        font-size: 2.5rem;
     }
 
     #data {
         grid-area: data;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        width: 15rem;
     }
 
     #buttons {
         grid-area: buttons;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        justify-content: center;
+        width: 16rem;
+    }
+
+    #buttons button {
+        background-color: #0DCAF0;
+        border: none;
+        padding: 0.5rem;
+        width: 8rem;
+        border-radius: 0.5rem;
+    }
+
+    #buttons button:hover {
+        cursor: pointer;
+        color: white;
+        background-color: #177183;
     }
 </style>

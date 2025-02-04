@@ -726,6 +726,14 @@
             },
         },
         watch: {
+            viewing_sellers(new_viewing): void {
+                const div: HTMLDivElement = document.getElementById('resource-view') as HTMLDivElement
+                if (div && new_viewing) {
+                    div.style.overflowY = 'hidden'
+                } else if (div && !new_viewing) {
+                    div.style.overflowY = 'scroll'
+                }
+            },
             async user(new_user: User): Promise<void> {
                 for (const resource of this.allResources) {
                     resource.price = await this.listedprice(resource)
@@ -783,13 +791,14 @@
                              "my-review my-review my-review my-review"
                              "reviews reviews reviews reviews"
                              ;
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-        margin-left: 1rem;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        padding-left: 1rem;
         gap: 2rem;
         max-height: 92vh;
         overflow-y: scroll;
         padding-right: 1rem;
+        position: relative;
     }
 
     #reviews {
