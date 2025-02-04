@@ -1,4 +1,4 @@
-import datetime
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
@@ -86,7 +86,7 @@ class Resource(models.Model):
     image1 = models.ImageField(null=False, blank=False, upload_to='resource_images/')
     image2 = models.ImageField(null=False, blank=False, upload_to='resource_images/')
     video = models.FileField(upload_to='resource_videos/')
-    upload_date = models.DateField(default=datetime.datetime.now)
+    upload_date = models.DateTimeField(default=timezone.now)
     rating = models.DecimalField(null=False, blank=True, default=0.0, max_digits=2, decimal_places=1, validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='listing')
 
@@ -174,7 +174,7 @@ class Review(models.Model):
     rating = models.DecimalField(null=False, blank=True, default=0.0, max_digits=2, decimal_places=1, validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
     title = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*[\.!\?]*$', message='Invalid format')])
     review = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*[\.!\?]*$', message='Invalid format')])
-    upload_date = models.DateField(default=datetime.datetime.now)
+    upload_date = models.DateTimeField(default=timezone.now)
     image = models.ImageField(null=False, blank=True, upload_to='review_images/')
     video = models.FileField(null=False, blank=True, upload_to='review_videos/')
 

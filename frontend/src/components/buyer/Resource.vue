@@ -1,6 +1,5 @@
 <template>
     <div id="resource-view" v-if="resource && Object.keys(resource).length > 0">
-    {{ resource_sentiment }}
         <div id="header">
             <p>{{ (resource as Resource).name }}</p>
         </div>
@@ -75,53 +74,57 @@
             <Stars />
         </div>
         <div id="my-review">
-            <div id="filtering">
+            <div id="filtering" v-if="!addingReview && !editing">
                 <button id="add-review" v-if="!addingReview && possible_sellers(false).length > 0" @click="add_review">Click to add Review</button>
-                <div id="filter-right">
-                    <div class="filtering">
-                        <label>Sort By</label>
-                        <select v-model="sort_by">
-                            <option value="earliest">Date: Earliest to Latest</option>
-                            <option value="latest">Date: Latest to Earliest</option>
-                            <option value="low">Review: Low to High</option>
-                            <option value="high">Review: High to Low</option>
-                        </select>
-                    </div>
-                    <div class="filtering" id="clickable">
-                        <div id="filtering-section">
-                            <div id="toggle-filter" @click="toggleFilter">
-                                <p id="clickable">Filter</p>
-                                <i id="clickable" v-if="!toggle_filter" class="bi bi-chevron-down"></i>
-                                <i id="clickable" v-if="toggle_filter" class="bi bi-chevron-up"></i>
-                            </div>
-                            <div id="filter-options" v-if="toggle_filter">
-                                <div class="filter-item border-top" @click="filter_one=!filter_one">
-                                    <label>Stars: 1</label>
-                                    <input v-model="filter_one" :checked="filter_one" type="checkbox">
+                <div id="sorting">
+                    <div id="filter-right">
+                        <div class="filtering">
+                            <label>Sort By</label>
+                            <select v-model="sort_by">
+                                <option value="earliest">Date: Earliest to Latest</option>
+                                <option value="latest">Date: Latest to Earliest</option>
+                                <option value="low">Rating: Low to High</option>
+                                <option value="high">Rating: High to Low</option>
+                                <option value="positive">Review: Positive to Negative</option>
+                                <option value="negative">Review: Negative to Positive</option>
+                            </select>
+                        </div>
+                        <div class="filtering" id="clickable">
+                            <div id="filtering-section">
+                                <div id="toggle-filter" @click="toggleFilter">
+                                    <p id="clickable">Filter</p>
+                                    <i id="clickable" v-if="!toggle_filter" class="bi bi-chevron-down"></i>
+                                    <i id="clickable" v-if="toggle_filter" class="bi bi-chevron-up"></i>
                                 </div>
-                                <div class="filter-item" @click="filter_two=!filter_two">
-                                    <label>Stars: 2</label>
-                                    <input v-model="filter_two" :checked="filter_two" type="checkbox">
-                                </div>
-                                <div class="filter-item" @click="filter_three=!filter_three">
-                                    <label>Stars: 3</label>
-                                    <input v-model="filter_three" :checked="filter_three" type="checkbox">
-                                </div>
-                                <div class="filter-item" @click="filter_four=!filter_four">
-                                    <label>Stars: 4</label>
-                                    <input v-model="filter_four" :checked="filter_four" type="checkbox">
-                                </div>
-                                <div class="filter-item" @click="filter_five=!filter_five">
-                                    <label>Stars: 5</label>
-                                    <input v-model="filter_five" :checked="filter_five" type="checkbox">
-                                </div>
-                                <div class="filter-item" @click="filter_images=!filter_images">
-                                    <label>Images</label>
-                                    <input v-model="filter_images" :checked="filter_images" type="checkbox">
-                                </div>
-                                <div class="filter-item border-bottom" @click="filter_video=!filter_video">
-                                    <label>Video</label>
-                                    <input v-model="filter_video" :checked="filter_video" type="checkbox">
+                                <div id="filter-options" v-if="toggle_filter">
+                                    <div class="filter-item border-top" @click="filter_one=!filter_one">
+                                        <label>Stars: 1</label>
+                                        <input v-model="filter_one" :checked="filter_one" type="checkbox">
+                                    </div>
+                                    <div class="filter-item" @click="filter_two=!filter_two">
+                                        <label>Stars: 2</label>
+                                        <input v-model="filter_two" :checked="filter_two" type="checkbox">
+                                    </div>
+                                    <div class="filter-item" @click="filter_three=!filter_three">
+                                        <label>Stars: 3</label>
+                                        <input v-model="filter_three" :checked="filter_three" type="checkbox">
+                                    </div>
+                                    <div class="filter-item" @click="filter_four=!filter_four">
+                                        <label>Stars: 4</label>
+                                        <input v-model="filter_four" :checked="filter_four" type="checkbox">
+                                    </div>
+                                    <div class="filter-item" @click="filter_five=!filter_five">
+                                        <label>Stars: 5</label>
+                                        <input v-model="filter_five" :checked="filter_five" type="checkbox">
+                                    </div>
+                                    <div class="filter-item" @click="filter_images=!filter_images">
+                                        <label>Images</label>
+                                        <input v-model="filter_images" :checked="filter_images" type="checkbox">
+                                    </div>
+                                    <div class="filter-item border-bottom" @click="filter_video=!filter_video">
+                                        <label>Video</label>
+                                        <input v-model="filter_video" :checked="filter_video" type="checkbox">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -224,11 +227,11 @@
                 <div v-if="editing && editing_review === review.id">
                     <div class="item">
                         <p>Title</p>
-                        <input type="text" id="specific-review-title" :value="review.title" @input="reset_validity(1)">
+                        <input type="text" id="specific-review-title" :value="review.title" @input="reset_validity(1, review.id)">
                     </div>
                     <div class="item top-marg">
                         <p>Seller</p>
-                        <select id="review-seller" :value="review.resource">
+                        <select :id="`${review.id}`" :value="review.resource">
                             <option :value="resource.id" v-for="resource in possible_sellers(true)">
                                 <p>{{ resource.author }}</p>
                             </option>
@@ -236,7 +239,7 @@
                     </div>
                 </div>
                 <p class="top-marg text-desc" v-if="editing && editing_review === review.id">Review</p>
-                <textarea :disabled="!editing || editing && editing_review !== review.id" id="review-review" @input="reset_validity(1)">{{ review.review }}</textarea>
+                <textarea :disabled="!editing || editing && editing_review !== review.id" :id="`${review.id}review-review`" :value="review.review" class="review-review" @input="reset_validity(1, review.id)">{{ review.review }}</textarea>
                 <div id="media" v-if="editing && editing_review === review.id">
                     <div id="image">
                         <p>Image</p>
@@ -260,7 +263,7 @@
                 <div v-if="review.user === user.id" id="edit-review">
                     <button v-if="!editing || editing && editing_review !== review.id" class="edit" @click="edit_review(review)"><i class="bi bi-pencil-fill"></i></button>
                     <button v-if="editing && editing_review === review.id" class="save" @click="save_edited_review(review)"><i class="bi bi-floppy-fill"></i></button>
-                    <button v-if="editing && editing_review === review.id" class="rewind" @click="close_review"><i class="bi bi-arrow-counterclockwise"></i></button>
+                    <button v-if="editing && editing_review === review.id" class="rewind" @click="close_review(review)"><i class="bi bi-arrow-counterclockwise"></i></button>
                     <button class="trash" @click="delete_review(review)"><i class="bi bi-trash3-fill"></i></button>
                 </div>
             </div>
@@ -288,7 +291,7 @@
             toggle_filter: boolean,
             video: File,
             editing_review: number,
-            sort_by: 'earliest' | 'latest' | 'high' | 'low',
+            sort_by: 'earliest' | 'latest' | 'high' | 'low' | 'positive' | 'negative',
             filter_one: boolean,
             filter_two: boolean,
             filter_three: boolean,
@@ -328,8 +331,8 @@
                     })
                 } 
             },
-            close_review(): void {
-                document.getElementById('review-review')?.classList.remove('review-review-desc')
+            close_review(review: Review): void {
+                document.getElementById(`${review.id}review-review`)?.classList.remove('review-review-desc')
                 document.getElementById('review-heading-one')?.classList.add('review-heading-one-height')
                 document.getElementById('review-heading-one')?.classList.remove('review-heading-one-reviewing-height')
                 this.editing = false
@@ -341,6 +344,8 @@
                 this.addingReview = false
                 nextTick(() => { 
                     this.review = review.id
+                    const description: HTMLTextAreaElement = document.getElementById(`${review.id}review-review`) as HTMLTextAreaElement
+                    description.scrollIntoView()
                     const reviews: HTMLDivElement = document.getElementById('reviews') as HTMLDivElement
                     const img: HTMLImageElement = reviews.querySelector('img') as HTMLImageElement
                     const vid: HTMLVideoElement = document.getElementById('vid1') as HTMLVideoElement
@@ -356,7 +361,7 @@
                     } else {
                         this.video = new File([], '')
                     }
-                    document.getElementById('review-review')?.classList.add('review-review-desc')
+                    document.getElementById(`${review.id}review-review`)?.classList.add('review-review-desc')
                     document.getElementById('review-heading-one')?.classList.remove('review-heading-one-height')
                     document.getElementById('review-heading-one')?.classList.add('review-heading-one-reviewing-height')
                     this.rating = review.rating
@@ -452,9 +457,9 @@
                     this.rating = 0
                 })
             },
-            reset_validity(number: number): void {
+            reset_validity(number: number, review?: number): void {
                 const title: HTMLInputElement = document.getElementById(number === 0 ? 'review-title' : 'specific-review-title') as HTMLInputElement
-                const description: HTMLTextAreaElement = document.getElementById(number === 0 ? 'review-text' : 'review-review') as HTMLTextAreaElement
+                const description: HTMLTextAreaElement = document.getElementById(number === 0 ? 'review-text' : `${review}review-review`) as HTMLTextAreaElement
                 title.setCustomValidity('')
                 title.reportValidity()
                 description.setCustomValidity('')
@@ -462,7 +467,7 @@
             },
             async save_edited_review(review: Review): Promise<void> {
                 const title: HTMLInputElement = document.getElementById('specific-review-title') as HTMLInputElement
-                const description: HTMLTextAreaElement = document.getElementById('review-review') as HTMLTextAreaElement
+                const description: HTMLTextAreaElement = document.getElementById(`${review.id}review-review`) as HTMLTextAreaElement
 
                 if (!title && !description) return
 
@@ -486,8 +491,8 @@
                     return
                 }
 
-                this.reset_validity(1)
-                const seller_element: HTMLSelectElement = document.getElementById('review-seller') as HTMLSelectElement
+                this.reset_validity(1, review.id)
+                const seller_element: HTMLSelectElement = document.getElementById(`${review.id}`) as HTMLSelectElement
                 const seller = seller_element.value
                 const data: FormData = new FormData()
                 data.append('stars', this.rating.toString())
@@ -511,7 +516,7 @@
                 }
                 let reviewData: {old_resource: Resource, new_resource : Resource} = await savedReview.json()
                 useResourcesStore().editResource(reviewData.old_resource, reviewData.new_resource)
-                this.close_review()
+                this.close_review(review)
             },
             async save_review(): Promise<void> {
                 const title: HTMLInputElement = document.getElementById('review-title') as HTMLInputElement
@@ -669,41 +674,28 @@
                     reviews.push(...resource.reviews)
                 )
                 reviews = reviews.sort((review1, review2) => {
-                    if (this.sort_by === 'earliest') {
-                        if (review1.upload_date > review2.upload_date) {
-                            return 1
-                        }
-                        return -1
-                    } else if (this.sort_by === 'latest') {
-                        if (review1.upload_date > review2.upload_date) {
-                            return -1
-                        }
+                    if (this.sort_by === 'earliest' && review1.upload_date > review2.upload_date
+                        || this.sort_by === 'latest' && review1.upload_date < review2.upload_date
+                        || this.sort_by === 'low' && review1.rating > review2.rating
+                        || this.sort_by === 'high' && review1.rating < review2.rating
+                    ) {
                         return 1
-                    } else if (this.sort_by === 'low') {
-                        if (review1.rating > review2.rating) {
-                            return 1
-                        }
-                        return -1
-                    } 
-                    if (review1.rating > review2.rating) {
-                        return -1
                     }
-                    return 1
+                    return -1
                 })
                 return reviews.filter(review => {
-                        if ( this.filter_one && parseFloat(review.rating.toString()) === 1 
-                            || this.filter_two && parseFloat(review.rating.toString()) === 2
-                            || this.filter_three && parseFloat(review.rating.toString()) === 3
-                            || this.filter_four && parseFloat(review.rating.toString()) === 4
-                            || this.filter_five && parseFloat(review.rating.toString()) === 5
-                            || (this.filter_images && review.image !== null)
-                            || (this.filter_video && review.video !== null)
-                        ) {
-                            return true
-                        }
-                        return false
+                    if ( this.filter_one && parseFloat(review.rating.toString()) === 1 
+                        || this.filter_two && parseFloat(review.rating.toString()) === 2
+                        || this.filter_three && parseFloat(review.rating.toString()) === 3
+                        || this.filter_four && parseFloat(review.rating.toString()) === 4
+                        || this.filter_five && parseFloat(review.rating.toString()) === 5
+                        || (this.filter_images && review.image !== null)
+                        || (this.filter_video && review.video !== null)
+                    ) {
+                        return true
                     }
-                )
+                    return false
+                })
             },
             allResources(): Resource[] {
                 const window_location: string[] = window.location.href.split('/')
@@ -1150,7 +1142,7 @@
         color: white;
     }
 
-    #review-review {
+    .review-review {
         background-color: #D9D9D9;
         padding: 0.5rem;
         border-radius: 0.5rem;
@@ -1270,6 +1262,11 @@
         justify-content: space-between;
     }
 
+    #sorting {
+        display: flex;
+        margin-left: auto;
+    }
+
     .filtering {
         display: flex;
         gap: 0.5rem;
@@ -1313,7 +1310,6 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 0.5rem;
         background-color: white;
         border-radius: 0.4rem;
         position: absolute;
@@ -1324,7 +1320,6 @@
     .filter-item {
         display: flex;
         align-items: center;
-        width: 6rem;
         padding: 0.5rem;
         padding-left: 0.7rem;
         padding-right: 0.7rem;
@@ -1345,12 +1340,12 @@
         color: white;
     }
 
-    .filter-item label {
-        background-color: red !important;
-    }
-
     #filter-right {
         display: flex;
         gap: 2rem;
+    }
+
+    textarea:disabled {
+        color: black;
     }
 </style>

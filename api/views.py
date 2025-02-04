@@ -1,4 +1,4 @@
-import datetime
+from django.utils import timezone
 import json
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -134,7 +134,7 @@ def edit_review(request: HttpRequest, user: int, id: int, resource: int) -> Json
             review.video = None
         elif not review.video or (media.get('video').name != review.video.name.split('/')[1]):
             review.video=media.get('video')
-        review.upload_date = datetime.datetime.now()
+        review.upload_date = timezone.now()
         review.save()
         resource.rating = set_resource_rating(resource.id)
         resource.save()
