@@ -345,7 +345,6 @@
                     const img: HTMLImageElement = reviews.querySelector('img') as HTMLImageElement
                     const vid: HTMLVideoElement = document.getElementById('vid1') as HTMLVideoElement
                     if (review.image) {
-                        og('here',img.src)
                         this.image = new File([], img.src)
                         img.style.display = 'block'
                     } else {
@@ -450,6 +449,7 @@
                     document.getElementById('stars-text')?.scrollIntoView()
                     this.image = new File([''], '')
                     this.video = new File([''], '')
+                    this.rating = 0
                 })
             },
             reset_validity(number: number): void {
