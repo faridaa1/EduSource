@@ -338,13 +338,14 @@
             edit_review(review: Review): void {
                 this.editing_review = review.id
                 this.editing = true
+                this.addingReview = false
                 nextTick(() => { 
                     this.review = review.id
                     const reviews: HTMLDivElement = document.getElementById('reviews') as HTMLDivElement
                     const img: HTMLImageElement = reviews.querySelector('img') as HTMLImageElement
                     const vid: HTMLVideoElement = document.getElementById('vid1') as HTMLVideoElement
                     if (review.image) {
-                        console.log('here',img.src)
+                        og('here',img.src)
                         this.image = new File([], img.src)
                         img.style.display = 'block'
                     } else {
@@ -444,8 +445,11 @@
             },
             add_review(): void {
                 this.addingReview = true
+                this.editing = false
                 nextTick(() => {
                     document.getElementById('stars-text')?.scrollIntoView()
+                    this.image = new File([''], '')
+                    this.video = new File([''], '')
                 })
             },
             reset_validity(number: number): void {
