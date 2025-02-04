@@ -167,8 +167,70 @@ class Resource(models.Model):
             'reviews': [review.as_dict() for review in reviews],
             'upload': self.upload_date,
             'unique': self.unique
+        }    
+
+
+class Cart(models.Model):
+    """Defining attributes and methods for Cart model"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
+    total = models.IntegerField(null=False, blank=False)
+
+    def as_dict(self) -> str:
+        """Dictionary representation of Cart"""
+        cart_resources = CartResource.objects.filter(cart=self.id)
+        return {
+            'id' : self.id,
+            'user' : self.user.id,
+            'resources': [resource.as_dict() for resource in cart_resources],
+            'total' : self.total
         }
+
+
+class CartResource(models.Model):
+    """Defining attributes and methods for CartResource model"""
+    resource = models.OneToOneField(Resource, on_delete=models.CASCADE, related_name='cart_resource')
+    number = models.IntegerField(null=False, blank=False)
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='cart_resource')
     
+    def as_dict(self) -> str:
+        """Dictionary representation of CartResource"""
+        return {
+            'id' : self.id,
+            'resource' : self.resource.id,
+            'number' : self.number,
+        }
+
+
+class Wishlist(models.Model):
+    """Defining attributes and methods for Wishlist model"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='wishlist')
+    total = models.IntegerField(null=False, blank=False)
+
+    def as_dict(self) -> str:
+        """Dictionary representation of Wishlist"""
+        wishlist_resources = WishlistResource.objects.filter(wishlist=self.id)
+        return {
+            'id' : self.id,
+            'user' : self.user.id,
+            'resources': [resource.as_dict() for resource in wishlist_resources],
+            'total' : self.total
+        }
+
+
+class WishlistResource(models.Model):
+    """Defining attributes and methods for WishlistResource model"""
+    resource = models.OneToOneField(Resource, on_delete=models.CASCADE, related_name='wishlist_resource')
+    number = models.IntegerField(null=False, blank=False)
+    wishlist = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='wishlist_resource')
+    
+    def as_dict(self) -> str:
+        """Dictionary representation of WishlistResource"""
+        return {
+            'id' : self.id,
+            'resource' : self.resource.id,
+            'number' : self.number,
+        }
+
 
 class Review(models.Model):
     """Defining attributes and methods for Review model"""

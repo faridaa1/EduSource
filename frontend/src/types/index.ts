@@ -65,3 +65,29 @@ export interface Review {
     image: string,
     video: string,
 }
+
+export interface Cart {
+    id: number,
+    user: number,
+    resources: Resource[],
+    total: number
+}
+
+export interface Wishlist {
+    id: number,
+    user: number,
+    resources: Resource[],
+    total: number
+}
+
+export interface CartResource {
+    id: number,
+    resource: number
+    number: number
+}
+
+export interface WishlistResource {
+    id: number,
+    resource: number
+    number: number
+}
