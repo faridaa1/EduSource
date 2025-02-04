@@ -47,7 +47,9 @@ class User(AbstractUser):
             'address_second_line': address.second_line,
             'city': address.city,
             'postcode': address.postcode,
-            'listings': [listing.as_dict() for listing in self.listing.all()]
+            'listings': [listing.as_dict() for listing in self.listing.all()],
+            'cart': self.cart.as_dict(),
+            'wishlist': self.wishlist.as_dict()
         }
 
 

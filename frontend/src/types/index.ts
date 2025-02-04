@@ -14,7 +14,9 @@ export interface User {
     address_second_line: string;
     city: string;
     postcode: string;
-    listings: Resource[]
+    listings: Resource[];
+    cart: Cart;
+    wishlist: Wishlist;
 }
 
 export interface Resource {
