@@ -34,7 +34,7 @@
         <div id="view-sellers">
             <p @click="viewing_sellers = true">View Sellers</p>
         </div>
-        <ViewSellers :resources="allResources" v-if="viewing_sellers" />
+        <ViewSellers :resources="allResources" v-if="viewing_sellers" @close-view="viewing_sellers = false" />
         <div id="resource-details">
             <div>Product Details</div>
             <div id="details">

@@ -1,6 +1,9 @@
 <template>
     <div id="view-sellers-container">
         <div id="view-sellers">
+            <div id="exit" @click="$emit('close-view')">
+                <i class="bi bi-x-lg"></i>
+            </div>
             <div id="seller" v-for="resource in resources">
                 <div id="profile-pic">
                     <div id="profile-section">
@@ -54,10 +57,10 @@
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent, nextTick, watch, type PropType } from 'vue';
+    import { defineComponent, type PropType } from 'vue';
     import type { Resource, Review, User } from '@/types';
-    import { useResourcesStore } from '@/stores/resources';
     export default defineComponent({
+        emits: ['close-view'],
         props: {
             resources: {
                 type: Array as PropType<Resource[]>,
@@ -178,6 +181,8 @@
         border: 0.3rem solid #D9D9D9;
         border-radius: 0.5rem;
         overflow-y: scroll;
+        display: flex;
+        flex-direction: column;
     }
 
     #seller {
@@ -230,5 +235,24 @@
         cursor: pointer;
         color: white;
         background-color: #177183;
+    }
+
+    #exit {
+        color: red;
+        align-self: flex-end;
+        transform: scale(1);
+    }
+
+    #exit i {
+        font-size: 1.5rem;
+    }
+
+    #exit i:hover {
+        cursor: pointer;
+        color: darkred;
+    }
+
+    #exit:hover {
+        transform: scale(1.5);
     }
 </style>
