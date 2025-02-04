@@ -289,11 +289,13 @@ def new_listing(request: HttpRequest, id: int) -> JsonResponse:
         return JsonResponse(resource.as_dict())
     return JsonResponse({})
 
-import torch
+
 def sentiment_analysis(request: HttpRequest, resource: str) -> JsonResponse:
     resources = Resource.objects.filter(name=resource)
     reviews = list(Review.objects.filter(resource__in=resources).values_list('review', flat=True))
+    reviews_ids = list(Review.objects.filter(resource__in=resources).values_list('id', flat=True))
     # https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment
     bert = pipeline("text-classification", model="nlptown/bert-base-multilingual-uncased-sentiment")
-    print(bert(reviews))
-    return JsonResponse({})
+    scores = list(review['score'] for review in bert(reviews))
+    reviews_scores = dict(zip(reviews_ids, scores))
+    return JsonResponse(reviews_scores, safe=False)

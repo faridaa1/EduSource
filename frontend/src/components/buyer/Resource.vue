@@ -186,7 +186,7 @@
         </div>
         <div id="reviews">
             <p id="no-reviews-to-display" v-if="all_reviews.length === 0">No reviews to display</p>
-            <div id="showing-reviews" class="reviews-review" v-for="review in all_reviews">
+            <div v-if="get_all_reviews" id="showing-reviews" class="reviews-review" v-for="review in all_reviews">
                 <div class="review-heading">
                     <div id="review-heading-one" class="review-heading-one-height">
                         <div v-if="!editing || editing && editing_review !== review.id">
@@ -281,6 +281,7 @@
     export default defineComponent({
         components: { Stars, ViewSellers },
         data(): {
+            all_reviews: Review[],
             addingReview: boolean,
             rating_error: boolean,
             viewing_sellers: boolean,
@@ -300,6 +301,7 @@
             filter_images: boolean,
             filter_video: boolean,
         } { return {
+            all_reviews: [],
             toggle_filter: false,
             filter_one: true,
             filter_five: true,
@@ -628,10 +630,53 @@
                 if (allReviews) {
                     allReviews.scrollIntoView()
                 }
-            }
+            },
+            async reviews_ordered(reviews: Review[]): Promise<void> {
+                const sentiment = await this.resource_sentiment
+                this.all_reviews = reviews.sort((review1, review2) => 
+                    this.sort_by === 'positive' ?
+                        sentiment[review2.id] - sentiment[review1.id]
+                        : sentiment[review1.id] - sentiment[review2.id]
+                )
+            },
+            async get_all_reviews(): Promise<void> {
+                let reviews: Review[] = []
+                this.allResources.forEach((resource) =>
+                    reviews.push(...resource.reviews)
+                )
+                console.log('mounted',reviews)
+                reviews = reviews.filter(review => {
+                    if ( this.filter_one && parseFloat(review.rating.toString()) === 1 
+                        || this.filter_two && parseFloat(review.rating.toString()) === 2
+                        || this.filter_three && parseFloat(review.rating.toString()) === 3
+                        || this.filter_four && parseFloat(review.rating.toString()) === 4
+                        || this.filter_five && parseFloat(review.rating.toString()) === 5
+                        || (this.filter_images && review.image !== null)
+                        || (this.filter_video && review.video !== null)
+                    ) {
+                        return true
+                    }
+                    return false
+                })
+                if (this.sort_by === 'positive' || this.sort_by === 'negative') {
+                    reviews = reviews.sort((review1, review2) => review1.id - review2.id)
+                        return this.reviews_ordered(reviews)
+                }
+                this.all_reviews = reviews.sort((review1, review2) => {
+                    if (this.sort_by === 'earliest' && review1.upload_date > review2.upload_date
+                        || this.sort_by === 'latest' && review1.upload_date < review2.upload_date
+                        || this.sort_by === 'low' && review1.rating > review2.rating
+                        || this.sort_by === 'high' && review1.rating < review2.rating
+                    ) {
+                        return 1
+                    }  
+                    return -1
+                })
+            },
+            
         },
         computed: {
-            async resource_sentiment(): Promise<void> {
+            async resource_sentiment(): Promise<{[key: number] : number}> {
                 const response: Response = await fetch(`http://localhost:8000/api/sentiment/${this.allResources[0].name}/`, {
                     method: 'GET',
                     credentials: 'include',
@@ -639,6 +684,8 @@
                         'X-CSRFToken' : useUserStore().csrf
                     },
                 })
+                const scores: {[key: number] : number} = await response.json()
+                return scores
             },
             total_ratings(): number {
                 let number_of_reviews: number = 0
@@ -659,7 +706,7 @@
                 if (this.total_ratings === 0) return 0
                 return (sum_of_rating/this.total_ratings)
             },
-            written_review(): boolean {
+            async written_review(): Promise<boolean> {
                 return this.all_reviews.find(review => review.user === this.user.id) !== undefined
             },
             user(): User {
@@ -667,35 +714,6 @@
             },
             reviews(): Review[] {
                 return []
-            },
-            all_reviews(): Review[] {
-                let reviews: Review[] = []
-                this.allResources.forEach((resource) =>
-                    reviews.push(...resource.reviews)
-                )
-                reviews = reviews.sort((review1, review2) => {
-                    if (this.sort_by === 'earliest' && review1.upload_date > review2.upload_date
-                        || this.sort_by === 'latest' && review1.upload_date < review2.upload_date
-                        || this.sort_by === 'low' && review1.rating > review2.rating
-                        || this.sort_by === 'high' && review1.rating < review2.rating
-                    ) {
-                        return 1
-                    }
-                    return -1
-                })
-                return reviews.filter(review => {
-                    if ( this.filter_one && parseFloat(review.rating.toString()) === 1 
-                        || this.filter_two && parseFloat(review.rating.toString()) === 2
-                        || this.filter_three && parseFloat(review.rating.toString()) === 3
-                        || this.filter_four && parseFloat(review.rating.toString()) === 4
-                        || this.filter_five && parseFloat(review.rating.toString()) === 5
-                        || (this.filter_images && review.image !== null)
-                        || (this.filter_video && review.video !== null)
-                    ) {
-                        return true
-                    }
-                    return false
-                })
             },
             allResources(): Resource[] {
                 const window_location: string[] = window.location.href.split('/')
@@ -717,6 +735,12 @@
             async resource(resource: Resource): Promise<void> {
                 this.fill_stars()
                 resource.price = await this.listedprice(resource)
+            },
+            sort_by() {
+                this.get_all_reviews()
+            },
+            allResources(): void {
+                this.get_all_reviews()
             },
             all_reviews(updated_all_reviews): void {
                 this.scrollReviewsIntoView()
@@ -745,7 +769,7 @@
         },
         mounted(): void {
             this.fill_stars()
-        }
+        },
     })
 </script>
 
