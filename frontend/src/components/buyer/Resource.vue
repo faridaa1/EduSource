@@ -28,12 +28,15 @@
             <div id="desc">{{ (resource as Resource).description }}</div>
         </div>
         <div id="resource-cart">
-            <div id="cart">
-                <p id="cart-total">{{ cart_resource.number }}</p>
-                <div id="cart-toggle">
-                    <p id="plus" @click="update_cart(1)">+</p>
-                    <p id="minus" @click="update_cart(-1)">-</p>
+            <div id="cart-total-section">
+                <div id="cart">
+                    <p id="cart-total">{{ cart_resource.number }}</p>
+                    <div id="cart-toggle">
+                        <p id="plus" @click="update_cart(1)">+</p>
+                        <p id="minus" @click="update_cart(-1)">-</p>
+                    </div>
                 </div>
+                <div id="total" v-if="cart_resource.number > 0"> Total: {{ (cart_resource.number * parseFloat((allResources.find(resource => resource.id === cart_resource.resource) as Resource).price.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }} </div>
             </div>
             <div>Add to Wishlist</div>
         </div>
@@ -361,10 +364,9 @@
                             this.cart_resource = cartResource
                             this.seller = cartResource.resource
                             return
-                        }
+                        } 
                     })
                 })
-
             },
             async update_cart_db(method: string): Promise<void> {
                 const resource = method === 'POST' ? this.seller : this.cart_resource.id
@@ -387,6 +389,10 @@
             update_cart(number: number): void {
                 if (this.cart_resource.number === 0 && number === -1) return
                 if (this.cart_resource.number === 0) {
+                    if (this.allResources.filter(resource => resource.user !== this.user.id).length === 1) {
+                        this.update_seller((this.allResources.find(resource => resource.user !== this.user.id) as Resource).id)                      
+                        return
+                    }
                     this.viewing_sellers = true
                     return;
                 }
@@ -827,6 +833,7 @@
             },
             allResources(): void {
                 this.get_all_reviews()
+                this.get_cart()
             },
             all_reviews(updated_all_reviews): void {
                 this.scrollReviewsIntoView()
@@ -1507,5 +1514,18 @@
 
     #cart-total {
         margin: auto;
+    }
+
+    #total {
+        background-color: transparent !important;
+        padding: 0 !important;
+    }
+
+    #cart-total-section {
+        background-color: transparent !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
     }
 </style>

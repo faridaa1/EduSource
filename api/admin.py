@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Resource, Review, User, Address
+from .models import Cart, CartResource, Resource, Review, User, Address
 from django.forms import BaseInlineFormSet, ValidationError
 
 
@@ -21,11 +21,30 @@ class AddressInline(admin.StackedInline):
 
 class ResourceInline(admin.StackedInline):
     model = Resource
+    extra = 0
 
 
 class ReviewInline(admin.StackedInline):
     model = Review
-    extra = 1
+    extra = 0
+
+
+class UserInline(admin.StackedInline):
+    model = User
+    extra = 0
+
+
+class CartResourceInline(admin.StackedInline):
+    model = CartResource
+    extra = 0
+
+
+@admin.register(Cart)
+class CartAdmin(admin.ModelAdmin):
+    """Defining Cart model appearance on django admin"""
+    list_display: tuple[str] = ('items', 'total')
+    inlines = [CartResourceInline, UserInline]
+
 
 @admin.register(Resource)
 class ResourceAdmin(admin.ModelAdmin):

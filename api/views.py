@@ -1,13 +1,13 @@
+from decimal import Decimal
 from django.utils import timezone
 import json
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate
-from django.db.models.query import QuerySet
 from django.db.models import Avg
 from django.contrib import auth
 from .forms import SignupForm, AddressForm, LoginForm
-from .models import CartResource, Resource, Review, User, Address
+from .models import Cart, CartResource, Resource, Review, User, Address
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 from transformers import pipeline
@@ -30,7 +30,8 @@ def signup(request: HttpRequest) -> HttpResponse:
                 password=signup_data['password'],
                 theme_preference=signup_data['theme_preference'],
                 mode=signup_data['mode'],
-                description=signup_data['description']
+                description=signup_data['description'],
+                cart=Cart.objects.create()
             )
             Address.objects.create(
                 first_line=address_data['first_line'],
@@ -304,22 +305,34 @@ def update_cart(request: HttpRequest, user: int, resource: int) -> JsonResponse:
     user: User = get_object_or_404(User, id=user)
     if request.method == 'POST':
         resource: Resource = get_object_or_404(Resource, id=resource)
+        price: float = Decimal(str(convert_money(Money(resource.price, resource.price_currency), user.currency)).replace('£','').replace('€','').replace('$',''))
         cartResource: CartResource = CartResource.objects.create(
             resource=resource,
             number=1,
             cart=user.cart,
-            # total=resource.price
         )
+        user.cart.total += price
+        user.cart.items += 1
+        user.cart.save()
         return JsonResponse(cartResource.as_dict())
     elif request.method == 'PUT':
         cartResource: CartResource = get_object_or_404(CartResource, id=resource)
         cartResource.number=json.loads(request.body)
         cartResource.save()
         user.cart.items += json.loads(request.body)
-        user.save()
+        price: float = Decimal(str(convert_money(Money(cartResource.resource.price, cartResource.resource.price_currency), user.currency)).replace('£','').replace('€','').replace('$',''))
+        if json.loads(request.body) == -1:
+            user.cart.total -= price
+        else:
+            user.cart.total += price
+        user.cart.save()
         return JsonResponse(cartResource.as_dict())
     elif request.method == 'DELETE':
         resource: CartResource = get_object_or_404(CartResource, id=resource)
+        price: float = Decimal(str(convert_money(Money(resource.resource.price, resource.resource.price_currency), user.currency)).replace('£','').replace('€','').replace('$',''))
+        user.cart.total -= price
+        user.cart.items -= 1
+        user.cart.save()
         resource.delete()
     return JsonResponse({})
 
