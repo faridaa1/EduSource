@@ -346,7 +346,6 @@
                 }
             },
             async get_cart(): Promise<void> {
-                console.log(this.user.id)
                 const cart: Response = await fetch(`http://localhost:8000/api/cart/${this.user.id}/`, {
                     method: 'GET',
                     credentials: 'include',
@@ -361,13 +360,15 @@
                         if (cartResource.resource === resource.id) {
                             this.cart_resource = cartResource
                             this.seller = cartResource.resource
+                            return
                         }
                     })
                 })
 
             },
             async update_cart_db(method: string): Promise<void> {
-                const updateCart: Response = await fetch(`http://localhost:8000/api/update-cart/${this.user.id}/resource/${this.cart_resource.id}/`, {
+                const resource = method === 'POST' ? this.seller : this.cart_resource.id
+                const updateCart: Response = await fetch(`http://localhost:8000/api/update-cart/${this.user.id}/resource/${resource}/`, {
                     method: method,
                     credentials: 'include',
                     headers: {
@@ -381,7 +382,7 @@
                     return
                 }
                 const data: CartResource = await updateCart.json()
-                console.log(data)
+                this.get_cart()
             },
             update_cart(number: number): void {
                 if (this.cart_resource.number === 0 && number === -1) return
