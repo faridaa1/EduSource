@@ -3,7 +3,6 @@
         <div id="header">
             <p>{{ (resource as Resource).name }}</p>
         </div>
-        i am {{ user.cart.total }}
         <div id="resource">
             <img id="resource-image" :src="`http://localhost:8000/${(resource as Resource).image1}`" :alt="`${(resource as Resource).type}`">
             <div id="resource-price-and-rating">
@@ -29,13 +28,19 @@
             <div id="desc">{{ (resource as Resource).description }}</div>
         </div>
         <div id="resource-cart">
-            <div>Add to Cart</div>
+            <div id="cart">
+                <p id="cart-total">{{ cart_resource.number }}</p>
+                <div id="cart-toggle">
+                    <p id="plus" @click="update_cart(1)">+</p>
+                    <p id="minus" @click="update_cart(-1)">-</p>
+                </div>
+            </div>
             <div>Add to Wishlist</div>
         </div>
         <div id="view-sellers">
             <p @click="viewing_sellers = true">View Sellers</p>
         </div>
-        <ViewSellers :resources="allResources" v-if="viewing_sellers" @close-view="viewing_sellers = false" />
+        <ViewSellers :resources="allResources" :seller="seller" v-if="viewing_sellers" @close-view="viewing_sellers = false" @update_seller="update_seller" />
         <div id="resource-details">
             <div>Product Details</div>
             <div id="details">
@@ -276,13 +281,15 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent, nextTick } from 'vue';
     import ViewSellers from './ViewSellers.vue';
-    import type { Resource, Review, User } from '@/types';
+    import type { Cart, CartResource, Resource, Review, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import Stars from './Stars.vue';
     export default defineComponent({
         components: { Stars, ViewSellers },
         data(): {
             all_reviews: Review[],
+            seller: number,
+            cart_resource: CartResource,
             addingReview: boolean,
             rating_error: boolean,
             viewing_sellers: boolean,
@@ -302,6 +309,12 @@
             filter_images: boolean,
             filter_video: boolean,
         } { return {
+            seller: -1,
+            cart_resource: {
+                id: -1,
+                resource: -1,
+                number: 0
+            },
             all_reviews: [],
             toggle_filter: false,
             filter_one: true,
@@ -323,6 +336,66 @@
             image: new File([''], ''),
         }},
         methods: {
+            update_seller(resource: number): void {
+                this.viewing_sellers = false
+                this.seller = resource
+                if (this.cart_resource.number === 0) {
+                    this.cart_resource.number +=1
+                    this.update_cart_db('POST')
+                    this.get_cart()
+                }
+            },
+            async get_cart(): Promise<void> {
+                console.log(this.user.id)
+                const cart: Response = await fetch(`http://localhost:8000/api/cart/${this.user.id}/`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
+                    },
+                })
+                const data: Cart = await cart.json()
+                data.resources.forEach(cartResource => {
+                    this.allResources.forEach(resource => {
+                        if (cartResource.resource === resource.id) {
+                            this.cart_resource = cartResource
+                            this.seller = cartResource.resource
+                        }
+                    })
+                })
+
+            },
+            async update_cart_db(method: string): Promise<void> {
+                const updateCart: Response = await fetch(`http://localhost:8000/api/update-cart/${this.user.id}/resource/${this.cart_resource.id}/`, {
+                    method: method,
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
+                    },
+                    body: JSON.stringify(this.cart_resource.number)
+                })
+                if (!updateCart.ok) {
+                    console.error('Error adding to cart')
+                    return
+                }
+                const data: CartResource = await updateCart.json()
+                console.log(data)
+            },
+            update_cart(number: number): void {
+                if (this.cart_resource.number === 0 && number === -1) return
+                if (this.cart_resource.number === 0) {
+                    this.viewing_sellers = true
+                    return;
+                }
+                this.cart_resource.number += number
+                if (this.cart_resource.number === 0) {
+                    this.update_cart_db('DELETE')
+                    return
+                }
+                this.update_cart_db('PUT')
+            },
             toggleFilter(): void {
                 this.toggle_filter = !this.toggle_filter
                 if (this.toggle_filter) {
@@ -727,6 +800,9 @@
             },
         },
         watch: {
+            "cart_resource.number"(new_number: number): void {
+                if (new_number === 0) this.seller = -1
+            },
             viewing_sellers(new_viewing): void {
                 const div: HTMLDivElement = document.getElementById('resource-view') as HTMLDivElement
                 if (div && new_viewing) {
@@ -736,6 +812,7 @@
                 }
             },
             async user(new_user: User): Promise<void> {
+                this.get_cart()
                 for (const resource of this.allResources) {
                     resource.price = await this.listedprice(resource)
                 }
@@ -1381,5 +1458,53 @@
 
     textarea:disabled {
         color: black;
+    }
+
+    #cart {
+        background-color: #D9D9D9 !important;
+        display: flex;
+        align-items: center;
+        border-radius: 0.8rem !important;
+        height: 1.4rem;
+        padding-right: 0.3rem !important;
+    }
+
+    #cart-toggle {
+        display: flex;
+        padding: 0 !important;
+        margin-left: auto;
+        background-color: transparent !important;
+        width: 3.4rem !important;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #cart-toggle p {
+        font-size: 1.4rem !important;
+    }
+
+    #cart-toggle #plus {
+        padding-right: 0.4rem;
+        padding-left: 0.4rem;
+        background-color: white !important;
+        border-right: 1px solid black;
+        border-top-left-radius: 0.4rem;
+        border-bottom-left-radius: 0.4rem;
+    }
+
+    #cart-toggle #minus {
+        padding-right: 0.4rem;
+        background-color: white !important;
+        padding-left: 0.4rem;
+        border-top-right-radius: 0.4rem;
+        border-bottom-right-radius: 0.4rem;
+    }
+
+    #cart-toggle #plus:hover, #cart-toggle #minus:hover {
+        background-color: darkgray !important;
+    }
+
+    #cart-total {
+        margin: auto;
     }
 </style>

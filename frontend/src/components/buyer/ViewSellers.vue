@@ -4,7 +4,7 @@
             <div id="exit" @click="$emit('close-view')">
                 <i class="bi bi-x-lg"></i>
             </div>
-            <div id="seller" v-for="resource in resources.filter(resource => resource.author !== user.username && !resource.unique)">
+            <div id="seller" v-for="resource in resources.filter(resource => resource.user !== user.id && !resource.unique)">
                 <div id="profile-pic">
                     <div id="profile-section">
                         <i class="bi bi-person-circle icon"></i>
@@ -46,7 +46,8 @@
                     </div>
                 </div>
                 <div id="buttons">
-                    <button>Select</button>
+                    <button v-if="seller !== resource.user" @click="$emit('update_seller', resource.id)">Select</button>
+                    <button id="selected" v-if="seller === resource.user" @click="$emit('update_seller', resource.id)">Selected</button>
                     <button>Message</button>
                 </div>
                 <hr>
@@ -60,10 +61,14 @@
     import { defineComponent, type PropType } from 'vue';
     import type { Resource, Review, User } from '@/types';
     export default defineComponent({
-        emits: ['close-view'],
+        emits: ['close-view', 'update_seller'],
         props: {
             resources: {
                 type: Array as PropType<Resource[]>,
+                required: true
+            },
+            seller: {
+                type: Number,
                 required: true
             }
         },
@@ -262,5 +267,10 @@
 
     #exit:hover {
         transform: scale(1.5);
+    }
+
+    #selected {
+        background-color: green !important;
+        color: white;
     }
 </style>

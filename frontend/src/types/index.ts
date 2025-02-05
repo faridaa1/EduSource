@@ -70,7 +70,11 @@ export interface Review {
 
 export interface Cart {
     id: number,
-    resources: Resource[],
+    resources: {
+        id: number,
+        number: number,
+        resource: number
+    }[]
     items: number,
     total: number
 }

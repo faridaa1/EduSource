@@ -7,7 +7,7 @@ from django.db.models.query import QuerySet
 from django.db.models import Avg
 from django.contrib import auth
 from .forms import SignupForm, AddressForm, LoginForm
-from .models import Resource, Review, User, Address
+from .models import CartResource, Resource, Review, User, Address
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 from transformers import pipeline
@@ -299,3 +299,31 @@ def sentiment_analysis(request: HttpRequest, resource: str) -> JsonResponse:
     scores = list(review['score'] for review in bert(reviews))
     reviews_scores = dict(zip(reviews_ids, scores))
     return JsonResponse(reviews_scores, safe=False)
+
+def update_cart(request: HttpRequest, user: int, resource: int) -> JsonResponse:
+    user: User = get_object_or_404(User, id=user)
+    if request.method == 'POST':
+        resource: Resource = get_object_or_404(Resource, id=resource)
+        cartResource: CartResource = CartResource.objects.create(
+            resource=resource,
+            number=1,
+            cart=user.cart,
+            # total=resource.price
+        )
+        return JsonResponse(cartResource.as_dict())
+    elif request.method == 'PUT':
+        cartResource: CartResource = get_object_or_404(CartResource, id=resource)
+        cartResource.number=json.loads(request.body)
+        cartResource.save()
+        user.cart.items += json.loads(request.body)
+        user.save()
+        return JsonResponse(cartResource.as_dict())
+    elif request.method == 'DELETE':
+        resource: CartResource = get_object_or_404(CartResource, id=resource)
+        resource.delete()
+    return JsonResponse({})
+
+
+def get_cart(request: HttpRequest, user: int) -> JsonResponse:
+    user: User = get_object_or_404(User, id=user)
+    return JsonResponse(user.cart.as_dict())
