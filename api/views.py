@@ -314,7 +314,7 @@ def update_cart(request: HttpRequest, user: int, resource: int) -> JsonResponse:
         user.cart.total += price
         user.cart.items += 1
         user.cart.save()
-        return JsonResponse(cartResource.as_dict())
+        return JsonResponse({'resource': cartResource.as_dict(), 'cart': user.cart.as_dict()})
     elif request.method == 'PUT':
         cartResource: CartResource = get_object_or_404(CartResource, id=resource)
         cartResource.number=json.loads(request.body)
@@ -326,7 +326,7 @@ def update_cart(request: HttpRequest, user: int, resource: int) -> JsonResponse:
         else:
             user.cart.total += price
         user.cart.save()
-        return JsonResponse(cartResource.as_dict())
+        return JsonResponse({'resource': cartResource.as_dict(), 'cart': user.cart.as_dict()})
     elif request.method == 'DELETE':
         resource: CartResource = get_object_or_404(CartResource, id=resource)
         price: float = Decimal(str(convert_money(Money(resource.resource.price, resource.resource.price_currency), user.currency)).replace('£','').replace('€','').replace('$',''))
@@ -334,6 +334,7 @@ def update_cart(request: HttpRequest, user: int, resource: int) -> JsonResponse:
         user.cart.items -= 1
         user.cart.save()
         resource.delete()
+        return JsonResponse({'resource': [], 'cart': user.cart.as_dict()})
     return JsonResponse({})
 
 

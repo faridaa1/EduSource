@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { Resource, User } from '../types';
+import type { Cart, Resource, User } from '../types';
 
 export const useUserStore = defineStore('user', {
     state: (): { user: User, csrf: string} => ({
@@ -24,6 +24,9 @@ export const useUserStore = defineStore('user', {
         },
         removeResource(id: number): void {
             this.user.listings = this.user.listings.filter(resource => resource.id !== id)
+        },
+        updateCart(new_cart: Cart): void {
+            this.user.cart = new_cart
         }
     }
 })

@@ -9,7 +9,7 @@
           <div id="profile-nav">
             <RouterLink class="profile-item border-bottom rounded-top" to="/details" >Details</RouterLink>
             <RouterLink class="profile-item border-bottom" to="/" v-if="user.mode==='buyer'">Orders</RouterLink>
-            <RouterLink class="profile-item border-bottom" to="/" v-if="user.mode==='buyer'">Cart</RouterLink>
+            <RouterLink class="profile-item border-bottom" to="/cart">Cart</RouterLink>
             <RouterLink class="profile-item rounded-bottom" to="/" v-if="user.mode==='buyer'">Wishlist</RouterLink>
             <RouterLink class="profile-item border-bottom" to="/listings" v-if="user.mode==='seller'">Listings</RouterLink>
             <RouterLink class="profile-item rounded-bottom" to="/" v-if="user.mode==='seller'">Orders</RouterLink>
@@ -48,7 +48,8 @@
             </div>
           </div>
         </div>
-        <RouterLink to="/" class="hide-on-mobile link">Sign out</RouterLink>
+        <!-- <RouterLink to="http://localhost:8000/login" class="hide-on-mobile link">Sign out</RouterLink> -->
+        <p @click="sign_out" class="hide-on-mobile link">Sign out</p>
         <button id="show-on-mobile" @click="show_menu"><i class="bi bi-list"></i></button>
       </header>
       <div id="hamburger">
@@ -155,6 +156,9 @@
       }
     },
     methods: {
+      sign_out(): void {
+        window.location.href = 'http://localhost:8000/login'
+      },
       async update_setting(called_by: string, data: string): Promise<void> {
             let updateResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/${called_by}/`, {
               method: 'PUT',

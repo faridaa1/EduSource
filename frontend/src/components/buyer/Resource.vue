@@ -367,6 +367,7 @@
                         } 
                     })
                 })
+                useUserStore().updateCart(data)
             },
             async update_cart_db(method: string): Promise<void> {
                 const resource = method === 'POST' ? this.seller : this.cart_resource.id
@@ -383,7 +384,8 @@
                     console.error('Error adding to cart')
                     return
                 }
-                const data: CartResource = await updateCart.json()
+                const data: {resource: CartResource, cart: Cart} = await updateCart.json()
+                useUserStore().updateCart(data.cart)
                 this.get_cart()
             },
             update_cart(number: number): void {
@@ -798,7 +800,7 @@
             allResources(): Resource[] {
                 const window_location: string[] = window.location.href.split('/')
                 const name: string = window_location[window_location.length-1]
-                return useResourcesStore().resources.filter(resource => resource.name === name && !resource.unique)
+                return useResourcesStore().resources.filter(resource => resource.name === name)
             },
             resource(): Resource | {} {
                 const window_location: string[] = window.location.href.split('/')

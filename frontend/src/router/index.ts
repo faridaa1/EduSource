@@ -5,6 +5,7 @@ import NewListing from '@/components/seller/NewListing.vue'
 import Resource from '@/components/seller/Resource.vue'
 import Listings from '@/components/seller/Listings.vue'
 import { createRouter, createWebHistory } from 'vue-router'
+import Cart from '@/components/Cart.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,6 +19,7 @@ const router = createRouter({
     { path: '/new-listing/stationery', name: 'new listing stationery', component: NewListing },
     { path: '/resource/:id', name: 'resource', component: Resource },
     { path: '/view/:name', name: 'buyer resource', component: BuyerResource },
+    { path: '/cart', name: 'cart', component: Cart },
   ],
 })
 
