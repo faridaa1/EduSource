@@ -604,7 +604,6 @@
                 }
                 let reviewData: {old_resource: Resource, new_resource : Resource, users: User[]} = await savedReview.json()
                 useResourcesStore().editResource(reviewData.old_resource, reviewData.new_resource)
-                console.log(reviewData.users)
                 useUsersStore().updateUsers(reviewData.users)
                 this.close_review(review)
             },
@@ -658,9 +657,9 @@
                     },
                     body: data
                 })
-                let resource: Resource = await savedReview.json()
-                useResourcesStore().updateResource(resource)
-                useUsersStore().updateUser(this.user)
+                let resource: { resource: Resource, users: User[]} = await savedReview.json()
+                useResourcesStore().updateResource(resource.resource)
+                useUsersStore().updateUsers(resource.users)
                 this.addingReview = false
             },
             show_potential_rating(event: Event): void {

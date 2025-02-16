@@ -122,7 +122,8 @@ def review(request: HttpRequest, user: int, resource: int) -> JsonResponse:
         resource.rating=set_resource_rating(resource.id)
         resource.save()
         update_seller_rating(review.resource.user)
-        return JsonResponse(resource.as_dict())
+        return JsonResponse({'resource': resource.as_dict(),
+                            'users': [user.as_dict() for user in User.objects.all()]})
     if request.method == 'DELETE':
         review: Review = Review.objects.get(id=resource)
         resource: Resource = Resource.objects.get(id=review.resource.id)
