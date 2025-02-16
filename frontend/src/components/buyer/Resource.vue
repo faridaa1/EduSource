@@ -287,7 +287,7 @@
     import type { Cart, CartResource, Resource, Review, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import Stars from './Stars.vue';
-import { useUsersStore } from '@/stores/users';
+    import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         components: { Stars, ViewSellers },
         data(): {
@@ -468,6 +468,7 @@ import { useUsersStore } from '@/stores/users';
                 }
                 const resource: Resource = await response.json()
                 useResourcesStore().updateResource(resource)
+                console.log(this.user)
                 useUsersStore().updateUser(this.user)
                 this.fill_stars()
             },
@@ -602,9 +603,10 @@ import { useUsersStore } from '@/stores/users';
                     alert('Error saving review')
                     return
                 }
-                let reviewData: {old_resource: Resource, new_resource : Resource} = await savedReview.json()
+                let reviewData: {old_resource: Resource, new_resource : Resource, users: User[]} = await savedReview.json()
                 useResourcesStore().editResource(reviewData.old_resource, reviewData.new_resource)
-                useUsersStore().updateUser(this.user)
+                console.log(reviewData.users)
+                useUsersStore().updateUsers(reviewData.users)
                 this.close_review(review)
             },
             async save_review(): Promise<void> {

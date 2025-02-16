@@ -9,6 +9,7 @@
                     <div id="profile-section">
                         <i class="bi bi-person-circle icon"></i>
                         <p>{{ users.find(user => user.id === resource.user)?.username }}</p>
+                        <p>{{ users.find(user => user.id === resource.user)?.rating }}</p>
                     </div>
                     <p>{{ to_date(resource.upload) }}</p>
                     <div id="rating">

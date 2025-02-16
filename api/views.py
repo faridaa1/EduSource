@@ -162,7 +162,8 @@ def edit_review(request: HttpRequest, user: int, id: int, resource: int) -> Json
         old_resource.save()
         update_seller_rating(review.resource.user)
         return JsonResponse({'old_resource' : old_resource.as_dict(),
-                             'new_resource' : resource.as_dict()})
+                             'new_resource' : resource.as_dict(),
+                             'users' : [user.as_dict() for user in User.objects.all()],})
     return JsonResponse({})
 
 
