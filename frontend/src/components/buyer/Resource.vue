@@ -345,7 +345,6 @@
                 nextTick(() => {
                     const view_sellers = document.getElementById('view-sellers-container')
                     view_sellers?.scrollIntoView()
-                    console.log(view_sellers)
                 })
             },
             update_seller(resource: number): void {

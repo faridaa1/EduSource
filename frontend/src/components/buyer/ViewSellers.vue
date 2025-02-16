@@ -60,7 +60,7 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent, type PropType } from 'vue';
     import type { Resource, Review, User } from '@/types';
-import { useUsersStore } from '@/stores/users';
+    import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         emits: ['close-view', 'update_seller'],
         props: {
@@ -146,6 +146,12 @@ import { useUsersStore } from '@/stores/users';
             for (const resource of this.resources) {
                 resource.price = await this.listedprice(resource)
             }
+            document.addEventListener('click', (event) => {
+                const container: HTMLDivElement = event.target as HTMLDivElement
+                if (container.id !== 'view-sellers') {
+                    this.$emit('close-view')
+                }
+            })
         }
     })
 </script>
