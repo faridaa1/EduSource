@@ -88,6 +88,20 @@ def set_resource_rating(resource_id: int) -> float:
     return average_rating if average_rating else 0.0
 
 
+def update_seller_rating(user: User) -> None:
+    """Ensuring seller rating is defined based on sentiment of reviews"""
+    reviews = list(Review.objects.filter(resource__user__id=user.id).values_list('review', flat=True))
+    # https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment
+    bert = pipeline("text-classification", model="nlptown/bert-base-multilingual-uncased-sentiment")
+    stars = list(int(review['label'][0]) for review in bert(reviews))
+    if len(stars) == 0:
+        user.rating = 0
+    else:
+        average = round(sum(stars) / len(stars), 1)
+        user.rating = average
+    user.save()
+
+
 def review(request: HttpRequest, user: int, resource: int) -> JsonResponse:
     if request.method == 'POST':
         resource: Resource = Resource.objects.get(id=resource)
@@ -105,6 +119,7 @@ def review(request: HttpRequest, user: int, resource: int) -> JsonResponse:
         review.save()
         resource.rating=set_resource_rating(resource.id)
         resource.save()
+        update_seller_rating(review.resource.user)
         return JsonResponse(resource.as_dict())
     if request.method == 'DELETE':
         review: Review = Review.objects.get(id=resource)
@@ -112,6 +127,7 @@ def review(request: HttpRequest, user: int, resource: int) -> JsonResponse:
         review.delete()
         resource.rating = set_resource_rating(resource.id)
         resource.save()
+        update_seller_rating(review.resource.user)
         return JsonResponse(resource.as_dict())
     return JsonResponse({})
 
@@ -142,6 +158,7 @@ def edit_review(request: HttpRequest, user: int, id: int, resource: int) -> Json
         old_resource: Resource = Resource.objects.get(id=data.get('old_resource'))
         old_resource.rating = set_resource_rating(old_resource)
         old_resource.save()
+        update_seller_rating(review.resource.user)
         return JsonResponse({'old_resource' : old_resource.as_dict(),
                              'new_resource' : resource.as_dict()})
     return JsonResponse({})
@@ -300,6 +317,7 @@ def sentiment_analysis(request: HttpRequest, resource: str) -> JsonResponse:
     scores = list(review['score'] for review in bert(reviews))
     reviews_scores = dict(zip(reviews_ids, scores))
     return JsonResponse(reviews_scores, safe=False)
+
 
 def update_cart(request: HttpRequest, user: int, resource: int) -> JsonResponse:
     user: User = get_object_or_404(User, id=user)
