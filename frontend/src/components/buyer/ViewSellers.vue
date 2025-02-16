@@ -8,7 +8,7 @@
                 <div id="profile-pic">
                     <div id="profile-section">
                         <i class="bi bi-person-circle icon"></i>
-                        <p>{{ resource.author }}</p>
+                        <p>{{ users.find(user => user.id === resource.user)?.username }}</p>
                     </div>
                     <p>{{ to_date(resource.upload) }}</p>
                     <div id="rating">
@@ -60,6 +60,7 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent, type PropType } from 'vue';
     import type { Resource, Review, User } from '@/types';
+import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         emits: ['close-view', 'update_seller'],
         props: {
@@ -115,6 +116,9 @@
             reviews(): Review[] {
                 return []
             },
+            users(): User[] {
+                return useUsersStore().users
+            }
         },
         watch: {
             async user(new_user: User): Promise<void> {

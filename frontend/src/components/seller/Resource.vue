@@ -212,6 +212,7 @@
     import { defineComponent } from 'vue';
     import type { Resource, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
+import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
             name: string,
@@ -300,6 +301,7 @@
                     }
                     useResourcesStore().removeResource(this.resource.id)
                     useUserStore().removeResource(this.resource.id)
+                    useUsersStore().updateUser(this.user)
                     window.location.href = '/listings'
                 }
             },
@@ -470,6 +472,7 @@
                 }
                 const putListingData: Resource = await putListingResponse.json()
                 useUserStore().updateListing(putListingData)
+                useUsersStore().updateUser(this.user)
                 useResourcesStore().updateResource(putListingData)
             },
             remove_video(event:Event): void {

@@ -106,6 +106,7 @@
   import type { Resource, User } from './types';
   import { useUserStore } from './stores/user';
   import { useResourcesStore } from './stores/resources';
+  import { useUsersStore } from './stores/users';
   export default defineComponent({
     components: { RouterView },
     data(): { currency_setting: string, mode_setting: string } { return {
@@ -114,6 +115,16 @@
       }
     },
     async mounted(): Promise<void> {
+      let usersResponse: Response = await fetch('http://localhost:8000/api/users/', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'X-CSRFToken' : useUserStore().csrf
+        }
+      })
+      let usersData: User[] = await usersResponse.json()
+      useUsersStore().updateUsers(usersData)
+
       let userResponse: Response = await fetch('http://localhost:8000/api/user/', {
         method: 'GET',
         credentials: 'include',
@@ -176,6 +187,7 @@
             }
             let userUpdateData: User = await updateResponse.json()
             useUserStore().saveUser(userUpdateData)
+            useUsersStore().updateUser(userUpdateData)
             if (called_by === 'mode') {
               if (data === 'seller') {
                 window.location.href = '/listings'

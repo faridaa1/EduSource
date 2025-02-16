@@ -287,6 +287,7 @@
     import type { Cart, CartResource, Resource, Review, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import Stars from './Stars.vue';
+import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         components: { Stars, ViewSellers },
         data(): {
@@ -386,6 +387,7 @@
                 }
                 const data: {resource: CartResource, cart: Cart} = await updateCart.json()
                 useUserStore().updateCart(data.cart)
+                useUsersStore().updateUser(this.user)
                 this.get_cart()
             },
             update_cart(number: number): void {
@@ -466,6 +468,7 @@
                 }
                 const resource: Resource = await response.json()
                 useResourcesStore().updateResource(resource)
+                useUsersStore().updateUser(this.user)
                 this.fill_stars()
             },
             to_date(date: string): string {
@@ -601,6 +604,7 @@
                 }
                 let reviewData: {old_resource: Resource, new_resource : Resource} = await savedReview.json()
                 useResourcesStore().editResource(reviewData.old_resource, reviewData.new_resource)
+                useUsersStore().updateUser(this.user)
                 this.close_review(review)
             },
             async save_review(): Promise<void> {
@@ -655,6 +659,7 @@
                 })
                 let resource: Resource = await savedReview.json()
                 useResourcesStore().updateResource(resource)
+                useUsersStore().updateUser(this.user)
                 this.addingReview = false
             },
             show_potential_rating(event: Event): void {

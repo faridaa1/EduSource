@@ -105,6 +105,7 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent } from 'vue';
     import type { User } from '@/types';
+import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
             email: string,
@@ -585,6 +586,9 @@
                     body: JSON.stringify(data)
                 })
                 if (userResponse.ok) {
+                    const user: User = await userResponse.json()
+                    useUsersStore().updateUser(user)
+                    
                     if (saveButton) {
                         saveButton.disabled = false
                     } 

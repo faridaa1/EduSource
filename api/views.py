@@ -82,6 +82,8 @@ def user(request: HttpRequest) -> JsonResponse:
         return JsonResponse({'user' : User.objects.get(username=request.user.username).as_dict()})
     return JsonResponse({'user' : 'unauthenticated'})
 
+def users(request: HttpRequest) -> JsonResponse:
+    return JsonResponse([user.as_dict() for user in User.objects.all()], safe=False)
 
 def set_resource_rating(resource_id: int) -> float:
     average_rating = Review.objects.filter(resource=resource_id).aggregate(Avg('rating'))['rating__avg']

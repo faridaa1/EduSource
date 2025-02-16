@@ -209,6 +209,7 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent } from 'vue';
     import type { Resource, User } from '@/types';
+import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
             name: string,
@@ -440,6 +441,7 @@
                 }
                 const postListingData: Resource = await postListingResponse.json()
                 useUserStore().addListing(postListingData)
+                useUsersStore().updateUser(this.user)
                 window.location.href = '/listings'
             },
             remove_video(event:Event): void {

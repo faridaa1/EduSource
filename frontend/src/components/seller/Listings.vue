@@ -91,6 +91,7 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent } from 'vue';
     import type { Resource, User } from '@/types';
+import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
             editingDescription: boolean
@@ -198,6 +199,7 @@
                 }
                 const updatedUser: User = await updateDecriptionResponse.json()
                 useUserStore().saveUser(updatedUser)
+                useUsersStore().updateUser(this.user)
                 this.editingDescription = false
             },
             revert(): void {
