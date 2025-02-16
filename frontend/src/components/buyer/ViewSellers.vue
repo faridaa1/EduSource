@@ -46,8 +46,8 @@
                     </div>
                 </div>
                 <div id="buttons">
-                    <button v-if="seller !== resource.user" @click="$emit('update_seller', resource.id)">Select</button>
-                    <button id="selected" v-if="seller === resource.user" @click="$emit('update_seller', resource.id)">Selected</button>
+                    <button v-if="seller !== resource.id" @click="$emit('update_seller', resource.id)">Select</button>
+                    <button id="selected" v-if="seller === resource.id" @click="$emit('update_seller', resource.id)">Selected</button>
                     <button>Message</button>
                 </div>
                 <hr>
