@@ -466,10 +466,9 @@
                     console.error('Error deleting review')
                     return
                 }
-                const resource: Resource = await response.json()
-                useResourcesStore().updateResource(resource)
-                console.log(this.user)
-                useUsersStore().updateUser(this.user)
+                const resource: {resource: Resource, users: User[]} = await response.json()
+                useResourcesStore().updateResource(resource.resource)
+                useUsersStore().updateUsers(resource.users)
                 this.fill_stars()
             },
             to_date(date: string): string {
