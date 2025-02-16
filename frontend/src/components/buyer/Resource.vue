@@ -341,10 +341,11 @@
         }},
         methods: {
             show_sellers(){
+                this.viewing_sellers = true
                 nextTick(() => {
-                    window.scrollTo({top: 0})
-                    document.documentElement.scrollTop = 0
-                    this.viewing_sellers = true
+                    const view_sellers = document.getElementById('view-sellers-container')
+                    view_sellers?.scrollIntoView()
+                    console.log(view_sellers)
                 })
             },
             update_seller(resource: number): void {
