@@ -41,7 +41,7 @@
             <div>Add to Wishlist</div>
         </div>
         <div id="view-sellers">
-            <p @click="viewing_sellers = true">View Sellers</p>
+            <p @click="show_sellers">View Sellers</p>
         </div>
         <ViewSellers :resources="allResources" :seller="seller" v-if="viewing_sellers" @close-view="viewing_sellers = false" @update_seller="update_seller" />
         <div id="resource-details">
@@ -242,7 +242,7 @@
                         <p>Seller</p>
                         <select :id="`${review.id}`" :value="review.resource">
                             <option :value="resource.id" v-for="resource in possible_sellers(true)">
-                                <p>{{ resource.author }}</p>
+                                <p>{{ users.find(user => user.id === resource.user)?.username }}</p>
                             </option>
                         </select>
                     </div>
@@ -340,6 +340,13 @@
             image: new File([''], ''),
         }},
         methods: {
+            show_sellers(){
+                nextTick(() => {
+                    window.scrollTo({top: 0})
+                    document.documentElement.scrollTop = 0
+                    this.viewing_sellers = true
+                })
+            },
             update_seller(resource: number): void {
                 this.viewing_sellers = false
                 this.seller = resource
@@ -763,6 +770,9 @@
             
         },
         computed: {
+            users(): User[] {
+                return useUsersStore().users
+            },
             async resource_sentiment(): Promise<{[key: number] : number}> {
                 const response: Response = await fetch(`http://localhost:8000/api/sentiment/${this.allResources[0].name}/`, {
                     method: 'GET',

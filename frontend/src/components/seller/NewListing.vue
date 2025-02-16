@@ -3,8 +3,8 @@
         <div id="header">
             <h1>New Resource Listing</h1>
             <div id="buttons">
-                <button @click="submit(true)">List Item</button>
-                <button @click="submit(false)">Save as Draft</button>
+                <button @click="submit(false)">List Item</button>
+                <button @click="submit(true)">Save as Draft</button>
             </div>
         </div>
         <div id="form" @input="clear_errors" @change="clear_errors">
@@ -186,7 +186,7 @@
                 </div>
             </div>
             <div class="form-item" id="video-container">
-                <label for="">Videos (.mp4) <span class="required">*</span></label>
+                <label for="">Video (.mp4) <span class="required">*</span></label>
                 <p id="videos-label">{{ video_error }}</p>
                 <div class="video_input" id="video_1">
                     <input id="video1" type="file" accept=".mp4" @change="show_video">
@@ -199,8 +199,8 @@
             </div>
         </div>
         <div id="buttons1">
-            <button @click="submit(true)">List Item</button>
-            <button @click="submit(false)">Save as Draft</button>
+            <button @click="submit(false)">List Item</button>
+            <button @click="submit(true)">Save as Draft</button>
         </div>
     </div>
 </template>
@@ -423,7 +423,7 @@ import { useUsersStore } from '@/stores/users';
                 data.append('image1', this.image1)
                 data.append('image2', this.image2)
                 data.append('video', this.video1)
-                data.append('is_draft', this.is_draft.toString())
+                data.append('is_draft', is_draft.toString())
                 data.append('source', this.source)
                 data.append('condition', this.condition)
                 let postListingResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/new-listing/`, {

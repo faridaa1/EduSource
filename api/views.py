@@ -240,6 +240,7 @@ def new_listing(request: HttpRequest, id: int) -> JsonResponse:
         resource: Resource = get_object_or_404(Resource, id=json.loads(request.body))
         resource.delete()
     if request.method == 'POST' and not data.get('id'):
+        print(data.get('is_draft'), data.get('is_draft') == 'false')
         resource: Resource = Resource.objects.create(
             name=data.get('name'),
             description=data.get('description'),
