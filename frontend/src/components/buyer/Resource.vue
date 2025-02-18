@@ -32,8 +32,8 @@
                 <div id="cart">
                     <p id="cart-total">{{ cart_resource.number }}</p>
                     <div id="cart-toggle">
-                        <p id="plus" @click="update_cart(1)">+</p>
-                        <p id="minus" @click="update_cart(-1)">-</p>
+                        <p v-if="(Object.keys(currentResource).length === 0) || cart_resource.number < currentResource.stock" id="plus" @click="update_cart(1)">+</p>
+                        <p v-if="cart_resource.number > 0" id="minus" @click="update_cart(-1)">-</p>
                     </div>
                 </div>
                 <div id="total" v-if="cart_resource.number > 0"> Total: {{ user.currency === 'GBP' ? '£' : user.currency === 'USD' ? '$' : '€' }}{{ (cart_resource.number * cart_price).toFixed(2) }} </div>
@@ -291,6 +291,7 @@
     export default defineComponent({
         components: { Stars, ViewSellers },
         data(): {
+            currentResource: Resource,
             all_reviews: Review[],
             seller: number,
             cart_resource: CartResource,
@@ -314,6 +315,7 @@
             filter_video: boolean,
             cart_price: number,
         } { return {
+            currentResource: {} as Resource,
             cart_price: 0,
             seller: -1,
             cart_resource: {
@@ -414,6 +416,9 @@
                 this.cart_resource.number += number
                 if (this.cart_resource.number === 0) {
                     this.update_cart_db('DELETE', this.cart_resource.id, -1)
+                    nextTick(() => {
+                        this.currentResource = {} as Resource
+                    })
                     return
                 }
                 this.update_cart_db('PUT', this.cart_resource.id, this.cart_resource.resource)
@@ -833,8 +838,16 @@
                     this.cart_price = 0
                     return
                 }
-                let price = await this.listedprice(this.allResources.find(resource => resource.id === this.cart_resource.resource) as Resource)
-                this.cart_price = parseFloat(price.toString().replace('€','').replace('£','').replace('$',''))
+                nextTick(async () => {
+                    if (this.cart_resource.number === 0) {
+                        this.cart_price = 0
+                        return
+                    }
+                    let price = await this.listedprice(this.allResources.find(resource => resource.id === this.cart_resource.resource) as Resource)
+                    this.cart_price = parseFloat(price.toString().replace('€','').replace('£','').replace('$',''))
+                    const resource: Resource | undefined = this.allResources.find(resource => resource.id === this.cart_resource.resource)
+                    if (resource) this.currentResource = resource
+                })
             },
             async "cart_resource.number"(new_number: number): Promise<void> {
                 if (new_number === 0) this.seller = -1
@@ -845,6 +858,20 @@
                     }
                     let price = await this.listedprice(this.allResources.find(resource => resource.id === this.cart_resource.resource) as Resource)
                     this.cart_price = parseFloat(price.toString().replace('€','').replace('£','').replace('$',''))
+                    const resource: Resource | undefined = this.allResources.find(resource => resource.id === this.cart_resource.resource)
+                    if (resource) this.currentResource = resource
+                })
+            },
+            async cart_resource(new_resource: CartResource): Promise<void> {
+                nextTick(async () => {
+                    if (this.cart_resource.number === 0) {
+                        this.cart_price = 0
+                        return
+                    }
+                    let price = await this.listedprice(this.allResources.find(resource => resource.id === this.cart_resource.resource) as Resource)
+                    this.cart_price = parseFloat(price.toString().replace('€','').replace('£','').replace('$',''))
+                    const resource: Resource | undefined = this.allResources.find(resource => resource.id === this.cart_resource.resource)
+                    if (resource) this.currentResource = resource
                 })
             },
             viewing_sellers(new_viewing): void {
