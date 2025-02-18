@@ -36,7 +36,7 @@
                         <p id="minus" @click="update_cart(-1)">-</p>
                     </div>
                 </div>
-                <div id="total" v-if="cart_resource.number > 0"> Total: {{ (cart_resource.number * parseFloat((allResources.find(resource => resource.id === cart_resource.resource) as Resource).price.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }} </div>
+                <div id="total" v-if="cart_resource.number > 0"> Total: {{ user.currency === 'GBP' ? '£' : user.currency === 'USD' ? '$' : '€' }}{{ (cart_resource.number * cart_price).toFixed(2) }} </div>
             </div>
             <div>Add to Wishlist</div>
         </div>
@@ -312,7 +312,9 @@
             filter_five: boolean,
             filter_images: boolean,
             filter_video: boolean,
+            cart_price: number,
         } { return {
+            cart_price: 0,
             seller: -1,
             cart_resource: {
                 id: -1,
@@ -355,7 +357,6 @@
                     this.update_cart_db('POST', -1, this.seller)
                     this.get_cart()
                 } else {
-                    console.log(resource)
                     this.update_cart_db('PUT', this.cart_resource.id, resource)
                     this.get_cart()
                 }
@@ -382,7 +383,6 @@
                 useUserStore().updateCart(data)
             },
             async update_cart_db(method: string, cart_number: number, resource: number): Promise<void> {
-                // const resource = method === 'POST' ? this.seller : this.cart_resource.id
                 const updateCart: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${cart_number}/resource/${resource}/`, {
                     method: method,
                     credentials: 'include',
@@ -828,8 +828,24 @@
             },
         },
         watch: {
-            "cart_resource.number"(new_number: number): void {
+            async seller(): Promise<void> {
+                if (this.cart_resource.number === 0) {
+                    this.cart_price = 0
+                    return
+                }
+                let price = await this.listedprice(this.allResources.find(resource => resource.id === this.cart_resource.resource) as Resource)
+                this.cart_price = parseFloat(price.toString().replace('€','').replace('£','').replace('$',''))
+            },
+            async "cart_resource.number"(new_number: number): Promise<void> {
                 if (new_number === 0) this.seller = -1
+                nextTick(async () => {
+                    if (this.cart_resource.number === 0) {
+                        this.cart_price = 0
+                        return
+                    }
+                    let price = await this.listedprice(this.allResources.find(resource => resource.id === this.cart_resource.resource) as Resource)
+                    this.cart_price = parseFloat(price.toString().replace('€','').replace('£','').replace('$',''))
+                })
             },
             viewing_sellers(new_viewing): void {
                 const div: HTMLDivElement = document.getElementById('resource-view') as HTMLDivElement

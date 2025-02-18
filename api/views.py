@@ -329,7 +329,6 @@ def sentiment_analysis(request: HttpRequest, resource: str) -> JsonResponse:
 
 def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> JsonResponse:
     user: User = get_object_or_404(User, id=user)
-    print('entered')
     if request.method == 'POST':
         resource: Resource = get_object_or_404(Resource, id=resource)
         cartResource: CartResource = CartResource.objects.create(
