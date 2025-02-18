@@ -749,6 +749,7 @@
                     reviews.push(...resource.reviews)
                 )
                 reviews = reviews.filter(review => {
+                    console.log('filtering')
                     if ( this.filter_one && parseFloat(review.rating.toString()) === 1 
                         || this.filter_two && parseFloat(review.rating.toString()) === 2
                         || this.filter_three && parseFloat(review.rating.toString()) === 3
@@ -903,24 +904,31 @@
                 this.scrollReviewsIntoView()
             },
             filter_one(): void {
+                this.get_all_reviews()
                 this.scrollReviewsIntoView()
             },
             filter_two(): void {
+                this.get_all_reviews()
                 this.scrollReviewsIntoView()
             },
             filter_three(): void {
+                this.get_all_reviews()
                 this.scrollReviewsIntoView()
             },
             filter_four(): void {
+                this.get_all_reviews()
                 this.scrollReviewsIntoView()
             },
             filter_five(): void {
+                this.get_all_reviews()
                 this.scrollReviewsIntoView()
             },
             filter_images(): void {
+                this.get_all_reviews()
                 this.scrollReviewsIntoView()
             },
             filter_video(): void {
+                this.get_all_reviews()
                 this.scrollReviewsIntoView()
             }
         },
