@@ -1035,6 +1035,7 @@
     #desc {
         background-color: #D9D9D9;
         border-radius: 0.5rem;
+        border: 0.3rem solid #D9D9D9;
         padding: 0.4rem;
         height: 100%;
         overflow-y: scroll;
