@@ -82,8 +82,10 @@ def user(request: HttpRequest) -> JsonResponse:
         return JsonResponse({'user' : User.objects.get(username=request.user.username).as_dict()})
     return JsonResponse({'user' : 'unauthenticated'})
 
+
 def users(request: HttpRequest) -> JsonResponse:
     return JsonResponse([user.as_dict() for user in User.objects.all()], safe=False)
+
 
 def set_resource_rating(resource_id: int) -> float:
     average_rating = Review.objects.filter(resource=resource_id).aggregate(Avg('rating'))['rating__avg']
@@ -325,36 +327,29 @@ def sentiment_analysis(request: HttpRequest, resource: str) -> JsonResponse:
     return JsonResponse(reviews_scores, safe=False)
 
 
-def update_cart(request: HttpRequest, user: int, resource: int) -> JsonResponse:
+def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> JsonResponse:
     user: User = get_object_or_404(User, id=user)
+    print('entered')
     if request.method == 'POST':
         resource: Resource = get_object_or_404(Resource, id=resource)
-        price: float = Decimal(str(convert_money(Money(resource.price, resource.price_currency), user.currency)).replace('£','').replace('€','').replace('$',''))
         cartResource: CartResource = CartResource.objects.create(
             resource=resource,
             number=1,
             cart=user.cart,
         )
-        user.cart.total += price
         user.cart.items += 1
         user.cart.save()
         return JsonResponse({'resource': cartResource.as_dict(), 'cart': user.cart.as_dict()})
     elif request.method == 'PUT':
-        cartResource: CartResource = get_object_or_404(CartResource, id=resource)
-        cartResource.number=json.loads(request.body)
+        cartResource: CartResource = get_object_or_404(CartResource, id=cart)
+        if cartResource.resource.id != int(resource):
+            cartResource.resource = Resource.objects.get(id=resource)
+        cartResource.number = json.loads(request.body)
         cartResource.save()
         user.cart.items += json.loads(request.body)
-        price: float = Decimal(str(convert_money(Money(cartResource.resource.price, cartResource.resource.price_currency), user.currency)).replace('£','').replace('€','').replace('$',''))
-        if json.loads(request.body) == -1:
-            user.cart.total -= price
-        else:
-            user.cart.total += price
-        user.cart.save()
         return JsonResponse({'resource': cartResource.as_dict(), 'cart': user.cart.as_dict()})
     elif request.method == 'DELETE':
-        resource: CartResource = get_object_or_404(CartResource, id=resource)
-        price: float = Decimal(str(convert_money(Money(resource.resource.price, resource.resource.price_currency), user.currency)).replace('£','').replace('€','').replace('$',''))
-        user.cart.total -= price
+        resource: CartResource = get_object_or_404(CartResource, id=cart)
         user.cart.items -= 1
         user.cart.save()
         resource.delete()

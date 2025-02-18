@@ -352,7 +352,11 @@
                 this.seller = resource
                 if (this.cart_resource.number === 0) {
                     this.cart_resource.number +=1
-                    this.update_cart_db('POST')
+                    this.update_cart_db('POST', -1, this.seller)
+                    this.get_cart()
+                } else {
+                    console.log(resource)
+                    this.update_cart_db('PUT', this.cart_resource.id, resource)
                     this.get_cart()
                 }
             },
@@ -377,9 +381,9 @@
                 })
                 useUserStore().updateCart(data)
             },
-            async update_cart_db(method: string): Promise<void> {
-                const resource = method === 'POST' ? this.seller : this.cart_resource.id
-                const updateCart: Response = await fetch(`http://localhost:8000/api/update-cart/${this.user.id}/resource/${resource}/`, {
+            async update_cart_db(method: string, cart_number: number, resource: number): Promise<void> {
+                // const resource = method === 'POST' ? this.seller : this.cart_resource.id
+                const updateCart: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${cart_number}/resource/${resource}/`, {
                     method: method,
                     credentials: 'include',
                     headers: {
@@ -409,10 +413,10 @@
                 }
                 this.cart_resource.number += number
                 if (this.cart_resource.number === 0) {
-                    this.update_cart_db('DELETE')
+                    this.update_cart_db('DELETE', this.cart_resource.id, -1)
                     return
                 }
-                this.update_cart_db('PUT')
+                this.update_cart_db('PUT', this.cart_resource.id, this.cart_resource.resource)
             },
             toggleFilter(): void {
                 this.toggle_filter = !this.toggle_filter
