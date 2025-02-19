@@ -319,4 +319,8 @@
         flex-direction: column;
         gap: 0.2rem;
     }
+
+    #dark #body, #dark #user_number, #dark #address_lines, #dark #card_ending {
+        border: 0.1rem solid white;
+    }
 </style>
