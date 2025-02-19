@@ -124,12 +124,11 @@
                 if (userResponse.ok) {
                     const user: User = await userResponse.json()
                     useUsersStore().updateUser(user)
+                    useUserStore().saveUser(user)
                     this.changing_number = false
                 } else {
                     console.error('Error updating number')
                 }
-                    
-                console.log(input)
             },
             attribute_existence(data: string): boolean {
                 const user = useUsersStore().users.filter(user => user.id !== this.user.id).find(user => user.phone_number === data)
