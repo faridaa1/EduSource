@@ -51,13 +51,34 @@
                     <button>Message</button>
                 </div>
                 <div id="media">
-                    <img :src="`http://localhost:8000${resource.image1}`" alt="Image1" @click="media_clicked=`${resource.id}image1`">
-                    <img :src="`http://localhost:8000${resource.image2}`" alt="Image1" @click="media_clicked=`${resource.id}image2`">
+                    <img class="hoverable" :src="`http://localhost:8000${resource.image1}`" alt="Image1" @click="media_clicked=`${resource.id}image1`">
+                    <img class="hoverable" :src="`http://localhost:8000${resource.image2}`" alt="Image1" @click="media_clicked=`${resource.id}image2`">
                     <video :src="`http://localhost:8000${resource.video}`" controls @click="media_clicked=`${resource.id}video`"></video>
                     <div id="large-media">
-                        <img v-if="media_clicked === `${resource.id}image1`" :src="`http://localhost:8000${resource.image1}`">
-                        <img v-if="media_clicked === `${resource.id}image2`" :src="`http://localhost:8000${resource.image2}`">
-                        <video v-if="media_clicked === `${resource.id}video`" :src="`http://localhost:8000${resource.video}`" controls @click="media_clicked='video'"></video>
+                        <div v-if="media_clicked === `${resource.id}image1`">
+                            <div>
+                                <i class="bi bi-x-lg" @click="media_clicked=''"></i>
+                            </div>
+                            <div>
+                                <img :src="`http://localhost:8000${resource.image1}`">
+                            </div>
+                        </div>
+                        <div v-if="media_clicked === `${resource.id}image2`">
+                            <div>
+                                <i class="bi bi-x-lg" @click="media_clicked=''"></i>
+                            </div>
+                            <div>
+                                <img :src="`http://localhost:8000${resource.image2}`">
+                            </div>
+                            </div>
+                        <div v-if="media_clicked === `${resource.id}video`">
+                            <div>
+                                <i class="bi bi-x-lg" @click="media_clicked=''"></i>
+                            </div>
+                            <div>
+                                <video :src="`http://localhost:8000${resource.video}`" controls @click="media_clicked=`${resource.id}video`"></video>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <hr>
@@ -208,10 +229,9 @@
     }
     
     #view-sellers-container {
-        z-index: 50;
+        z-index: 3;
         background-color: rgba(0, 0, 0, 0.5);
         position: absolute;
-        top: -5rem;
         height: 100%;
         width: 100%;
     }
@@ -250,7 +270,13 @@
     }
 
     #media img, #media video {
+        border-radius: 0.5rem;
         height: 5rem;
+    }
+
+    .hoverable:hover {
+        cursor: pointer;
+        background-color: #999898;
     }
 
     #profile-pic {
@@ -324,13 +350,30 @@
     #large-media {
         position: absolute;
         background-color: white;
-        top: 50;
+        border-radius: 0.5rem;
         right: 5rem;
         z-index: 1;
-        height: 30rem;
+        height: 28rem;
+        display: flex;
     }
 
-    #large-media img, #large-media video {
+    #large-media div i {
+        color: red;
+        font-size: 1.3rem;
+        margin-left: auto;
+    }
+
+    #large-media div i:hover {
+        cursor: pointer;
+        /* transform: scale(1.5); */
+        color: darkred;
+    }
+
+    #large-media img {
         height: 25rem;
+    }
+
+     #large-media video {
+        height: 20rem;
     }
 </style>
