@@ -159,6 +159,7 @@ import { useUsersStore } from '@/stores/users';
                 textarea.reportValidity()
             },
             async listedprice(resource: Resource): Promise<number> {
+                if (resource === undefined) return 0
                 let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
