@@ -34,8 +34,23 @@
                 </div>
             </div>
             <div id="col2">
-                <div id="address"></div>
-                <div id="number"></div>
+                <div id="address">
+                    <div>Delivery Address</div>
+                    <div id="address_lines">
+                        <div>{{ user.address_line_one }}</div>
+                        <div v-if="user.address_second_line">{{ user.address_second_line }}</div>
+                        <div>{{ user.city }}</div>
+                        <div>{{ user.postcode }}</div>
+                        <div class="change_text">Change Address</div>
+                    </div>
+                </div>
+                <div id="number">
+                    <div>Phone Number</div>
+                    <div id="user_number">
+                        <div>{{ user.phone_number }}</div>
+                        <div class="change_text">Change Phone Number</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -143,7 +158,6 @@
                 resource.price = await this.listedprice(resource)
             }
             this.get_total()
-            console.log('here')
         },
         watch: {
             async all_resources(): Promise<void> {
@@ -258,7 +272,7 @@
         gap: 2rem;
     }
 
-    #col1 {
+    #col1, #col2 {
         display: flex;
         flex-direction: column;
         gap: 3rem;
@@ -268,7 +282,7 @@
         display: fl;
     }
 
-    #card_ending {
+    #card_ending, #address_lines, #user_number {
         border: 0.1rem solid #0DCAF0;
         padding: 1rem;
         border-radius: 0.8rem;
@@ -285,5 +299,24 @@
 
     #two {
         font-weight: bold;
+    }
+
+    .change_text { 
+        color: rgb(144, 171, 253);
+    }
+
+    #dark .change_text {
+        color: rgb(255, 255, 255);
+    }
+
+    .change_text:hover { 
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    #address_lines, #user_number {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
     }
 </style>
