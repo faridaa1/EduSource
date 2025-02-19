@@ -407,7 +407,7 @@
                     body: JSON.stringify(this.cart_resource.number)
                 })
                 if (!updateCart.ok) {
-                    console.error('Error adding to cart')
+                    console.error('Error deleting from cart')
                     return
                 }
                 const data: {resource: CartResource, cart: Cart} = await updateCart.json()

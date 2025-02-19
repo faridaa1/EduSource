@@ -20,9 +20,9 @@
                     <div class="number_toggle">
                         <div id="number">{{ resource.number }}</div>
                         <div class="number_controls">
-                            <p id="plus">+</p>
+                            <p id="plus" @click="toggle_cart(resource, 1)">+</p>
                             <hr>
-                            <p id="minus">-</p>
+                            <p id="minus" @click="toggle_cart(resource, -1)">-</p>
                         </div>
                     </div>
                     <div>
@@ -39,6 +39,7 @@
     import { defineComponent, nextTick } from 'vue';
     import type { Cart, CartResource, Resource, Review, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
+import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
             cart_resource: CartResource,
@@ -50,6 +51,28 @@
             },
         }},
         methods: {
+            async delete_cart_item(resource: CartResource): Promise<void> {
+                const deleteCartItem: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
+                    },
+                })
+                if (!deleteCartItem.ok) {
+                    console.error('Error deleting from cart')
+                    return
+                }
+                const data: {resource: CartResource, cart: Cart} = await deleteCartItem.json()
+                useUserStore().updateCart(data.cart)
+                useUsersStore().updateUser(this.user)
+            },
+            toggle_cart(resource: CartResource, value: number): void {
+                if (resource.number === 1 && value === -1 && confirm('Are you sure you want to delete this item from your cart?')) {
+                    this.delete_cart_item(resource)
+                }
+            },
             view_item(name: string): void {
                 window.location.href = `/view/${name}`
             },
