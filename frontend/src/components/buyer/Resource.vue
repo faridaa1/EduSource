@@ -106,7 +106,15 @@
                                     <i id="clickable" v-if="toggle_filter" class="bi bi-chevron-up"></i>
                                 </div>
                                 <div id="filter-options" v-if="toggle_filter">
-                                    <div class="filter-item border-top" @click="filter_one=!filter_one">
+                                    <div class="filter-item border-top" @click="my_reviews=!my_reviews">
+                                        <label>My Reviews</label>
+                                        <input v-model="my_reviews" :checked="my_reviews" type="checkbox">
+                                    </div>
+                                    <div class="filter-item" @click="me_reviews=!me_reviews">
+                                        <label>Reviews for Me</label>
+                                        <input v-model="me_reviews" :checked="me_reviews" type="checkbox">
+                                    </div>
+                                    <div class="filter-item" @click="filter_one=!filter_one">
                                         <label>Stars: 1</label>
                                         <input v-model="filter_one" :checked="filter_one" type="checkbox">
                                     </div>
@@ -224,7 +232,7 @@
                                 <i v-if="editing && editing_review === review.id && review.rating < 5" id="rating-five" class="bi bi-star-fill" @mouseenter="show_potential_rating"></i>
                                 <span v-if="editing && editing_review === review.id" id="stars-span">{{ parseFloat(rating.toString()) }}</span>
                             </div>
-                            <p v-if="!editing || editing_review !== review.id" id="title">{{ review.title }} (Ordered from {{ allResources.find(resource => resource.id === review.resource)?.author }})</p>
+                            <p v-if="!editing || editing_review !== review.id" id="title">{{ review.title }} (Ordered from {{ users.find(user => user.id === allResources.find(resource => resource.id === review.resource)?.user)?.username }})</p>
                             <p v-if="!editing || editing && editing_review !== review.id" class="date">{{ to_date(review.upload_date) }}</p>
                         </div>
                     </div>
@@ -306,6 +314,8 @@
             video: File,
             editing_review: number,
             sort_by: 'earliest' | 'latest' | 'high' | 'low' | 'positive' | 'negative',
+            my_reviews: boolean,
+            me_reviews: boolean,
             filter_one: boolean,
             filter_two: boolean,
             filter_three: boolean,
@@ -329,6 +339,8 @@
             filter_five: true,
             filter_four: true,
             filter_images: true,
+            my_reviews: false,
+            me_reviews: false,
             filter_three: true,
             filter_two: true,
             filter_video: true,
@@ -749,8 +761,7 @@
                     reviews.push(...resource.reviews)
                 )
                 reviews = reviews.filter(review => {
-                    console.log('filtering')
-                    if ( this.filter_one && parseFloat(review.rating.toString()) === 1 
+                    if (this.filter_one && parseFloat(review.rating.toString()) === 1 
                         || this.filter_two && parseFloat(review.rating.toString()) === 2
                         || this.filter_three && parseFloat(review.rating.toString()) === 3
                         || this.filter_four && parseFloat(review.rating.toString()) === 4
@@ -762,6 +773,13 @@
                     }
                     return false
                 })
+                if (this.my_reviews) {
+                    reviews = reviews.filter(review => review.user === this.user.id)
+                }
+                if (this.me_reviews) {
+                    const my_resources = this.allResources.filter(resource => resource.user === this.user.id).map(resource => resource.id)
+                    reviews = reviews.filter(review => my_resources.includes(review.resource))
+                }
                 if (this.sort_by === 'positive' || this.sort_by === 'negative') {
                     reviews = reviews.sort((review1, review2) => review1.id - review2.id)
                         return this.reviews_ordered(reviews)
@@ -928,6 +946,14 @@
                 this.scrollReviewsIntoView()
             },
             filter_video(): void {
+                this.get_all_reviews()
+                this.scrollReviewsIntoView()
+            },
+            my_reviews(): void {
+                this.get_all_reviews()
+                this.scrollReviewsIntoView()
+            },
+            me_reviews(): void {
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()
             }
