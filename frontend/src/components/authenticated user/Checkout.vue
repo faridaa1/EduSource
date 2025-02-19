@@ -47,11 +47,22 @@
                 <div id="number">
                     <div>Phone Number</div>
                     <div id="user_number">
-                        <div>{{ user.phone_number }}</div>
-                        <div class="change_text">Change Phone Number</div>
+                        <div v-if="!changing_number">{{ user.phone_number }}</div>
+                        <div v-if="changing_number" id="number_container">
+                            <div><input id="number_input" type="text" :value="user.phone_number" @input="clear_number_error"></div>
+                            <div class="edit-buttons">
+                                <button class="save" @click="change_phone_number"><i class="bi bi-floppy-fill"></i></button>
+                                <button class="clockwise" @click="cancel_edit(0)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                            </div>
+                        </div>
+                        <div class="change_text" @click="changing_number = true">Change Phone Number</div>
                     </div>
                 </div>
             </div>
+        </div>
+        <div id="buttons">
+            <button id="place_order">Place Order</button>
+            <button id="cancel" @click="home">Cancel</button>
         </div>
     </div>
 </template>
@@ -65,10 +76,68 @@
     export default defineComponent({
         data(): {
             total: number
+            changing_number: boolean
+            valid_number: boolean
         } { return {
+            changing_number: false,
+            valid_number: false,
             total: 0
         }},
         methods: {
+            cancel_edit(attribute: number): void {
+                if (attribute === 0) {
+                    this.changing_number = false
+                }
+            },
+            clear_number_error(): void {
+                const numberElement: HTMLInputElement = document.getElementById('number_input') as HTMLInputElement
+                if (!numberElement) return
+                numberElement.setCustomValidity('')
+            },
+            async change_phone_number(): Promise<void> {
+                const numberElement: HTMLInputElement = document.getElementById('number_input') as HTMLInputElement
+                if (!numberElement) return
+                const input = numberElement.value
+                if (input.length === 0) {
+                    numberElement.setCustomValidity('Phone number cannot be empty')
+                    numberElement.reportValidity()
+                    return
+                } else if (!(/^07(\d{8,9})$/.test(input))) {
+                    numberElement.setCustomValidity('Must be 10 or 11 digit number starting with 07')
+                    numberElement.reportValidity()
+                    return
+                }
+                let correctNumber: boolean = this.attribute_existence(input)
+                if (correctNumber) {
+                    numberElement.setCustomValidity('Account already exists with this phone number')
+                    numberElement.reportValidity()
+                    return
+                } 
+                let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/number/`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                    'X-CSRFToken' : useUserStore().csrf
+                    },
+                    body: JSON.stringify(input)
+                })
+                if (userResponse.ok) {
+                    const user: User = await userResponse.json()
+                    useUsersStore().updateUser(user)
+                    this.changing_number = false
+                } else {
+                    console.error('Error updating number')
+                }
+                    
+                console.log(input)
+            },
+            attribute_existence(data: string): boolean {
+                const user = useUsersStore().users.filter(user => user.id !== this.user.id).find(user => user.phone_number === data)
+                return user === undefined ? false : true
+            },
+            home(): void {
+                window.location.href = '/cart'
+            },
             async remove_from_cart(resource: CartResource): Promise<void> {
                 if (resource.number === 1) {
                     if (!confirm('Are you sure you want to delete this item')) {
@@ -187,6 +256,23 @@
         margin-top: 1rem;
     }
 
+    #number_container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    #number_container input {
+        width: 7rem;
+        border-radius: 0.5rem;
+    }
+
+    .edit-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
     #checkout-title {
         font-size: 1.5rem;
         margin-bottom: 1rem;
@@ -270,7 +356,7 @@
 
     #content { 
         display: flex;
-        gap: 2rem;
+        gap: 8rem;
     }
 
     #col1, #col2 {
@@ -324,5 +410,73 @@
 
     #dark #body, #dark #user_number, #dark #address_lines, #dark #card_ending {
         border: 0.1rem solid white;
+    }
+
+    #buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    #buttons button {
+        width: 7rem;
+        border-radius: 0.4rem;
+        border: none;
+        padding: 0.4rem;
+    }
+
+    #place_order {
+        background-color: #0DCAF0;
+    }
+
+    #dark #place_order {
+        background-color: white;
+    }
+
+    #place_order:hover {
+        background-color: #3991a2;
+        cursor: pointer;
+    }
+
+    #dark #place_order:hover {
+        background-color: darkgray;
+        cursor: pointer;
+    }
+
+    #cancel {
+        background-color: red;
+        color: white;
+    }
+
+    #cancel:hover {
+        cursor: pointer;
+        background-color: darkred;
+    }
+
+    #number_container button {
+        border: none;
+        color: white;
+        border-radius: 0.2rem;
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    .clockwise {
+        background-color: red;
+    }
+
+    .clockwise:hover {
+        background-color: darkred;
+        cursor: pointer;
+    }
+
+    .save {
+        background-color: green;
+    }
+
+    .save:hover {
+        background-color: darkgreen;
+        cursor: pointer;
     }
 </style>
