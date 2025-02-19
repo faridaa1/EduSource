@@ -5,6 +5,7 @@
             <p id="total">Total: {{ currency }}{{ parseFloat(total.toString()).toFixed(2) }}</p>
         </div>
         <div id="resources">
+            <div id="empty-message" v-if="user.cart.resources.length === 0">No items in cart</div>
             <div class="cart-item" v-for="resource in user.cart.resources">
                 <div class="item-one">
                     <div class="item-image">
@@ -31,6 +32,10 @@
                 </div>
             </div>
         </div>
+        <div id="buttons" v-if="user.cart.resources.length > 0">
+            <button id="checkout">Checkout</button>
+            <button id="clear" @click="clear_cart">Clear Cart</button>
+        </div>
     </div>
 </template>
 
@@ -53,6 +58,13 @@
             },
         }},
         methods: {
+            async clear_cart(): Promise<void> {
+                if (confirm('Are you sure you want to clear your cart?')) {
+                    for (const cart_item of this.user.cart.resources) {
+                        this.delete_cart_item(cart_item)
+                    }
+                }
+            },
             async delete_cart_item(resource: CartResource): Promise<void> {
                 const deleteCartItem: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
                     method: 'DELETE',
@@ -200,7 +212,7 @@
         flex-direction: column;
         gap: 3rem;
         overflow-y: scroll;
-        height: 52rem;
+        height: 45rem;
     }
 
     .cart-item {
@@ -292,5 +304,43 @@
 
     #number {
         margin: auto;
+    }
+
+    #buttons {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #buttons button {
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        font-size: 1.2rem;
+    }
+
+    #checkout {
+        background-color: #0DCAF0;
+    }
+
+    #checkout:hover {
+        cursor: pointer;
+        background-color: #177183;
+    }
+
+    #clear {
+        background-color: red;
+        color: white;
+    }
+
+    #clear:hover {
+        cursor: pointer;
+        background-color: darkred;
+    }
+
+    #empty-message {
+        text-align: center;
+        font-size: 1.1rem;
     }
 </style>
