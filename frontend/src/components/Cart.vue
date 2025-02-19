@@ -18,22 +18,28 @@
                     </div>
                 </div>
                 <div class="item-two">
-                    <div class="number_toggle">
-                        <div id="number">{{ resource.number }}</div>
-                        <div class="number_controls">
-                            <p v-if="resource.number < (allResources.find(res => res.id === resource.resource) as Resource)?.stock" id="plus" @click="toggle_cart(resource, 1)">+</p>
-                            <hr v-if="resource.number < (allResources.find(res => res.id === resource.resource) as Resource)?.stock">
-                            <p id="minus" @click="toggle_cart(resource, -1)">-</p>
+                    <div class="item">
+                        <div class="number_toggle">
+                            <div id="number">{{ resource.number }}</div>
+                            <div class="number_controls">
+                                <p v-if="resource.number < (allResources.find(res => res.id === resource.resource) as Resource)?.stock" id="plus" @click="toggle_cart(resource, 1)">+</p>
+                                <hr v-if="resource.number < (allResources.find(res => res.id === resource.resource) as Resource)?.stock">
+                                <p id="minus" @click="toggle_cart(resource, -1)">-</p>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="cart_total"> Total: {{ currency }}{{ (resource.number * cart_price(resource)).toFixed(2) }} </div>
                         </div>
                     </div>
-                    <div>
-                        <div class="cart_total"> Total: {{ currency }}{{ (resource.number * cart_price(resource)).toFixed(2) }} </div>
+                    <div class="move_to_wishlist">
+                        <button @click="move_to_wishlist(resource)">Move to Wishlist</button>
                     </div>
                 </div>
             </div>
         </div>
         <div id="buttons" v-if="user.cart.resources.length > 0">
             <button id="checkout">Checkout</button>
+            <button id="checkout" @click="move_all_wishlist">Move all to Wishlist</button>
             <button id="clear" @click="clear_cart">Clear Cart</button>
         </div>
     </div>
@@ -42,7 +48,7 @@
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
     import { defineComponent, nextTick } from 'vue';
-    import type { Cart, CartResource, Resource, Review, User } from '@/types';
+    import type { Cart, CartResource, Resource, Review, User, Wishlist } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
@@ -52,6 +58,30 @@
             total: 0,
         }},
         methods: {
+            move_all_wishlist(): void {
+                for (let cart_item of this.user.cart.resources) {
+                    this.move_to_wishlist(cart_item)
+                }
+            },
+            async move_to_wishlist(resource: CartResource): Promise<void> {
+                const moveToWishlist: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/cart-to-wishlist/`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
+                    },
+                    body: JSON.stringify(resource.id)
+                })
+                if (!moveToWishlist.ok) {
+                    console.error('Error moving to wishlist')
+                    return
+                }
+                const data: {wishlist: Wishlist, cart: Cart} = await moveToWishlist.json()
+                useUserStore().updateCart(data.cart)
+                useUserStore().updateWishlist(data.wishlist)
+                useUsersStore().updateUser(this.user)
+            },
             async clear_cart(): Promise<void> {
                 if (confirm('Are you sure you want to clear your cart?')) {
                     for (const cart_item of this.user.cart.resources) {
@@ -245,11 +275,30 @@
         text-decoration: underline;
     }
 
-    .item-two {
+    .item {
         display: flex;
         flex-direction: column;
         margin-right: 1rem;
         align-items: center;
+    }
+
+    .item-two {
+        display: flex;
+        margin-right: 1rem;
+    }
+
+    .move_to_wishlist button {
+        background-color: #0DCAF0;
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        padding-left: 0.8rem;
+        padding-right: 0.8rem;
+    }
+
+    .move_to_wishlist button:hover {
+        background-color: #177183;
+        cursor: pointer;
     }
 
     .number_toggle {

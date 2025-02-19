@@ -395,3 +395,19 @@ def update_wishlist(request: HttpRequest, user: int) -> JsonResponse:
         wishlist_resource.delete()
         return JsonResponse({ 'wishlist': user.wishlist.as_dict(), 'cart': user.cart.as_dict() }) 
     return JsonResponse({})
+
+def cart_to_wishlist(request: HttpRequest, user: int) -> JsonResponse:
+    """Defining request that moves all cart item to wishlist"""
+    if request.method == 'PUT':
+        user: User = User.objects.get(id=user)
+        cart_resource: CartResource = get_object_or_404(CartResource, id=json.loads(request.body))
+        wishlist_resource: WishlistResource = WishlistResource.objects.create(
+            resource=cart_resource.resource,
+            wishlist=user.wishlist,
+        )
+        user.wishlist.items += 1
+        user.wishlist.save()
+        user.cart.items -= 1
+        user.cart.save()
+        cart_resource.delete()
+        return JsonResponse({ 'wishlist': user.wishlist.as_dict(), 'cart': user.cart.as_dict() }) 
