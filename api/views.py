@@ -335,7 +335,11 @@ def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> Js
         )
         user.cart.items += 1
         user.cart.save()
-        return JsonResponse({'resource': cartResource.as_dict(), 'cart': user.cart.as_dict()})
+        if WishlistResource.objects.filter(wishlist=user.wishlist, resource__name=resource.name).exists():
+            object = WishlistResource.objects.filter(wishlist=user.wishlist, resource__name=resource.name).first()
+            object.delete()
+            user.wishlist.save()
+        return JsonResponse({'resource': cartResource.as_dict(), 'cart': user.cart.as_dict(), 'wishlist': user.wishlist.as_dict()})
     elif request.method == 'PUT':
         cartResource: CartResource = get_object_or_404(CartResource, id=cart)
         if cartResource.resource.id != int(resource):
@@ -343,13 +347,13 @@ def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> Js
         cartResource.number = json.loads(request.body)
         cartResource.save()
         user.cart.items += json.loads(request.body)
-        return JsonResponse({'resource': cartResource.as_dict(), 'cart': user.cart.as_dict()})
+        return JsonResponse({'resource': cartResource.as_dict(), 'cart': user.cart.as_dict(), 'wishlist': user.wishlist.as_dict()})
     elif request.method == 'DELETE':
         resource: CartResource = get_object_or_404(CartResource, id=cart)
         user.cart.items -= 1
         user.cart.save()
         resource.delete()
-        return JsonResponse({'resource': [], 'cart': user.cart.as_dict()})
+        return JsonResponse({'resource': [], 'cart': user.cart.as_dict(), 'wishlist': user.wishlist.as_dict()})
     return JsonResponse({})
 
 

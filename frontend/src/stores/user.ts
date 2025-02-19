@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { Cart, Resource, User, Wishlist } from '../types';
+import type { Cart, Resource, User, Wishlist, WishlistResource } from '../types';
 
 export const useUserStore = defineStore('user', {
     state: (): { user: User, csrf: string} => ({

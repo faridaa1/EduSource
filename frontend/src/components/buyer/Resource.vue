@@ -38,7 +38,7 @@
                 </div>
                 <div id="total" v-if="cart_resource.number > 0"> Total: {{ user.currency === 'GBP' ? '£' : user.currency === 'USD' ? '$' : '€' }}{{ (cart_resource.number * cart_price).toFixed(2) }} </div>
             </div>
-            <div @click="edit_wishlist()">{{ in_wishlist ? 'Remove from Wishlist' : 'Add to Wishlist' }}</div>
+            <div v-if="cart_resource.number === 0" @click="edit_wishlist()">{{ in_wishlist ? 'Remove from Wishlist' : 'Add to Wishlist' }}</div>
         </div>
         <div id="view-sellers">
             <p @click="show_sellers">View Sellers</p>
@@ -429,8 +429,9 @@
                     console.error('Error deleting from cart')
                     return
                 }
-                const data: {resource: CartResource, cart: Cart} = await updateCart.json()
+                const data: {resource: CartResource, cart: Cart, wishlist: Wishlist} = await updateCart.json()
                 useUserStore().updateCart(data.cart)
+                useUserStore().updateWishlist(data.wishlist)
                 useUsersStore().updateUser(this.user)
                 this.get_cart()
             },
