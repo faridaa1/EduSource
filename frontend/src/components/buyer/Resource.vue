@@ -951,6 +951,12 @@
                 this.get_all_reviews()
                 this.updateWishlist(this.user.wishlist)
                 this.get_cart()
+                for (const resource of this.allResources) {
+                    const item = this.user.cart.resources.find(item => item.resource === resource.id)
+                    if (item) {
+                        this.seller = resource.id
+                    }
+                }
             },
             all_reviews(updated_all_reviews): void {
                 this.scrollReviewsIntoView()
