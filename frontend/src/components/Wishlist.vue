@@ -12,7 +12,7 @@
                     </div>
                     <div class="details">
                         <p>{{ (allResources.find(res => res.id === resource.resource) as Resource)?.name }}</p>
-                        <p> {{ currency }}{{ (allResources.find(res => res.id === resource.resource) as Resource)?.price }}</p>
+                        <p> {{ currency }}{{ parseFloat((allResources.find(res => res.id === resource.resource) as Resource)?.price.toString().replace('€','').replace('£','').replace('$','')) }}</p>
                         <p id="view-details" @click="view_item((allResources.find(res => res.id === resource.resource) as Resource)?.name)">View Details</p>
                     </div>
                 </div>
