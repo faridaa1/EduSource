@@ -37,11 +37,31 @@
                 <div id="address">
                     <div>Delivery Address</div>
                     <div id="address_lines">
-                        <div>{{ user.address_line_one }}</div>
-                        <div v-if="user.address_second_line">{{ user.address_second_line }}</div>
-                        <div>{{ user.city }}</div>
-                        <div>{{ user.postcode }}</div>
-                        <div class="change_text">Change Address</div>
+                        <div v-if="!changing_address">{{ user.address_line_one }}</div>
+                        <div v-if="user.address_second_line && !changing_address">{{ user.address_second_line }}</div>
+                        <div v-if="!changing_address">{{ user.city }}</div>
+                        <div v-if="!changing_address">{{ user.postcode }}</div>
+                        <div v-if="!changing_address" class="change_text" @click="changing_address = true">Change Address</div>
+                        <div v-if="changing_address" class="input">
+                            <label for="">First Line</label>
+                            <input id="address1" type="text" :value="user.address_line_one" @input="clear_address_error">
+                        </div>
+                        <div v-if="changing_address" class="input">
+                            <label for="" class="header">Second Line</label>
+                            <input id="address2" type="text" :value="user.address_second_line" @input="clear_address_error">
+                        </div>
+                        <div v-if="changing_address" class="input">
+                            <label for="" class="header">City</label>
+                            <input id="city" type="text" :value="user.city" @input="clear_address_error">
+                        </div>
+                        <div v-if="changing_address" class="input">
+                            <label for="" class="header">Postcode</label>
+                            <input id="postcode" type="text" :value="user.postcode" @input="clear_address_error">
+                        </div>
+                        <div v-if="changing_address" class="edit-buttons header">
+                            <button class="save" @click="change_address"><i class="bi bi-floppy-fill"></i></button>
+                            <button class="clockwise" @click="cancel_edit(1)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                        </div>
                     </div>
                 </div>
                 <div id="number">
@@ -55,7 +75,7 @@
                                 <button class="clockwise" @click="cancel_edit(0)"><i class="bi bi-arrow-counterclockwise"></i></button>
                             </div>
                         </div>
-                        <div class="change_text" @click="changing_number = true">Change Phone Number</div>
+                        <div v-if="!changing_number" class="change_text" @click="changing_number = true">Change Phone Number</div>
                     </div>
                 </div>
             </div>
@@ -70,29 +90,117 @@
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
     import { defineComponent, nextTick } from 'vue';
-    import type { Cart, CartResource, Resource, Review, User, Wishlist } from '@/types';
+    import type { Cart, CartResource, Resource, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
-            total: number
-            changing_number: boolean
-            valid_number: boolean
+            total: number,
+            changing_number: boolean,
+            changing_address: boolean
         } { return {
             changing_number: false,
-            valid_number: false,
+            changing_address: false,
             total: 0
         }},
         methods: {
             cancel_edit(attribute: number): void {
                 if (attribute === 0) {
                     this.changing_number = false
+                } else {
+                    this.changing_address = false
                 }
+            },
+            clear_address_error(): void {
+                const address1Element: HTMLInputElement = document.getElementById('address1') as HTMLInputElement
+                const address2Element: HTMLInputElement = document.getElementById('address2') as HTMLInputElement
+                const cityElement: HTMLInputElement = document.getElementById('city') as HTMLInputElement
+                const postcodeElement: HTMLInputElement = document.getElementById('postcode') as HTMLInputElement
+                if (!address1Element || !address2Element || !cityElement || !postcodeElement) return
+                address1Element.setCustomValidity('')
+                address2Element.setCustomValidity('')
+                cityElement.setCustomValidity('')
+                postcodeElement.setCustomValidity('')
             },
             clear_number_error(): void {
                 const numberElement: HTMLInputElement = document.getElementById('number_input') as HTMLInputElement
                 if (!numberElement) return
                 numberElement.setCustomValidity('')
+            },
+            async change_address(): Promise<void> {
+                const address1Element: HTMLInputElement = document.getElementById('address1') as HTMLInputElement
+                const address2Element: HTMLInputElement = document.getElementById('address2') as HTMLInputElement
+                const cityElement: HTMLInputElement = document.getElementById('city') as HTMLInputElement
+                const postcodeElement: HTMLInputElement = document.getElementById('postcode') as HTMLInputElement
+                if (!address1Element || !address2Element || !cityElement || !postcodeElement) return
+
+                // validate address line 1 
+                const address1Input = address1Element.value
+                if (address1Input.length === 0) {
+                    address1Element.setCustomValidity('Cannot be empty')
+                    address1Element.reportValidity()
+                    return
+                } else if (!(/^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/.test(address1Input))) {
+                    address1Element.setCustomValidity('No special characters allowed')
+                    address1Element.reportValidity()
+                    return
+                }
+
+                // validate address line 2
+                const address2Input = address2Element.value
+                if (address2Input.length !== 0 && !(/^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/.test(address2Input))) {
+                    address2Element.setCustomValidity('No special characters allowed')
+                    address2Element.reportValidity()
+                    return
+                }
+
+                // validate city
+                const cityInput = cityElement.value
+                if (cityInput.length === 0) {
+                    cityElement.setCustomValidity('Cannot be empty')
+                    cityElement.reportValidity()
+                    return
+                } else if (!(/^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/.test(cityInput))) {                     
+                    cityElement.setCustomValidity('No special characters allowed')
+                    cityElement.reportValidity()
+                    return
+                }
+
+                // validate postcode
+                const postcodeInput = postcodeElement.value
+                if (postcodeInput.length === 0) {
+                    postcodeElement.setCustomValidity('Cannot be empty')
+                    postcodeElement.reportValidity()
+                    return
+                } else if (!(/^[A-Za-z0-9]{5,7}$/.test(postcodeInput))) {
+                    postcodeElement.setCustomValidity('Enter 5-7 character postcode without spaces')
+                    postcodeElement.reportValidity()
+                    return
+                }
+                
+                this.changing_address = false
+                await this.update_address('address_line_one', address1Input)
+                await this.update_address('address_line_two', address2Input)
+                await this.update_address('city', cityInput)
+                await this.update_address('postcode', postcodeInput)
+            },
+            async update_address(attribute: string, data: string): Promise<void> {
+                let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/${attribute}/`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                    'X-CSRFToken' : useUserStore().csrf
+                    },
+                    body: JSON.stringify(data)
+                })
+                if (userResponse.ok) {
+                    const user: User = await userResponse.json()
+                    useUsersStore().updateUser(user)
+                    useUserStore().saveUser(user)
+                    console.log(user.address_line_one, user.address_second_line, user.city, user.postcode)
+                } else {
+                    console.error(`Error updating ${attribute}`)
+                }
             },
             async change_phone_number(): Promise<void> {
                 const numberElement: HTMLInputElement = document.getElementById('number_input') as HTMLInputElement
@@ -461,6 +569,24 @@
         height: 1.5rem;
     }
 
+    #address_lines button {
+        border: none;
+        color: white;
+        border-radius: 0.2rem;
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    .input {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .header {
+        margin-top: 0.5rem;
+    }
+
     .clockwise {
         background-color: red;
     }
@@ -477,5 +603,9 @@
     .save:hover {
         background-color: darkgreen;
         cursor: pointer;
+    }
+
+    #address_lines input {
+        border-radius: 0.5rem;
     }
 </style>
