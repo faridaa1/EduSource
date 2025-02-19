@@ -110,7 +110,7 @@
                                         <label>My Reviews</label>
                                         <input v-model="my_reviews" :checked="my_reviews" type="checkbox">
                                     </div>
-                                    <div class="filter-item" @click="me_reviews=!me_reviews">
+                                    <div v-if="allResources.map(resource => resource.user).includes(user.id)" class="filter-item" @click="me_reviews=!me_reviews">
                                         <label>Reviews for Me</label>
                                         <input v-model="me_reviews" :checked="me_reviews" type="checkbox">
                                     </div>

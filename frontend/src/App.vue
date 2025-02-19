@@ -285,6 +285,7 @@
   
   body {
     overflow: hidden;
+    position: relative;
   }
 
   #logo {

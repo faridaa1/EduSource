@@ -50,6 +50,16 @@
                     <button id="selected" v-if="seller === resource.id" @click="$emit('update_seller', resource.id)">Selected</button>
                     <button>Message</button>
                 </div>
+                <div id="media">
+                    <img :src="`http://localhost:8000${resource.image1}`" alt="Image1" @click="media_clicked=`${resource.id}image1`">
+                    <img :src="`http://localhost:8000${resource.image2}`" alt="Image1" @click="media_clicked=`${resource.id}image2`">
+                    <video :src="`http://localhost:8000${resource.video}`" controls @click="media_clicked=`${resource.id}video`"></video>
+                    <div id="large-media">
+                        <img v-if="media_clicked === `${resource.id}image1`" :src="`http://localhost:8000${resource.image1}`">
+                        <img v-if="media_clicked === `${resource.id}image2`" :src="`http://localhost:8000${resource.image2}`">
+                        <video v-if="media_clicked === `${resource.id}video`" :src="`http://localhost:8000${resource.video}`" controls @click="media_clicked='video'"></video>
+                    </div>
+                </div>
                 <hr>
             </div>
         </div>
@@ -74,7 +84,9 @@
             }
         },
         data(): {
+            media_clicked: string
         } { return {
+            media_clicked: ''
         }},
         methods: {
             to_date(date: string): string {
@@ -148,7 +160,8 @@
             }
             document.addEventListener('click', (event) => {
                 const container: HTMLDivElement = event.target as HTMLDivElement
-                if (container.id !== 'view-sellers') {
+                if (container.id === 'view-sellers-container') {
+                // if (container.id !== 'view-sellers') {
                     this.$emit('close-view')
                 }
             })
@@ -198,6 +211,7 @@
         z-index: 50;
         background-color: rgba(0, 0, 0, 0.5);
         position: absolute;
+        top: -5rem;
         height: 100%;
         width: 100%;
     }
@@ -221,9 +235,22 @@
     #seller {
         display: grid;
         grid-template-areas: "profile-pic data buttons"
+                             "media media media"
                              "hr hr hr";
         column-gap: 3rem;
         row-gap: 0.3rem;
+    }
+
+    #media {
+        grid-area: media;
+        display: flex;
+        flex-direction: row;
+        gap: 2rem;
+        margin-top: 0.7rem;
+    }
+
+    #media img, #media video {
+        height: 5rem;
     }
 
     #profile-pic {
@@ -292,5 +319,18 @@
     #selected {
         background-color: green !important;
         color: white;
+    }
+
+    #large-media {
+        position: absolute;
+        background-color: white;
+        top: 50;
+        right: 5rem;
+        z-index: 1;
+        height: 30rem;
+    }
+
+    #large-media img, #large-media video {
+        height: 25rem;
     }
 </style>
