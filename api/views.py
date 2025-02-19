@@ -242,7 +242,6 @@ def new_listing(request: HttpRequest, id: int) -> JsonResponse:
         resource: Resource = get_object_or_404(Resource, id=json.loads(request.body))
         resource.delete()
     if request.method == 'POST' and not data.get('id'):
-        print(data.get('is_draft'), data.get('is_draft') == 'false')
         resource: Resource = Resource.objects.create(
             name=data.get('name'),
             description=data.get('description'),
@@ -293,7 +292,6 @@ def new_listing(request: HttpRequest, id: int) -> JsonResponse:
         resource.page_end=data.get('page_end')
         resource.height_unit=data.get('height_unit')
         resource.width_unit=data.get('width_unit')
-        print(resource.image1, media_data.get('image1'))
         if media_data.get('image1'):
             resource.image1=media_data.get('image1')
         if media_data.get('image2'):
@@ -311,7 +309,6 @@ def new_listing(request: HttpRequest, id: int) -> JsonResponse:
         resource.delivery_option=data.get('delivery')
         resource.user=user
         resource.save()
-        print(resource.image1, media_data.get('image1'))
         return JsonResponse(resource.as_dict())
     return JsonResponse({})
 
@@ -381,6 +378,7 @@ def update_wishlist(request: HttpRequest, user: int) -> JsonResponse:
         resource.delete()
         return JsonResponse({ 'wishlist': user.wishlist.as_dict() }) 
     elif request.method == 'PUT':
+        """Defining move from cart to wishlist"""
         user: User = User.objects.get(id=user)
         wishlist_resource: WishlistResource = get_object_or_404(WishlistResource, id=resource_id)
         cartResource: CartResource = CartResource.objects.create(
@@ -396,8 +394,9 @@ def update_wishlist(request: HttpRequest, user: int) -> JsonResponse:
         return JsonResponse({ 'wishlist': user.wishlist.as_dict(), 'cart': user.cart.as_dict() }) 
     return JsonResponse({})
 
+
 def cart_to_wishlist(request: HttpRequest, user: int) -> JsonResponse:
-    """Defining request that moves all cart item to wishlist"""
+    """Defining request that moves cart item to wishlist"""
     if request.method == 'PUT':
         user: User = User.objects.get(id=user)
         cart_resource: CartResource = get_object_or_404(CartResource, id=json.loads(request.body))

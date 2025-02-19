@@ -158,10 +158,11 @@
                 const cart_res = this.user.cart.resources.map(item => item.resource)
                 this.total = 0
                 for (const resource of this.allResources.filter(res => cart_res.includes(res.id))) {
-                    // resource.price = await this.listedprice(resource)
+                    resource.price = await this.listedprice(resource)
                     const cart_item = this.user.cart.resources.find(item => item.resource === resource.id)
                     if (cart_item) {
-                        this.total += (resource.price * cart_item.number)
+                        const price = parseFloat(resource.price.toString().replace('€','').replace('£','').replace('$',''))
+                        this.total += (price * cart_item.number)
                     }
                 }
             }
@@ -197,7 +198,7 @@
             }
         },
         mounted(): void {
-            
+            this.update_total()
         },
     })
 </script>
