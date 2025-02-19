@@ -81,7 +81,7 @@
             </div>
         </div>
         <div id="buttons">
-            <button id="place_order">Place Order</button>
+            <button id="place_order" @click="place_order">Place Order</button>
             <button id="cancel" @click="home">Cancel</button>
         </div>
     </div>
@@ -104,6 +104,20 @@
             total: 0
         }},
         methods: {
+            async place_order(): Promise<void> {
+                let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf
+                    },
+                })
+                if (userResponse.ok) {
+                    const user: User = await userResponse.json()
+                } else {
+                    console.error('Error placing order')
+                }
+            },
             cancel_edit(attribute: number): void {
                 if (attribute === 0) {
                     this.changing_number = false
@@ -177,7 +191,7 @@
                     postcodeElement.reportValidity()
                     return
                 }
-                
+
                 this.changing_address = false
                 await this.update_address('address_line_one', address1Input)
                 await this.update_address('address_line_two', address2Input)
@@ -197,7 +211,6 @@
                     const user: User = await userResponse.json()
                     useUsersStore().updateUser(user)
                     useUserStore().saveUser(user)
-                    console.log(user.address_line_one, user.address_second_line, user.city, user.postcode)
                 } else {
                     console.error(`Error updating ${attribute}`)
                 }

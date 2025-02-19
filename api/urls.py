@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
-from .views import signup, login, users, edit_review, currency_conversion, cart_to_wishlist, user, review, resources, user_details, check_details, update_wishlist, new_listing, sentiment_analysis, update_cart, get_cart
+from .views import order, signup, login, users, edit_review, currency_conversion, cart_to_wishlist, user, review, resources, user_details, check_details, update_wishlist, new_listing, sentiment_analysis, update_cart, get_cart
 
 urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [
     path('signup/', signup, name='signup'),
@@ -9,6 +9,7 @@ urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [
     path('api/users/', users, name='users'),
     path('api/currency-conversion/<int:id>/<str:from_currency>/<str:to_currency>/', currency_conversion, name='currency conversion'),
     path('api/user/', user, name='user'),
+    path('api/user/<int:user>/order/', order, name='order'),
     path('api/resources/', resources, name='resources'),
     path('api/user/<int:user>/cart-to-wishlist/', cart_to_wishlist, name='cart to wishlist'),
     path('api/user/<int:user>/wishlist/', update_wishlist, name='update wishlist'),

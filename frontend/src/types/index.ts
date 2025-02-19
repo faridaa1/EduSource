@@ -15,6 +15,7 @@ export interface User {
     city: string;
     postcode: string;
     listings: Resource[];
+    orders: Order[];
     cart: Cart;
     wishlist: Wishlist;
 }
@@ -98,4 +99,14 @@ export interface CartResource {
 export interface WishlistResource {
     id: number,
     resource: number
+}
+
+export interface Order {
+    id: number,
+    status: 'Processing' | 'Dispatched' | 'Complete' | 'Being Returned' | 'Refunded',
+    buyer: number,
+    seller: number,
+    resource: number,
+    estimated_delivery_date: string,
+    delivery_image: string
 }

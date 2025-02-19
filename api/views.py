@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate
 from django.db.models import Avg
 from django.contrib import auth
 from .forms import SignupForm, AddressForm, LoginForm
-from .models import Cart, CartResource, Resource, Review, User, Address, WishlistResource
+from .models import Cart, CartResource, Order, Resource, Review, User, Address, WishlistResource
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 from transformers import pipeline
@@ -414,3 +414,12 @@ def cart_to_wishlist(request: HttpRequest, user: int) -> JsonResponse:
         user.cart.save()
         cart_resource.delete()
         return JsonResponse({ 'wishlist': user.wishlist.as_dict(), 'cart': user.cart.as_dict() }) 
+    
+
+def order(request: HttpRequest, user: int) -> JsonResponse:
+    """Defining order creation"""
+    if request.method == 'GET':
+        """Creating and returning order"""
+        user: User = get_object_or_404(User, id=user)
+        print(user.as_dict()['orders'])
+    return JsonResponse({})

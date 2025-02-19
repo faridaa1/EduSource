@@ -68,6 +68,7 @@ class User(AbstractUser):
     def as_dict(self) -> dict[str, int | float | str]:
         """Dictionary representation of User object"""
         address: Address = Address.objects.get(user=self)
+        orders = Order.objects.filter(seller=self)
         return {
             'id': self.id,
             'email': self.email,
@@ -85,6 +86,7 @@ class User(AbstractUser):
             'city': address.city,
             'postcode': address.postcode,
             'listings': [listing.as_dict() for listing in self.listing.all()],
+            'orders': [order.as_dict() for order in orders],
             'cart': self.cart.as_dict(),
             'wishlist': self.wishlist.as_dict()
         }
@@ -208,6 +210,7 @@ class Resource(models.Model):
             'unique': self.unique
         }    
 
+
 class WishlistResource(models.Model):
     """Defining attributes and methods for WishlistResource model"""
     resource = models.OneToOneField(Resource, on_delete=models.CASCADE, related_name='wishlist_resource')
@@ -258,4 +261,27 @@ class Review(models.Model):
             'upload_date': self.upload_date,
             'image': self.image.url if self.image else None,
             'video': self.video.url if self.video else None,
+        }
+    
+
+class Order(models.Model):
+    """Defining attributes and methods for Order model"""
+    STATUSES: list [tuple[str, str]] = [('Processing', 'Processing'), ('Dispatched', 'Dispatched'), ('Complete', 'Complete'), ('Being Returned', 'Being Returned'), ('Refunded', 'Refunded')]
+    status = models.CharField(max_length=14, choices=STATUSES, default='Processing', null=False, blank=False)
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='buyer')
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='seller')
+    resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name='resource')
+    estimated_delivery_date = models.DateField(null=False, blank=False)
+    delivery_image = models.ImageField(null=False, blank=False, upload_to='delivery_images/')
+
+    def as_dict(self) -> str:
+        """Dictionary representation of Order"""
+        return {
+            'id': id,
+            'status': self.status,
+            'buyer': self.buyer.id,
+            'seller': self.seller.id,
+            'resource': self.resource.id,
+            'estimated_delivery_date': self.estimated_delivery_date,
+            'delivery_image': self.delivery_image.url if self.delivery_image else None,
         }
