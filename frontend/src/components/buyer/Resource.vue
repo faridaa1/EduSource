@@ -707,6 +707,7 @@
                 this.rating = star === star1 ? 1 : star === star2 ? 2 : star === star3 ? 3 : star === star4 ? 4 : 5
             },
             async listedprice(resource: Resource): Promise<number> {
+                if (resource === undefined) return 0
                 let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
