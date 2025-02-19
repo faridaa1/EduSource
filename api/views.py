@@ -362,7 +362,7 @@ def get_cart(request: HttpRequest, user: int) -> JsonResponse:
 
 
 def update_wishlist(request: HttpRequest, user: int) -> JsonResponse:
-    """Defining POST and DELETE handling"""
+    """Defining POST, PUT and DELETE handling"""
     resource_id = json.loads(request.body)
     if request.method == 'POST':
         user: User = User.objects.get(id=user)
@@ -380,4 +380,18 @@ def update_wishlist(request: HttpRequest, user: int) -> JsonResponse:
         user.wishlist.save()
         resource.delete()
         return JsonResponse({ 'wishlist': user.wishlist.as_dict() }) 
+    elif request.method == 'PUT':
+        user: User = User.objects.get(id=user)
+        wishlist_resource: WishlistResource = get_object_or_404(WishlistResource, id=resource_id)
+        cartResource: CartResource = CartResource.objects.create(
+            resource=wishlist_resource.resource,
+            number=1,
+            cart=user.cart,
+        )
+        user.cart.items += 1
+        user.cart.save()
+        user.wishlist.items -= 1
+        user.wishlist.save()
+        wishlist_resource.delete()
+        return JsonResponse({ 'wishlist': user.wishlist.as_dict(), 'cart': user.cart.as_dict() }) 
     return JsonResponse({})

@@ -47,15 +47,9 @@
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
-            cart_resource: CartResource,
             total: number,
         } { return {
             total: 0,
-            cart_resource: {
-                id: -1,
-                resource: -1,
-                number: 0
-            },
         }},
         methods: {
             async clear_cart(): Promise<void> {

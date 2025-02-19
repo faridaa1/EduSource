@@ -816,7 +816,7 @@
                 })
             },
             updateWishlist(wishlist: Wishlist): void {
-                const wishlist_item = wishlist.resources.map(item => item.id)
+                const wishlist_item = wishlist.resources.map(item => item.resource)
                 this.in_wishlist = false
                 const mapped_resources = this.allResources.map(res => res.id)
                 for (let item of wishlist_item) {

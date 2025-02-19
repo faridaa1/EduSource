@@ -1,112 +1,99 @@
 <template>
-    <div id="cart-view" v-if="user && user.cart">
+    <div id="cart-view" v-if="user && user.wishlist">
         <div id="header">
-            <p>My Cart</p>
-            <p id="total">Total: {{ currency }}{{ parseFloat(total.toString()).toFixed(2) }}</p>
+            <p>My Wishlist</p>
         </div>
         <div id="resources">
-            <div id="empty-message" v-if="user.cart.resources.length === 0">No items in cart</div>
-            <div class="cart-item" v-for="resource in user.cart.resources">
+            <div id="empty-message" v-if="user.wishlist.resources.length === 0">No items in wishlist</div>
+            <div class="cart-item" v-for="resource in user.wishlist.resources">
                 <div class="item-one">
                     <div class="item-image">
                         <img :src="`http://localhost:8000${(allResources.find(res => res.id === resource.resource) as Resource)?.image1}`" alt="">
                     </div>
                     <div class="details">
                         <p>{{ (allResources.find(res => res.id === resource.resource) as Resource)?.name }}</p>
-                        <p>{{ (allResources.find(res => res.id === resource.resource) as Resource)?.price }}</p>
+                        <p> {{ currency }}{{ (allResources.find(res => res.id === resource.resource) as Resource)?.price }}</p>
                         <p id="view-details" @click="view_item((allResources.find(res => res.id === resource.resource) as Resource)?.name)">View Details</p>
                     </div>
                 </div>
                 <div class="item-two">
-                    <div class="number_toggle">
-                        <div id="number">{{ resource.number }}</div>
-                        <div class="number_controls">
-                            <p v-if="resource.number < (allResources.find(res => res.id === resource.resource) as Resource)?.stock" id="plus" @click="toggle_cart(resource, 1)">+</p>
-                            <hr v-if="resource.number < (allResources.find(res => res.id === resource.resource) as Resource)?.stock">
-                            <p id="minus" @click="toggle_cart(resource, -1)">-</p>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="cart_total"> Total: {{ currency }}{{ (resource.number * cart_price(resource)).toFixed(2) }} </div>
-                    </div>
+                    <button id="move_to_cart" @click="move_to_cart(resource)">Move to Cart</button>
+                    <button id="remove_from_wishlist" @click="remove_item(resource)">Remove</button>
                 </div>
             </div>
         </div>
-        <div id="buttons" v-if="user.cart.resources.length > 0">
-            <button id="checkout">Checkout</button>
-            <button id="clear" @click="clear_cart">Clear Cart</button>
+        <div id="buttons" v-if="user.wishlist.resources.length > 0">
+            <button id="checkout" @click="add_wishlist">Move all to Cart</button>
+            <button id="clear" @click="clear_wishlist">Clear Wishlist</button>
         </div>
     </div>
 </template>
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent, nextTick } from 'vue';
-    import type { Cart, CartResource, Resource, Review, User } from '@/types';
+    import { defineComponent } from 'vue';
+    import type { Cart, CartResource, Resource, User, Wishlist, WishlistResource } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
-            cart_resource: CartResource,
             total: number,
         } { return {
             total: 0,
-            cart_resource: {
-                id: -1,
-                resource: -1,
-                number: 0
-            },
         }},
         methods: {
-            async clear_cart(): Promise<void> {
-                if (confirm('Are you sure you want to clear your cart?')) {
-                    for (const cart_item of this.user.cart.resources) {
-                        this.delete_cart_item(cart_item)
+            async clear_wishlist(): Promise<void> {
+                if (confirm('Are you sure you want to clear your wishlist?')) {
+                    for (const wishlist_item of this.user.wishlist.resources) {
+                        this.delete_wishlist_item(wishlist_item)
                     }
                 }
             },
-            async delete_cart_item(resource: CartResource): Promise<void> {
-                const deleteCartItem: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
-                    method: 'DELETE',
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRFToken' : useUserStore().csrf,
-                        'Content-Type' : 'application/json',
-                    },
-                })
-                if (!deleteCartItem.ok) {
-                    console.error('Error deleting from cart')
-                    return
+            async add_wishlist(): Promise<void> {
+                for (const wishlist_item of this.user.wishlist.resources) {
+                    this.move_to_cart(wishlist_item)
                 }
-                const data: {resource: CartResource, cart: Cart} = await deleteCartItem.json()
-                useUserStore().updateCart(data.cart)
-                useUsersStore().updateUser(this.user)
             },
-            async edit_cart_item(resource: CartResource, value: number): Promise<void> {
-                const putCartItem: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
+            async move_to_cart(resource: WishlistResource): Promise<void> {
+                const moveToCartResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/wishlist/`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
                         'X-CSRFToken' : useUserStore().csrf,
                         'Content-Type' : 'application/json',
                     },
-                    body: JSON.stringify(value)
+                    body: JSON.stringify(resource.id)
                 })
-                if (!putCartItem.ok) {
-                    console.error('Error editing cart')
+                if (!moveToCartResponse.ok) {
+                    console.error('Error moving to cart')
                     return
                 }
-                const data: {resource: CartResource, cart: Cart} = await putCartItem.json()
+                const data: {wishlist: Wishlist, cart: Cart} = await moveToCartResponse.json()
+                useUserStore().updateWishlist(data.wishlist)
                 useUserStore().updateCart(data.cart)
                 useUsersStore().updateUser(this.user)
             },
-            toggle_cart(resource: CartResource, value: number): void {
-                if (resource.number === 1 && value === -1) {
-                    if (confirm('Are you sure you want to delete this item from your cart?')) {
-                        this.delete_cart_item(resource)
-                    }
-                } else {
-                    this.edit_cart_item(resource, resource.number + value)
+            async delete_wishlist_item(resource: WishlistResource): Promise<void> {
+                const deleteWishlistItemResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/wishlist/`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
+                    },
+                    body: JSON.stringify(resource.resource)
+                })
+                if (!deleteWishlistItemResponse.ok) {
+                    console.error('Error deleting from wishlist')
+                    return
+                }
+                const data: {wishlist: Wishlist} = await deleteWishlistItemResponse.json()
+                useUserStore().updateWishlist(data.wishlist)
+                useUsersStore().updateUser(this.user)
+            },
+            remove_item(resource: WishlistResource): void {
+                if (confirm('Are you sure you want to remove this item from your wishlist?')) {
+                    this.delete_wishlist_item(resource)
                 }
             },
             view_item(name: string): void {
@@ -129,18 +116,6 @@
                 let returnedPrice: {new_price: number} = await convertedPrice.json()
                 return returnedPrice.new_price
             },
-            async update_total(): Promise<void> {
-                if (Object.keys(this.allResources).length === 0) return
-                const cart_res = this.user.cart.resources.map(item => item.resource)
-                this.total = 0
-                for (const resource of this.allResources.filter(res => cart_res.includes(res.id))) {
-                    // resource.price = await this.listedprice(resource)
-                    const cart_item = this.user.cart.resources.find(item => item.resource === resource.id)
-                    if (cart_item) {
-                        this.total += (resource.price * cart_item.number)
-                    }
-                }
-            }
         },
         computed: {
             currency(): string {
@@ -160,17 +135,10 @@
         },
         watch: {
             user(new_user: User): void {
-                this.update_total()
             },
             async resource(resource: Resource): Promise<void> {
                 resource.price = await this.listedprice(resource)
             },
-            "user.cart"(): void {
-                this.update_total()
-            },
-            allResources(): void {
-                this.update_total()
-            }
         },
         mounted(): void {
             
@@ -253,9 +221,22 @@
 
     .item-two {
         display: flex;
-        flex-direction: column;
+        gap: 0.8rem;
         margin-right: 1rem;
-        align-items: center;
+    }
+
+    .item-two button {
+        border: none;
+        border-radius: 0.5rem;
+        background-color: #0DCAF0;
+        padding: 0.5rem;
+        padding-left: 0.8rem;
+        padding-right: 0.8rem;
+    }
+
+    .item-two button:hover{
+        background-color: #177183;
+        cursor: pointer;
     }
 
     .number_toggle {
@@ -329,12 +310,12 @@
         background-color: #177183;
     }
 
-    #clear {
+    #clear, #remove_from_wishlist {
         background-color: red;
         color: white;
     }
 
-    #clear:hover {
+    #clear:hover, #remove_from_wishlist:hover {
         cursor: pointer;
         background-color: darkred;
     }

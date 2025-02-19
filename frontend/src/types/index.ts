@@ -81,7 +81,10 @@ export interface Cart {
 
 export interface Wishlist {
     id: number,
-    resources: Resource[],
+    resources: {
+        id: number,
+        resource: number
+    }[]
     items: number,
     total: number
 }
