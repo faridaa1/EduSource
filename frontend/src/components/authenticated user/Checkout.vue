@@ -1,12 +1,12 @@
 <template>
     <div v-if="user.cart" id="checkout">
-        <div id="header">Checkout</div>
+        <div id="checkout-title">Checkout</div>
         <div id="content">
             <div id="col1">
                 <div id="items">
                     <div id="header">
                         <div id="one">Items</div>
-                        <div id="two">Total: </div>
+                        <div id="two">Total: {{ currency }}{{ total.toFixed(2) }} </div>
                     </div>
                     <div id="body">
                         <div class="resource" v-for="resource in user.cart.resources">
@@ -21,12 +21,17 @@
                                         <div id="minus" @click="remove_from_cart(resource)">-</div>
                                     </div>
                                 </div>
-                                <div>{{ user.currency === 'GBP' ? '£' : user.currency === 'USD' ? '$' : '€'  }}{{ (resource.number*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
+                                <div>{{ currency }}{{ (resource.number*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div id="payment"></div>
+                <div id="payment">
+                    <div>Payment Method</div>
+                    <div id="card_ending">
+                        Card ending in 1234
+                    </div>
+                </div>
             </div>
             <div id="col2">
                 <div id="address"></div>
@@ -44,7 +49,9 @@
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
+            total: number
         } { return {
+            total: 0
         }},
         methods: {
             async remove_from_cart(resource: CartResource): Promise<void> {
@@ -105,8 +112,22 @@
                 let returnedPrice: {new_price: number} = await convertedPrice.json()
                 return returnedPrice.new_price
             },
+            get_total(): void {
+                this.total = 0
+                if (!this.user.cart || !this.user.cart.resources) return
+                for (let item of this.user.cart.resources) {
+                    let resource = this.all_resources.find(resource => resource.id === item.resource)
+                    if (resource) {
+                        const price = parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€',''))
+                        this.total += item.number * price
+                    }
+                }
+            }
         },
         computed: {
+            currency(): string {
+                return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
+            },
             users(): User[] {
                 return useUsersStore().users
             },
@@ -121,23 +142,40 @@
             for (const resource of useResourcesStore().resources) {
                 resource.price = await this.listedprice(resource)
             }
+            this.get_total()
+            console.log('here')
         },
         watch: {
             async all_resources(): Promise<void> {
                 for (const resource of useResourcesStore().resources) {
                     resource.price = await this.listedprice(resource)
                 }
+                this.get_total()
             },
             async user(): Promise<void> {
                 for (const resource of useResourcesStore().resources) {
                     resource.price = await this.listedprice(resource)
                 }
+                this.get_total()
+            },
+            "user.cart"(): void {
+                this.get_total()
             }
         },
     })
 </script>
 
 <style scoped>
+    #checkout {
+        margin-left: 2rem;
+        margin-right: 2rem;
+        margin-left: 2rem;
+        margin-top: 1rem;
+    }
+
+    #checkout-title {
+        font-size: 1.5rem;
+    }
 
     #body {
         height: 25rem;
@@ -213,5 +251,39 @@
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
+    }
+
+    #content { 
+        display: flex;
+        gap: 2rem;
+    }
+
+    #col1 {
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+    }
+
+    #payment {
+        display: fl;
+    }
+
+    #card_ending {
+        border: 0.1rem solid #0DCAF0;
+        padding: 1rem;
+        border-radius: 0.8rem;
+    }
+
+    #header {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    #header div {
+        font-size: 1.3rem;
+    }
+
+    #two {
+        font-weight: bold;
     }
 </style>
