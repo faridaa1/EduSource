@@ -38,7 +38,7 @@
                 </div>
                 <div id="total" v-if="cart_resource.number > 0"> Total: {{ user.currency === 'GBP' ? '£' : user.currency === 'USD' ? '$' : '€' }}{{ (cart_resource.number * cart_price).toFixed(2) }} </div>
             </div>
-            <div>Add to Wishlist</div>
+            <div @click="edit_wishlist()">{{ in_wishlist ? 'Remove from Wishlist' : 'Add to Wishlist' }}</div>
         </div>
         <div id="view-sellers">
             <p @click="show_sellers">View Sellers</p>
@@ -292,13 +292,14 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent, nextTick } from 'vue';
     import ViewSellers from './ViewSellers.vue';
-    import type { Cart, CartResource, Resource, Review, User } from '@/types';
+    import type { Cart, CartResource, Resource, Review, User, Wishlist } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import Stars from './Stars.vue';
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         components: { Stars, ViewSellers },
         data(): {
+            in_wishlist: boolean,
             currentResource: Resource,
             all_reviews: Review[],
             seller: number,
@@ -325,6 +326,7 @@
             filter_video: boolean,
             cart_price: number,
         } { return {
+            in_wishlist: false,
             currentResource: {} as Resource,
             cart_price: 0,
             seller: -1,
@@ -356,7 +358,24 @@
             image: new File([''], ''),
         }},
         methods: {
-            show_sellers(){
+            async edit_wishlist(): Promise<void> {
+                const editWishlistResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/wishlist/`, {
+                    method: this.in_wishlist ? 'DELETE' : 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
+                    },
+                    body: JSON.stringify(this.allResources[0].id)
+                })
+                if (!editWishlistResponse.ok) { console.error('Error editing wishlist') }
+                else { 
+                    const data: { wishlist: Wishlist } = await editWishlistResponse.json()
+                    this.in_wishlist = !this.in_wishlist
+                    useUserStore().updateWishlist(data.wishlist)
+                }
+            },
+            show_sellers() {
                 this.viewing_sellers = true
                 nextTick(() => {
                     const view_sellers = document.getElementById('view-sellers-container')
@@ -796,7 +815,17 @@
                     return -1
                 })
             },
-            
+            updateWishlist(wishlist: Wishlist): void {
+                const wishlist_item = wishlist.resources.map(item => item.id)
+                this.in_wishlist = false
+                const mapped_resources = this.allResources.map(res => res.id)
+                for (let item of wishlist_item) {
+                    if (mapped_resources.includes(item)) {
+                        this.in_wishlist = true
+                        return
+                    }
+                }
+            }
         },
         computed: {
             users(): User[] {
@@ -869,6 +898,9 @@
                     if (resource) this.currentResource = resource
                 })
             },
+            "user.wishlist"(wishlist: Wishlist): void {
+                this.updateWishlist(wishlist)
+            },
             async "cart_resource.number"(new_number: number): Promise<void> {
                 if (new_number === 0) this.seller = -1
                 nextTick(async () => {
@@ -917,6 +949,7 @@
             },
             allResources(): void {
                 this.get_all_reviews()
+                this.updateWishlist(this.user.wishlist)
                 this.get_cart()
             },
             all_reviews(updated_all_reviews): void {

@@ -95,5 +95,4 @@ export interface CartResource {
 export interface WishlistResource {
     id: number,
     resource: number
-    number: number
 }

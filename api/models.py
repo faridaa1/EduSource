@@ -211,15 +211,13 @@ class Resource(models.Model):
 class WishlistResource(models.Model):
     """Defining attributes and methods for WishlistResource model"""
     resource = models.OneToOneField(Resource, on_delete=models.CASCADE, related_name='wishlist_resource')
-    number = models.IntegerField(null=False, blank=False)
-    wishlist = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='wishlist_resource')
+    wishlist = models.ForeignKey(Wishlist, on_delete=models.CASCADE, related_name='wishlist_resource')
     
     def as_dict(self) -> str:
         """Dictionary representation of WishlistResource"""
         return {
             'id' : self.id,
             'resource' : self.resource.id,
-            'number' : self.number,
         }
     
     

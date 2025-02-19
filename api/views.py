@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate
 from django.db.models import Avg
 from django.contrib import auth
 from .forms import SignupForm, AddressForm, LoginForm
-from .models import Cart, CartResource, Resource, Review, User, Address
+from .models import Cart, CartResource, Resource, Review, User, Address, WishlistResource
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 from transformers import pipeline
@@ -359,3 +359,25 @@ def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> Js
 def get_cart(request: HttpRequest, user: int) -> JsonResponse:
     user: User = get_object_or_404(User, id=user)
     return JsonResponse(user.cart.as_dict())
+
+
+def update_wishlist(request: HttpRequest, user: int) -> JsonResponse:
+    """Defining POST and DELETE handling"""
+    resource_id = json.loads(request.body)
+    if request.method == 'POST':
+        user: User = User.objects.get(id=user)
+        WishlistResource.objects.create(
+            resource = Resource.objects.get(id=resource_id),
+            wishlist=user.wishlist
+        )
+        user.wishlist.items +=1
+        user.wishlist.save()
+        return JsonResponse({ 'wishlist': user.wishlist.as_dict() }) 
+    elif request.method == 'DELETE':
+        user: User = User.objects.get(id=user)
+        resource: WishlistResource = get_object_or_404(WishlistResource, resource=Resource.objects.get(id=resource_id))
+        user.wishlist.items -= 1
+        user.wishlist.save()
+        resource.delete()
+        return JsonResponse({ 'wishlist': user.wishlist.as_dict() }) 
+    return JsonResponse({})
