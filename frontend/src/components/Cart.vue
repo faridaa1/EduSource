@@ -38,7 +38,7 @@
             </div>
         </div>
         <div id="buttons" v-if="user.cart.resources.length > 0">
-            <button id="checkout">Checkout</button>
+            <button id="checkout" @click="checkout">Checkout</button>
             <button id="checkout" @click="move_all_wishlist">Move all to Wishlist</button>
             <button id="clear" @click="clear_cart">Clear Cart</button>
         </div>
@@ -58,6 +58,9 @@
             total: 0,
         }},
         methods: {
+            checkout(): void {
+                window.location.href = '/checkout'
+            },
             move_all_wishlist(): void {
                 for (let cart_item of this.user.cart.resources) {
                     this.move_to_wishlist(cart_item)

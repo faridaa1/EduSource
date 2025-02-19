@@ -7,6 +7,7 @@ import Listings from '@/components/seller/Listings.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import Cart from '@/components/Cart.vue'
 import Wishlist from '@/components/Wishlist.vue'
+import Checkout from '@/components/authenticated user/Checkout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,6 +23,7 @@ const router = createRouter({
     { path: '/view/:name', name: 'buyer resource', component: BuyerResource },
     { path: '/cart', name: 'cart', component: Cart },
     { path: '/wishlist', name: 'wishlist', component: Wishlist },
+    { path: '/checkout', name: 'checkout', component: Checkout },
   ],
 })
 
