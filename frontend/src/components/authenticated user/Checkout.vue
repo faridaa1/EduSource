@@ -189,6 +189,7 @@
 
     #checkout-title {
         font-size: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     #body {
@@ -291,6 +292,7 @@
     #header {
         display: flex;
         justify-content: space-between;
+        margin-bottom: 1rem;
     }
 
     #header div {
