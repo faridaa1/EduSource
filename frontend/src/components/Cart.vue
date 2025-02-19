@@ -6,19 +6,28 @@
         </div>
         <div id="resources">
             <div class="cart-item" v-for="resource in user.cart.resources">
-                {{ resource }}
                 <div class="item-one">
                     <div class="item-image">
-                        <img :src="`http://localhost:8000${(allResources.find(res => res.id === resource.resource) as Resource).image1}`" alt="">
+                        <img :src="`http://localhost:8000${(allResources.find(res => res.id === resource.resource) as Resource)?.image1}`" alt="">
                     </div>
                     <div class="details">
-                        <p>{{ (allResources.find(res => res.id === resource.resource) as Resource).name }}</p>
-                        <p>{{ (allResources.find(res => res.id === resource.resource) as Resource).price }}</p>
-                        <p id="view-details">View Details</p>
+                        <p>{{ (allResources.find(res => res.id === resource.resource) as Resource)?.name }}</p>
+                        <p>{{ (allResources.find(res => res.id === resource.resource) as Resource)?.price }}</p>
+                        <p id="view-details" @click="view_item((allResources.find(res => res.id === resource.resource) as Resource)?.name)">View Details</p>
                     </div>
                 </div>
                 <div class="item-two">
-
+                    <div class="number_toggle">
+                        <div id="number">{{ resource.number }}</div>
+                        <div class="number_controls">
+                            <p id="plus">+</p>
+                            <hr>
+                            <p id="minus">-</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p>price is here</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -41,6 +50,9 @@
             },
         }},
         methods: {
+            view_item(name: string): void {
+                window.location.href = `/view/${name}`
+            },
             async listedprice(resource: Resource): Promise<number> {
                 let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
@@ -99,6 +111,7 @@
 
     #header p {
         font-size: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     #header #total {
@@ -116,6 +129,7 @@
     .cart-item {
         display: flex;
         justify-content: space-between;
+        align-items: center;
     }
 
     img {
@@ -135,4 +149,71 @@
         gap: 0.5rem;
     }
 
+    #view-details {
+        color: rgb(121, 189, 218);
+    }
+
+    #dark #view-details {
+        color: rgb(255, 255, 255);
+    }
+
+    #view-details:hover {
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+    .item-two {
+        display: flex;
+        flex-direction: column;
+        margin-right: 1rem;
+        align-items: center;
+    }
+
+    .number_toggle {
+        display: flex;
+        background-color: #D9D9D9;
+        border-radius: 0.5rem;
+        padding-left: 0.4rem;
+        padding-right: 0.4rem;
+        padding-top: 0.3rem;
+        padding-bottom: 0.3rem;
+        width: 6rem;
+        justify-content: space-between;
+    }
+
+    .number_controls {
+        display: flex;
+        background-color: white;
+        border-radius: 0.3rem;
+    }
+
+    .number_controls hr {
+        border: none;
+        background-color: black;
+        width: 0.01rem;
+    }
+
+    .number_controls p {
+        width: 1.3rem;
+        text-align: center;
+    }
+
+    .number_controls p:hover {
+        background-color: darkgray;
+        cursor: pointer;
+    }
+
+    #minus {
+        border-top-right-radius: 0.3rem;
+        border-bottom-right-radius: 0.3rem;
+    }
+
+    #plus {
+        border-top-left-radius: 0.3rem;
+        border-bottom-left-radius: 0.3rem;
+    }
+
+    #number {
+        margin: auto;
+    }
 </style>

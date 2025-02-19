@@ -167,6 +167,9 @@
       }
     },
     methods: {
+      go_home(): void {
+        window.location.href = '/'
+      },
       sign_out(): void {
         window.location.href = 'http://localhost:8000/login'
       },
