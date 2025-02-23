@@ -113,9 +113,9 @@
                     },
                 })
                 if (userResponse.ok) {
-                    const user: User = await userResponse.json()
-                    useUserStore().saveUser(user)
-                    console.log(user)
+                    const data: {user: User, resources: Resource[]} = await userResponse.json()
+                    useUserStore().saveUser(data.user)
+                    useResourcesStore().saveResources(data.resources)
                 } else {
                     console.error('Error placing order')
                 }
