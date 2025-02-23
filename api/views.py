@@ -461,6 +461,6 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
             resource.stock = resource.stock - cart_resource.number
             resource.save()
             # clear cart 
-        user.cart.resources.all().delete
+        user.cart.cart_resource.all().delete()
         return JsonResponse({'user': user.as_dict(), 'resources': [resource.as_dict() for resource in Resource.objects.all()]})
     return JsonResponse({})
