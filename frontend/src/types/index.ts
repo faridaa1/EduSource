@@ -115,4 +115,5 @@ export interface Order {
 export interface OrderResource {
     id: number,
     resource: number,
+    number: number
 }

@@ -446,7 +446,8 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
                 )
                 orderResource: OrderResource = OrderResource.objects.create(
                     resource=resource,
-                    order=order
+                    order=order,
+                    number=cart_resource.number
                 )
                 orderResource.save()
                 order.save()
@@ -455,12 +456,13 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
                 order = Order.objects.get(id=seller_ids[resource.user.id])
                 orderResource: OrderResource = OrderResource.objects.create(
                     resource=resource,
-                    order=order
+                    order=order,
+                    number=cart_resource.number
                 )
                 orderResource.save()
             resource.stock = resource.stock - cart_resource.number
             resource.save()
-            # clear cart 
+        # clear cart 
         user.cart.cart_resource.all().delete()
         return JsonResponse({'user': user.as_dict(), 'resources': [resource.as_dict() for resource in Resource.objects.all()]})
     return JsonResponse({})

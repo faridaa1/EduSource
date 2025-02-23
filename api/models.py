@@ -294,10 +294,12 @@ class OrderResource(models.Model):
     """Defining attributes and methods for OrderResource model"""
     resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name='resource')
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_resource')
+    number = models.IntegerField(null=False, blank=False)
 
     def as_dict(self) -> str:
         """Dictionary representation of OrderResource"""
         return {
             'id': self.id,
             'resource': self.resource.id,
+            'number': self.number,
         }

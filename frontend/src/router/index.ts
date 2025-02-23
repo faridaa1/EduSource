@@ -7,8 +7,10 @@ import Listings from '@/components/seller/Listings.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import Cart from '@/components/Cart.vue'
 import Wishlist from '@/components/Wishlist.vue'
-import Checkout from '@/components/authenticated user/Checkout.vue'
-import OrderConfirmation from '@/components/authenticated user/OrderConfirmation.vue'
+import Checkout from '@/components/authenticated user/checkout/Checkout.vue'
+import OrderConfirmation from '@/components/authenticated user/checkout/OrderConfirmation.vue'
+import Orders from '@/components/authenticated user/orders/Orders.vue'
+import Order from '@/components/authenticated user/orders/Order.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,7 +28,8 @@ const router = createRouter({
     { path: '/wishlist', name: 'wishlist', component: Wishlist },
     { path: '/checkout', name: 'checkout', component: Checkout },
     { path: '/order-confirmation', name: 'order confirmation', component: OrderConfirmation },
-    // { path: '/order-summary/:id', name: 'checkout', component: Checkout },
+    { path: '/orders', name: 'orders', component: Orders },
+    { path: '/order/:id', name: 'order', component: Order },
   ],
 })
 
