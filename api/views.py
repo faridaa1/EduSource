@@ -72,6 +72,14 @@ def login(request: HttpRequest) -> HttpResponse:
     return render(request, 'api/login.html', {'login_form' : LoginForm()})
 
 
+def signout(request: HttpRequest) -> JsonResponse:
+    """Handling user log out"""
+    try:
+        auth.logout(request)
+    except:
+        pass
+    return JsonResponse({})
+
 def currency_conversion(request: HttpRequest, id: int, from_currency: str, to_currency: float) -> JsonResponse:
     resource: Resource = get_object_or_404(Resource, id=id)
     initial_value: Money = Money(resource.price, to_currency)

@@ -49,7 +49,8 @@
           </div>
         </div>
         <!-- <RouterLink to="http://localhost:8000/login" class="hide-on-mobile link">Sign out</RouterLink> -->
-        <p @click="sign_out" class="hide-on-mobile link">Sign out</p>
+        <p v-if="authenticated" class="hide-on-mobile link" @click="sign_out"> Sign out </p>
+        <p v-if="!authenticated" @click="sign_in" class="hide-on-mobile link"> Sign in</p>
         <button id="show-on-mobile" @click="show_menu"><i class="bi bi-list"></i></button>
       </header>
       <div id="hamburger">
@@ -174,7 +175,18 @@
       go_home(): void {
         window.location.href = '/'
       },
-      sign_out(): void {
+      async sign_out(): Promise<void> {
+        await fetch(`http://localhost:8000/signout/`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type' : 'application/json',
+            'X-CSRFToken' : useUserStore().csrf
+          },
+        })
+        this.go_home()
+      },
+      sign_in(): void {
         window.location.href = 'http://localhost:8000/login'
       },
       async update_setting(called_by: string, data: string): Promise<void> {
