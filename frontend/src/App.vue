@@ -1,11 +1,11 @@
 <template>
   <div id="app-vue">
     <div id="light">
-      <header>
+      <header id="main-header">
         <img id='logo' src="/logo-light.svg" alt="EduSource" width="125" height="125" v-pre/>
         <RouterLink to="/" class="hide-on-mobile link">Home</RouterLink>
         <div id="profile-div" class="hide-on-mobile" @click="show_profile('desktop')">
-          <p id="profile-header">Profile</p>
+          <p id="profile-header" v-if="authenticated">Profile</p>
           <div id="profile-nav">
             <RouterLink class="profile-item border-bottom rounded-top" to="/details" >Details</RouterLink>
             <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='buyer'">Orders</RouterLink>
@@ -21,7 +21,7 @@
         </div>
         <RouterLink to="/" class="hide-on-mobile link">Help</RouterLink>
         <div id="main-settings" class="hide-on-mobile">
-          <p id="settings-header" @click="show_settings('desktop')">Settings</p>
+          <p id="settings-header" @click="show_settings('desktop')" v-if="authenticated">Settings</p>
           <div id="settings">
             <div id="theme" class="setting">
               <label for="">Theme</label>
@@ -38,7 +38,7 @@
                 </option>
               </select>
             </div>
-            <div id="mode" class="setting">
+            <div id="mode" class="setting" v-if="authenticated">
               <label for="">Mode</label>
               <select id="currency-dropdown" v-model="mode_setting" @change="update_setting('mode', mode_setting)">
                 <option v-for="mode in ['buyer', 'seller']" :key="mode" :value="mode">
@@ -56,7 +56,7 @@
         <button><i class="bi bi-x"></i></button>
         <RouterLink to="/" id="item1" class="show-mobile">Home</RouterLink>
         <div id="item2" class="show-mobile" @click="show_profile('mobile')">
-          <p id="profile-header">Profile</p>
+          <p id="profile-header" v-if="authenticated">Profile</p>
           <div id="profile-nav">
             <RouterLink class="profile-item border-bottom rounded-top" to="/details" >Details</RouterLink>
             <RouterLink class="profile-item border-bottom" to="/">Orders</RouterLink>
@@ -109,9 +109,10 @@
   import { useUsersStore } from './stores/users';
   export default defineComponent({
     components: { RouterView },
-    data(): { currency_setting: string, mode_setting: string } { return {
+    data(): { currency_setting: string, mode_setting: string, authenticated: boolean } { return {
         currency_setting : 'GBP',
-        mode_setting: 'buyer'
+        mode_setting: 'buyer',
+        authenticated: false
       }
     },
     async mounted(): Promise<void> {
@@ -134,7 +135,10 @@
       })
       let userData: { user: User | 'unauthenticated' } = await userResponse.json()
       if (userData.user === 'unauthenticated') {
+        let header: HTMLHeadingElement = document.getElementById('main-header') as HTMLHeadingElement
+        header.style.gridTemplateColumns = '1fr 1fr 0fr 2fr 1fr 0fr 1fr'
       } else {
+        this.authenticated = true
         useUserStore().saveUser(userData.user)
         for (let cookie of document.cookie.split(';')) {
           const cookie_pair = cookie.split('=')
