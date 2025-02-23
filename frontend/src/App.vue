@@ -150,8 +150,8 @@
         this.toggle_theme('mounted')
         this.currency_setting = this.user.currency
         this.mode_setting = this.user.mode
-
-        let getResourcesStore: Response = await fetch(`http://localhost:8000/api/resources/`, {
+      }
+      let getResourcesStore: Response = await fetch(`http://localhost:8000/api/resources/`, {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -164,7 +164,6 @@
         }
         let resources: Resource[] = await getResourcesStore.json()
         useResourcesStore().saveResources(resources)
-      }
     },
     computed: {
       user(): User {

@@ -1,6 +1,6 @@
 <template>
     <div id="buyer-home">
-        <div id="recommendations">
+        <div id="recommendations" v-if="Object.keys(user).length > 0">
             <div class="header">
                 <p>Recommendations</p>
             </div>
@@ -94,6 +94,7 @@
                 return useUserStore().user
             },
             resources(): Resource[] {
+                console.log(useResourcesStore().resources)
                 return useResourcesStore().resources
             },
             textbooks(): Resource[] {
