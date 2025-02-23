@@ -1,3 +1,4 @@
+import datetime
 from decimal import Decimal
 from django.utils import timezone
 import json
@@ -7,7 +8,7 @@ from django.contrib.auth import authenticate
 from django.db.models import Avg
 from django.contrib import auth
 from .forms import SignupForm, AddressForm, LoginForm
-from .models import Cart, CartResource, Order, Resource, Review, User, Address, WishlistResource
+from .models import Cart, CartResource, Order, OrderResource, Resource, Review, User, Address, WishlistResource
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 from transformers import pipeline
@@ -421,5 +422,41 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
     if request.method == 'GET':
         """Creating and returning order"""
         user: User = get_object_or_404(User, id=user)
-        print(user.as_dict()['orders'])
+        all_cart_resources = user.cart.cart_resource.all()
+        # Order is between one buyer and one seller, so there may be multiple 
+        seller_ids = []
+        for cart_resource in all_cart_resources:
+            resource: Resource = cart_resource.resource
+            if not resource.user.id in seller_ids:
+                current_date = datetime.datetime.now()
+                if resource.estimated_delivery_units == 'day':
+                    estimated_date = current_date + datetime.timedelta(days=int(resource.estimated_delivery_time))
+                elif resource.estimated_delivery_units == 'minute':
+                    estimated_date = current_date + datetime.timedelta(minutes=int(resource.estimated_delivery_time))
+                elif resource.estimated_delivery_units == 'hour':
+                    estimated_date = current_date + datetime.timedelta(hours=int(resource.estimated_delivery_time))
+                elif resource.estimated_delivery_units == 'week':
+                    estimated_date = current_date + datetime.timedelta(weeks=int(resource.estimated_delivery_time))
+                else:
+                    estimated_date = current_date + datetime.timedelta(weeks=4*int(resource.estimated_delivery_time))
+                order: Order = Order.objects.create(
+                    buyer=user,
+                    seller=resource.user,
+                    estimated_delivery_date=estimated_date.date(),
+                )
+                orderResource: OrderResource = OrderResource.objects.create(
+                    resource=resource,
+                    order=order
+                )
+                orderResource.save()
+                order.save()
+                seller_ids.append(resource.user.id)
+            else:
+                order = Order.objects.get(seller=resource.user)
+                orderResource: OrderResource = OrderResource.objects.create(
+                    resource=resource,
+                    order=order
+                )
+                orderResource.save()
+        return JsonResponse(user.as_dict())
     return JsonResponse({})

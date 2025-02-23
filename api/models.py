@@ -68,7 +68,8 @@ class User(AbstractUser):
     def as_dict(self) -> dict[str, int | float | str]:
         """Dictionary representation of User object"""
         address: Address = Address.objects.get(user=self)
-        orders = Order.objects.filter(seller=self)
+        placed_orders = Order.objects.filter(buyer=self)
+        sold_orders = Order.objects.filter(seller=self)
         return {
             'id': self.id,
             'email': self.email,
@@ -86,7 +87,8 @@ class User(AbstractUser):
             'city': address.city,
             'postcode': address.postcode,
             'listings': [listing.as_dict() for listing in self.listing.all()],
-            'orders': [order.as_dict() for order in orders],
+            'placed_orders': [order.as_dict() for order in placed_orders],
+            'sold_orders': [order.as_dict() for order in sold_orders],
             'cart': self.cart.as_dict(),
             'wishlist': self.wishlist.as_dict()
         }
@@ -270,18 +272,32 @@ class Order(models.Model):
     status = models.CharField(max_length=14, choices=STATUSES, default='Processing', null=False, blank=False)
     buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='buyer')
     seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='seller')
-    resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name='resource')
     estimated_delivery_date = models.DateField(null=False, blank=False)
-    delivery_image = models.ImageField(null=False, blank=False, upload_to='delivery_images/')
+    delivery_image = models.ImageField(null=False, blank=True, upload_to='delivery_images/')
+
 
     def as_dict(self) -> str:
         """Dictionary representation of Order"""
+        resources = OrderResource.objects.filter(order=self.id)
         return {
-            'id': id,
+            'id': self.id,
             'status': self.status,
             'buyer': self.buyer.id,
             'seller': self.seller.id,
-            'resource': self.resource.id,
+            'resources': [resource.as_dict() for resource in resources],
             'estimated_delivery_date': self.estimated_delivery_date,
             'delivery_image': self.delivery_image.url if self.delivery_image else None,
+        }
+    
+
+class OrderResource(models.Model):
+    """Defining attributes and methods for OrderResource model"""
+    resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name='resource')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_resource')
+
+    def as_dict(self) -> str:
+        """Dictionary representation of OrderResource"""
+        return {
+            'id': self.id,
+            'resource': self.resource.id,
         }

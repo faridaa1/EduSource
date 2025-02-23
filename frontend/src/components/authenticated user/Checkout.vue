@@ -114,6 +114,8 @@
                 })
                 if (userResponse.ok) {
                     const user: User = await userResponse.json()
+                    useUserStore().saveUser(user)
+                    console.log(user)
                 } else {
                     console.error('Error placing order')
                 }

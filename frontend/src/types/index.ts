@@ -15,7 +15,8 @@ export interface User {
     city: string;
     postcode: string;
     listings: Resource[];
-    orders: Order[];
+    placed_orders: Order[];
+    sold_orders: Order[];
     cart: Cart;
     wishlist: Wishlist;
 }
@@ -106,7 +107,12 @@ export interface Order {
     status: 'Processing' | 'Dispatched' | 'Complete' | 'Being Returned' | 'Refunded',
     buyer: number,
     seller: number,
-    resource: number,
+    resources: OrderResource[],
     estimated_delivery_date: string,
     delivery_image: string
+}
+
+export interface OrderResource {
+    id: number,
+    resource: number,
 }
