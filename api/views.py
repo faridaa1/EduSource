@@ -424,7 +424,7 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
         user: User = get_object_or_404(User, id=user)
         all_cart_resources = user.cart.cart_resource.all()
         # Order is between one buyer and one seller, so there may be multiple 
-        seller_ids = []
+        seller_ids = {}
         for cart_resource in all_cart_resources:
             resource: Resource = cart_resource.resource
             if not resource.user.id in seller_ids:
@@ -450,9 +450,9 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
                 )
                 orderResource.save()
                 order.save()
-                seller_ids.append(resource.user.id)
+                seller_ids[resource.user.id] = order.id
             else:
-                order = Order.objects.get(seller=resource.user)
+                order = Order.objects.get(id=seller_ids[resource.user.id])
                 orderResource: OrderResource = OrderResource.objects.create(
                     resource=resource,
                     order=order
