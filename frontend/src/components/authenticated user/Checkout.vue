@@ -119,6 +119,7 @@
                 } else {
                     console.error('Error placing order')
                 }
+                window.location.href = '/order-confirmation'
             },
             cancel_edit(attribute: number): void {
                 if (attribute === 0) {

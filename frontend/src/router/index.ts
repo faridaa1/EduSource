@@ -8,6 +8,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Cart from '@/components/Cart.vue'
 import Wishlist from '@/components/Wishlist.vue'
 import Checkout from '@/components/authenticated user/Checkout.vue'
+import OrderConfirmation from '@/components/authenticated user/OrderConfirmation.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,6 +25,8 @@ const router = createRouter({
     { path: '/cart', name: 'cart', component: Cart },
     { path: '/wishlist', name: 'wishlist', component: Wishlist },
     { path: '/checkout', name: 'checkout', component: Checkout },
+    { path: '/order-confirmation', name: 'order confirmation', component: OrderConfirmation },
+    // { path: '/order-summary/:id', name: 'checkout', component: Checkout },
   ],
 })
 
