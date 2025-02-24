@@ -78,7 +78,7 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent, nextTick } from 'vue';
     import type { Resource, User } from '@/types';
-import { useUsersStore } from '@/stores/users';
+    import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
             editingDescription: boolean
@@ -173,7 +173,8 @@ import { useUsersStore } from '@/stores/users';
                 }
             }
         },
-        async created(): Promise<void> {
+        async mounted(): Promise<void> {
+            console.log('here')
             this.fill_stars()
         }
     })

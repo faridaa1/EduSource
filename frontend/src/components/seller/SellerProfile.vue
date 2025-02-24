@@ -40,7 +40,7 @@
                 <div v-for="listing in textbooks">
                     <div class="listed" @click="showResourcePage(listing.id)">
                         <img :src="`http://localhost:8000${listing.image1}`" alt="Textbook">
-                        {{ Object.keys(user).length === 0 ? unauth_currency(listing) : '' }}{{ listing.price }}
+                        {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
             </div>
@@ -59,7 +59,7 @@
                 <div v-for="listing in notes">
                     <div class="listed" @click="showResourcePage(listing.id)">
                         <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
-                        {{ Object.keys(user).length === 0 ? unauth_currency(listing) : '' }}{{ listing.price }}
+                        {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
             </div>
@@ -79,7 +79,7 @@
                     <div v-for="listing in stationery">
                         <div class="listed" @click="showResourcePage(listing.id)">
                             <img :src="`http://localhost:8000${listing.image1}`" alt="Stationery">
-                            {{ Object.keys(user).length === 0 ? unauth_currency(listing) : '' }}{{ listing.price }}
+                            {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                         </div>
                     </div>
                 </div>
@@ -98,6 +98,7 @@
             if (window.location.href.includes('seller')) {
                 this.viewing_profile = true
             }
+            this.fill_stars()
         },
         data(): {
             viewing_profile: boolean,
@@ -240,6 +241,9 @@
             }
         },
         computed: {
+            currency(): string {
+                return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
+            },
             users(): User[] {
                 return useUsersStore().users
             },
