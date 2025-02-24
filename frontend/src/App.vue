@@ -183,9 +183,27 @@
             'X-CSRFToken' : useUserStore().csrf
           },
         })
-        this.go_home()
+        location.reload()
       },
-      sign_in(): void {
+      async sign_in(): Promise<void> {
+        // let csrf
+        // for (let cookie of document.cookie.split(';')) {
+        //   const cookie_pair = cookie.split('=')
+        //    if (cookie_pair[0] === 'csrftoken') {
+        //       csrf = cookie_pair[1]
+        //    }
+        // }
+        // if (csrf === undefined) return
+        // await fetch(`http://localhost:8000/login/`, {
+        //   method: 'POST',
+        //   credentials: 'include',
+        //   headers: {
+        //     'Content-Type' : 'application/json',
+        //     'X-CSRFToken' : csrf
+        //   },
+        //   body: JSON.stringify(window.location.href)
+        // })
+        // location.reload()
         window.location.href = 'http://localhost:8000/login'
       },
       async update_setting(called_by: string, data: string): Promise<void> {

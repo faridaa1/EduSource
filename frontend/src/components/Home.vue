@@ -6,7 +6,7 @@
             </div>
             <div class="displays">
                 <div v-for="listing in textbooks">
-                    <div class="listed" v-if="listing.type === 'Textbook'" @click="showResourcePage(listing.name)">
+                    <div class="listed" v-if="listing.type === 'Textbook'" @click="showResourcePage(listing)">
                         <img :src="`http://localhost:8000${listing.image1}`" alt="Textbook">
                         {{ listing.price }}
                     </div>
@@ -19,9 +19,9 @@
             </div>
             <div class="displays">
                 <div v-for="listing in textbooks">
-                    <div class="listed" v-if="listing.type === 'Textbook'" @click="showResourcePage(listing.name)">
+                    <div class="listed" v-if="listing.type === 'Textbook'" @click="showResourcePage(listing)">
                         <img :src="`http://localhost:8000${listing.image1}`" alt="Textbook">
-                        {{ listing.price }}
+                        {{ Object.keys(user).length === 0 ? currency(listing) : '' }}{{ listing.price }}
                     </div>
                 </div>
             </div>
@@ -32,9 +32,9 @@
             </div>
             <div class="displays">
                 <div v-for="listing in notes">
-                    <div class="listed" @click="showResourcePage(listing.name)">
+                    <div class="listed" @click="showResourcePage(listing)">
                         <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
-                        {{ listing.price }}
+                        {{ Object.keys(user).length === 0 ? currency(listing) : '' }}{{ listing.price }}
                     </div>
                 </div>
             </div>
@@ -44,9 +44,9 @@
                 <p> Stationery</p>
                 <div class="displays">
                     <div v-for="listing in stationery">
-                        <div class="listed" @click="showResourcePage(listing.name)">
+                        <div class="listed" @click="showResourcePage(listing)">
                             <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
-                            {{ listing.price }}
+                            {{ Object.keys(user).length === 0 ? currency(listing) : '' }}{{ listing.price }}
                         </div>
                     </div>
                 </div>
@@ -74,6 +74,10 @@
         }},
         methods: {
             async listedprice(resource: Resource): Promise<number> {
+                if (Object.keys(this.user).length === 0) {
+                    // if user is unauthenticated
+                    return resource.price
+                }
                 if (resource === undefined) return 0
                 let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
@@ -85,8 +89,11 @@
                 let returnedPrice: {new_price: number} = await convertedPrice.json()
                 return returnedPrice.new_price
             },
-            showResourcePage(resourceName: string): void {
-                window.location.href = `/view/${resourceName}`
+            showResourcePage(resource: Resource): void {
+                window.location.href = `/view/${resource.id}`
+            },
+            currency(resource: Resource): string {
+                return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
             },
         },
         computed: {
@@ -94,8 +101,21 @@
                 return useUserStore().user
             },
             resources(): Resource[] {
-                console.log(useResourcesStore().resources)
-                return useResourcesStore().resources
+                const allResources: Resource[] = useResourcesStore().resources
+                let generic_items = [] as string[]
+                let newAllResources = [] as Resource[]
+                for (let resource of allResources) {
+                    if (parseInt(resource.stock.toString()) === 0) continue
+                    if (!resource.unique) {
+                        if (!(generic_items.includes(resource.name))) {
+                            newAllResources.push(resource)
+                            generic_items.push(resource.name)
+                        } 
+                    } else {
+                        newAllResources.push(resource)
+                    }
+                }
+                return newAllResources
             },
             textbooks(): Resource[] {
                 if (!this.resources) return []
@@ -108,7 +128,7 @@
             stationery(): Resource[] {
                 if (!this.resources) return []
                 return this.resources.filter(resource => resource.type === 'Stationery' && !resource.is_draft)
-            }
+            },
         },
         watch: {
             async user(new_user: User): Promise<void> {

@@ -52,7 +52,7 @@ def signup(request: HttpRequest) -> HttpResponse:
 
 def login(request: HttpRequest) -> HttpResponse:
     """Handling user log in"""
-    if request.method == 'POST':
+    if request.method == 'POST' and not b'localhost:5173' in request.body:
         login_form: LoginForm = LoginForm(request.POST)
         if login_form.is_valid():
             login_data: dict[str, str] = login_form.cleaned_data

@@ -6,7 +6,7 @@
         <div id="resource">
             <img id="resource-image" :src="`http://localhost:8000/${(resource as Resource).image1}`" :alt="`${(resource as Resource).type}`">
             <div id="resource-price-and-rating">
-                <div>{{ (resource as Resource).price }}</div>
+                <div>{{ Object.keys(user).length === 0 ? unauth_currency(resource as Resource) : '' }}{{ (resource as Resource).price }}</div>
                 <div id="rating">
                     <i id="one" class="bi bi-star-fill"></i>
                     <i id="two" class="bi bi-star-fill"></i>
@@ -19,7 +19,7 @@
                 </div>
                 <span v-if="total_ratings === 0">0 ratings</span>
                 <div id="add-review" v-if="!written_review && total_ratings === 0" @click="add_review">Be the first to write a review</div>
-                <div id="add-review" v-if="total_ratings > 0 && possible_sellers(false).length > 0" @click="add_review">Add Review</div>
+                <div id="add-review" v-if="Object.keys(user).length > 0 && total_ratings > 0 && possible_sellers(false).length > 0" @click="add_review">Add Review</div>
                 <div id="est-del">Estimated: {{ parseFloat((resource as Resource).estimated_delivery_time.toString()) }} {{ (resource as Resource).estimated_delivery_units }} {{ (resource as Resource).delivery_option }}</div>
             </div>
         </div>
@@ -38,7 +38,7 @@
                 </div>
                 <div id="total" v-if="cart_resource.number > 0"> Total: {{ user.currency === 'GBP' ? '£' : user.currency === 'USD' ? '$' : '€' }}{{ (cart_resource.number * cart_price).toFixed(2) }} </div>
             </div>
-            <div v-if="cart_resource.number === 0" @click="edit_wishlist()">{{ in_wishlist ? 'Remove from Wishlist' : 'Add to Wishlist' }}</div>
+            <div v-if="Object.keys(user).length > 0 && cart_resource.number === 0" @click="edit_wishlist()">{{ in_wishlist ? 'Remove from Wishlist' : 'Add to Wishlist' }}</div>
         </div>
         <div id="view-sellers">
             <p @click="show_sellers">View Sellers</p>
@@ -84,7 +84,7 @@
         </div>
         <div id="my-review">
             <div id="filtering" v-if="!addingReview && !editing">
-                <button id="add-review" v-if="!addingReview && possible_sellers(false).length > 0" @click="add_review">Click to add Review</button>
+                <button id="add-review" v-if="Object.keys(user).length > 0 && !addingReview && possible_sellers(false).length > 0" @click="add_review">Click to add Review</button>
                 <div id="sorting">
                     <div id="filter-right">
                         <div class="filtering">
@@ -358,6 +358,9 @@
             image: new File([''], ''),
         }},
         methods: {
+            unauth_currency(resource: Resource): string {
+                return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
+            },
             async edit_wishlist(): Promise<void> {
                 const editWishlistResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/wishlist/`, {
                     method: this.in_wishlist ? 'DELETE' : 'POST',
@@ -728,6 +731,7 @@
             },
             async listedprice(resource: Resource): Promise<number> {
                 if (resource === undefined) return 0
+                if (Object.keys(this.user).length === 0) return resource.price
                 let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
@@ -755,6 +759,7 @@
                 })
             },
             possible_sellers(editing: boolean): Resource[] {
+                if (Object.keys(this.user).length === 0) return this.allResources
                 // filter so that user cannot review seller twice; check who theyve reviewed and remove them
                 let resources = this.allResources.filter(resource =>  resource.user !== this.user.id)
                 if (editing) {
@@ -873,8 +878,17 @@
             },
             allResources(): Resource[] {
                 const window_location: string[] = window.location.href.split('/')
-                const name: string = window_location[window_location.length-1]
-                return useResourcesStore().resources.filter(resource => resource.name === name)
+                const id: string = window_location[window_location.length-1]
+                let returnedResources = [] as Resource[]
+                const initial_resource: Resource | undefined = useResourcesStore().resources.find(resource => resource.id === parseInt(id))
+                if (initial_resource === undefined) return []
+                if (initial_resource.unique) {
+                    returnedResources.push(initial_resource)
+                    return returnedResources
+                }
+                const resources: Resource[] = useResourcesStore().resources.filter(resource => resource.name === initial_resource.name && !resource.unique && resource.stock > 0)
+                returnedResources.push(...resources)
+                return returnedResources
             },
             resource(): Resource | {} {
                 const window_location: string[] = window.location.href.split('/')
@@ -950,12 +964,14 @@
             },
             allResources(): void {
                 this.get_all_reviews()
-                this.updateWishlist(this.user.wishlist)
-                this.get_cart()
-                for (const resource of this.allResources) {
-                    const item = this.user.cart.resources.find(item => item.resource === resource.id)
-                    if (item) {
-                        this.seller = resource.id
+                if (Object.keys(this.user).length > 0) {
+                    this.updateWishlist(this.user.wishlist)
+                    this.get_cart()
+                    for (const resource of this.allResources) {
+                        const item = this.user.cart.resources.find(item => item.resource === resource.id)
+                        if (item) {
+                            this.seller = resource.id
+                        }
                     }
                 }
             },

@@ -23,7 +23,7 @@ const router = createRouter({
     { path: '/new-listing/notes', name: 'new listing notes', component: NewListing },
     { path: '/new-listing/stationery', name: 'new listing stationery', component: NewListing },
     { path: '/resource/:id', name: 'resource', component: Resource },
-    { path: '/view/:name', name: 'buyer resource', component: BuyerResource },
+    { path: '/view/:id', name: 'buyer resource', component: BuyerResource },
     { path: '/cart', name: 'cart', component: Cart },
     { path: '/wishlist', name: 'wishlist', component: Wishlist },
     { path: '/checkout', name: 'checkout', component: Checkout },
