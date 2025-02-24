@@ -163,7 +163,7 @@
                 <div id="options">
                     <div>
                         <label for="">Delivery</label>
-                        <input type="checkbox" v-model="allow_delivery">
+                        <input type="checkbox" v-model="allow_delivery" id="allow_delivery">
                     </div>
                     <div>
                         <label for="">Collection</label>
@@ -454,6 +454,15 @@
                     })
                     return
                 } 
+
+                // delivery validation 
+                if (!is_draft && !this.allow_collection && !this.allow_delivery) {
+                    const deliveryInput: HTMLInputElement = document.getElementById('allow_delivery') as HTMLInputElement
+                    deliveryInput.setCustomValidity('Must choose at least delivery or collection')
+                    deliveryInput.reportValidity()
+                    deliveryInput.scrollIntoView()
+                    return
+                }
 
                 // built in validation
                 const form: HTMLDivElement = document.getElementById('new-listing') as HTMLDivElement
