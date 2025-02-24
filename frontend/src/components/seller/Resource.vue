@@ -474,6 +474,7 @@ import { useUsersStore } from '@/stores/users';
                 useUserStore().updateListing(putListingData)
                 useUsersStore().updateUser(this.user)
                 useResourcesStore().updateResource(putListingData)
+                window.location.href = '/listings'
             },
             remove_video(event:Event): void {
                 event.preventDefault()

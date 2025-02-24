@@ -2,37 +2,20 @@
     <div id="new-listing">
         <div id="header">
             <h1>New Resource Listing</h1>
-            <div id="buttons" v-if="!duplicate_resource">
-                <button @click="submit(false)">List Item</button>
-                <button @click="submit(true)">Save as Draft</button>
+            <div id="buttons">
+                <button @click="submit(resource.is_draft)">Update Details</button>
+                <button @click="submit(resource.is_draft ? false : true)">{{ resource && resource.is_draft ? 'List Item' : 'Save as Draft'}}</button>
+                <button class="delete_listing" @click="delete_listing">Delete Listing</button>
             </div>
         </div>
-
         <div id="form" @input="clear_errors" @change="clear_errors">
-            <div class="form-item" id="author">
-                <label for="" id="author-container">Author <span class="required">*</span></label>
-                <input type="text" v-model="author" id="author-field" :disabled="self_made">
-                <div id="author-div">
-                    <label for="">Resource was self-made</label>
-                    <input type="checkbox" :checked="self_made" @click="self_made = !self_made">
-                </div>
-                <p v-if="self_made">Author will show up as your username, <span>{{ user.username }}</span></p>
-            </div>
             <div class="form-item">
                 <label for="">Name <span class="required">*</span></label>
                 <input type="text" name="" id="name" v-model="name">
-                <div id="resource_exists" v-if="exists_resource">
-                    <p>A resource exists with this name, so certain details below cannot be changed.</p>
-                    <p>Select 'Resource was self-made', change the resource name,  or change the resource author name to be able to edit all details.</p>
-                </div>
-                <div id="duplicate" v-if="duplicate_resource">
-                    <p>You already sell this resource.</p>
-                    <p>Select 'Resource was self-made', change the resource name, or change the author name to be able to save this item.</p>
-                </div>
             </div>
             <div class="form-item">
                 <label for="">Description <span class="required">*</span></label>
-                <textarea name="" id="description" v-model="description" :disabled="exists_resource"></textarea>
+                <textarea name="" id="description" v-model="description"></textarea>
             </div>
             <div id="dimensions" class="form-item">
                 <label for="">Dimensions <span class="required">*</span></label>
@@ -40,8 +23,8 @@
                     <div class="dimension">
                         <label for="">Height</label>
                         <div>
-                            <input required type="number" min="1" max="1000.00" step="0.01" v-model="height" :disabled="exists_resource">
-                            <select name="" id="height_dimension" v-model="dimension_unit" :disabled="exists_resource">
+                            <input required type="number" min="1" max="1000.00" step="0.01" v-model="height">
+                            <select name="" id="height_dimension" v-model="dimension_unit">
                                 <option value="cm">cm</option>
                                 <option value="m">m</option>
                                 <option value="in">in</option>
@@ -51,8 +34,8 @@
                     <div class="dimension">
                         <label for="">Width</label>
                         <div>
-                            <input required type="number" max="1000.00" min="1" step="0.01" v-model="width" :disabled="exists_resource">
-                            <select name="" id="width_dimension" v-model="dimension_unit" :disabled="exists_resource">
+                            <input required type="number" max="1000.00" min="1" step="0.01" v-model="width">
+                            <select name="" id="width_dimension" v-model="dimension_unit">
                                 <option value="cm">cm</option>
                                 <option value="m">m</option>
                                 <option value="in">in</option>
@@ -62,8 +45,8 @@
                     <div class="dimension">
                         <label for="">Weight</label>
                         <div>
-                            <input required type="number" min="1" max="1000.00" step="0.01" v-model="weight" :disabled="exists_resource">
-                            <select name="" id="weight_dimension" v-model="weight_unit" :disabled="exists_resource">
+                            <input required type="number" min="1" max="1000.00" step="0.01" v-model="weight">
+                            <select name="" id="weight_dimension" v-model="weight_unit">
                                 <option value="kg">kg</option>
                                 <option value="ml">ml</option>
                                 <option value="L">L</option>
@@ -77,7 +60,7 @@
             </div>
             <div class="form-item" id="type-container">
                 <label for="">Type <span class="required">*</span></label>
-                <select name="" id="type" v-model="type" :disabled="exists_resource">
+                <select name="" id="type" v-model="type">
                     <option value="Textbook">Textbook</option>
                     <option value="Notes">Notes</option>
                     <option value="Stationery">Stationery</option>
@@ -101,14 +84,8 @@
             <div class="form-item" id="subject-container">
                 <label for="">Subject <span class="required">*</span></label>
                 <div>
-                    <input id="subject" type="text" v-model="subject" :disabled="exists_resource">
-                    <select v-model="subject_select" :disabled="exists_resource">
-                        <option value="" selected disabled hidden>
-                            Select
-                        </option>
-                        <option :value="subject" v-for="subject in all_subjects">
-                            {{ subject }}
-                        </option>
+                    <input id="subject" type="text" v-model="subject">
+                    <select name="" v-model="subject">
                     </select>
                 </div>
             </div>
@@ -127,6 +104,15 @@
                     <option value="Brown">Brown</option>
                     <option value="Grey">Grey</option>
                 </select>
+            </div>
+            <div class="form-item" id="author">
+                <label for="" id="author-container">Author <span class="required">*</span></label>
+                <input type="text" v-model="author" id="author-field">
+                <div id="author-div">
+                    <label for="">Resource was self-made</label>
+                    <input type="checkbox" :checked="self_made" name="" @click="self_made = !self_made">
+                </div>
+                <p v-if="self_made">Author will show up as <span>{{ user.username }}</span></p>
             </div>
             <div v-if="self_made" class="form-item" id="sources-container">
                 <label for="">Assisted Sources <span class="required">*</span></label>
@@ -170,17 +156,17 @@
                 <div id="price-flex">
                     <input required type="number" max="9999.00" min="1" step="1" v-model="estimated_delivery_number">
                     <select name="" id="estimated-delivery-field" v-model="estimated_delivery_units">
-                        <option value="minute">{{ estimated_delivery_number === 1 ? 'minute' : 'minutes' }}</option>
-                        <option value="hour">{{ estimated_delivery_number === 1 ? 'hour' : 'hours' }}</option>
-                        <option value="day">{{ estimated_delivery_number === 1 ? 'day' : 'days' }}</option>
-                        <option value="week">{{ estimated_delivery_number === 1 ? 'week' : 'weeks' }}</option>
-                        <option value="month">{{ estimated_delivery_number === 1 ? 'month' : 'months' }}</option>
+                        <option value="minute">{{ estimated_delivery_number === 1.00 ? 'minute' : 'minutes' }}</option>
+                        <option value="hour">{{ estimated_delivery_number === 1.00 ? 'hour' : 'hours' }}</option>
+                        <option value="day">{{ estimated_delivery_number === 1.00 ? 'day' : 'days' }}</option>
+                        <option value="week">{{ estimated_delivery_number === 1.00 ? 'week' : 'weeks' }}</option>
+                        <option value="month">{{ estimated_delivery_number === 1.00 ? 'month' : 'months' }}</option>
                     </select>
                 </div>
             </div>
             <div class="form-item" id="image-container">
                 <label for="">Images (.png) <span class="required">*</span></label>
-                <p id="images-label" v-if="image_error">{{ image_error }}</p>
+                <p id="images-label">{{ image_error }}</p>
                 <div id="images">
                     <div class="image_input" id="image">
                         <input id="image1" type="file" accept=".png" @change="(event) => show_image(event, 1)">
@@ -201,8 +187,8 @@
                 </div>
             </div>
             <div class="form-item" id="video-container">
-                <label for="">Video (.mp4) <span class="required">*</span></label>
-                <p id="videos-label" v-if="video_error">{{ video_error }}</p>
+                <label for="">Videos (.mp4) <span class="required">*</span></label>
+                <p id="videos-label">{{ video_error }}</p>
                 <div class="video_input" id="video_1">
                     <input id="video1" type="file" accept=".mp4" @change="show_video">
                     <label for="video1" class="video-square">
@@ -213,9 +199,10 @@
                 </div>
             </div>
         </div>
-        <div id="buttons1" v-if="!duplicate_resource">
-            <button :disabled="duplicate_resource" @click="submit(false)">List Item</button>
-            <button :disabled="duplicate_resource" @click="submit(true)">Save as Draft</button>
+        <div id="buttons1">
+            <button @click="submit(resource.is_draft)">Update Details</button>
+            <button @click="submit(resource.is_draft ? false : true)">{{ resource && resource.is_draft ? 'List Item' : 'Save as Draft'}}</button>
+            <button class="delete_listing" @click="delete_listing">Delete Listing</button>
         </div>
     </div>
 </template>
@@ -224,13 +211,10 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent } from 'vue';
     import type { Resource, User } from '@/types';
-    import { useUsersStore } from '@/stores/users';
     import { useResourcesStore } from '@/stores/resources';
+import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
-            duplicate_resource: boolean,
-            existing_resource: Resource,
-            exists_resource: boolean,
             name: string,
             description: string,
             height: number,
@@ -240,7 +224,6 @@
             dimension_unit: string,
             type: 'Textbook' | 'Notes' | 'Stationery'
             subject: string
-            subject_select: string
             colour: 'Black' | 'Red' | 'Yellow' | 'Pink'
                     | 'Purple' | 'Green' | 'Blue' | 'White'
                     | 'Orange' | 'Brown' | 'Grey'
@@ -263,11 +246,11 @@
             media: 'Online' | 'Paper',
             page_start: number,
             page_end: number,
+            image1Changed: boolean,
+            image2Changed: boolean,
+            videoChanged: boolean,
         } { return {
-            duplicate_resource: false,
-            exists_resource: false,
             name: '',
-            existing_resource: {} as Resource,
             description: '',
             height: 1,
             width: 1,
@@ -276,7 +259,6 @@
             dimension_unit: 'cm',
             type: 'Textbook',
             subject: '',
-            subject_select: '',
             colour: 'Black',
             author: '',
             condition: 'Used',
@@ -287,7 +269,7 @@
             image1: new File([''], ''),
             image2: new File([''], ''),
             video1: new File([''], ''),
-            estimated_delivery_number: 1,
+            estimated_delivery_number: 1.00,
             estimated_delivery_units: 'day',
             delivery_options: 'Delivery',
             stock: 0,
@@ -297,8 +279,32 @@
             media: 'Paper',
             page_start: 1,
             page_end: 1,
+            image1Changed: false,
+            image2Changed: false,
+            videoChanged: false,
         }},
         methods: {
+            async delete_listing(): Promise<void> {
+                if (confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
+                    let deleteListingResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/new-listing/`, {
+                        method: 'DELETE',
+                        credentials: 'include',
+                        headers: {
+                            'X-CSRFToken' : useUserStore().csrf
+                        },
+                        body: JSON.stringify(this.resource.id)
+                    })
+                    if (!deleteListingResponse.ok) {
+                        console.error('Failed to delete listing')
+                        alert('Failed to delete listing')
+                        return
+                    }
+                    useResourcesStore().removeResource(this.resource.id)
+                    useUserStore().removeResource(this.resource.id)
+                    useUsersStore().updateUser(this.user)
+                    window.location.href = '/listings'
+                }
+            },
             clear_errors(): void {
                 const form: HTMLDivElement = document.getElementById('new-listing') as HTMLDivElement
                 const inputs = form.querySelectorAll('input, textarea, select')
@@ -365,8 +371,7 @@
 
                 // author validation
                 const authorInputField: HTMLInputElement = document.getElementById('author-field') as HTMLInputElement
-                if (this.self_made) {
-                } else if (this.author.length === 0) {
+                if (this.author.length === 0) {
                     authorInputField.setCustomValidity('Cannot be empty')
                     authorInputField.reportValidity()
                     return
@@ -374,7 +379,7 @@
                     authorInputField.setCustomValidity('Name must be less than 150 characters')
                     authorInputField.reportValidity()
                     return
-                } else if (!this.author.match(/^[a-zA-Z]+( [a-zA-Z]+)*$/)) {
+                } else if ((!(this.author === this.user.username)) && !this.author.match(/^[a-zA-Z]+( [a-zA-Z]+)*$/)) {
                     if (!this.author.match(/^\S/)) {
                         authorInputField.setCustomValidity('Cannot start with space')
                     } else if (!this.author.match(/\S$/)) {
@@ -389,20 +394,21 @@
                 }
 
                 // ensuring images are uploaded
-                if (this.image1.name === '' && this.image2.name === '') {
+                const imageInputField: HTMLInputElement = document.getElementById('images-label') as HTMLInputElement
+                if (imageInputField && this.image1.name === '' && this.image2.name === '') {
                     this.image_error = 'Upload 2 supporting images'
-                    const imageInputField: HTMLInputElement = document.getElementById('images-label') as HTMLInputElement
                     imageInputField.scrollIntoView()
-                } else if ((this.image1.name === '' || this.image2.name === '')) {
+                    return
+                } else if (imageInputField && (this.image1.name === '' || this.image2.name === '')) {
                     this.image_error = 'Upload 1 supporting image'
-                    const imageInputField: HTMLInputElement = document.getElementById('images-label') as HTMLInputElement
                     imageInputField.scrollIntoView()
+                    return
                 }
 
                 // ensuring video is uploaded
-                if (this.video1.name === '') {
+                const videoInputField: HTMLInputElement = document.getElementById('videos-label') as HTMLInputElement
+                if (videoInputField && this.video1.name === '') {
                     this.video_error = 'Upload 1 supporting video'
-                    const videoInputField: HTMLInputElement = document.getElementById('videos-label') as HTMLInputElement
                     videoInputField.scrollIntoView()
                     return
                 } 
@@ -422,6 +428,7 @@
             },
             async post_listing(is_draft: boolean): Promise<void> {
                 const data: FormData = new FormData()
+                data.append('id', this.resource.id.toString())
                 data.append('name', this.name)
                 data.append('description', this.description)
                 data.append('height', this.height.toString())
@@ -444,14 +451,13 @@
                 data.append('estimated_number', this.estimated_delivery_number.toString())
                 data.append('estimated_units', this.estimated_delivery_units)
                 data.append('delivery', this.delivery_options)
-                data.append('image1', this.image1)
-                data.append('image2', this.image2)
-                data.append('video', this.video1)
+                if (this.image1Changed) data.append('image1', this.image1)
+                if (this.image2Changed) data.append('image2', this.image2)
+                if (this.videoChanged) data.append('video', this.video1)
                 data.append('is_draft', is_draft.toString())
                 data.append('source', this.source)
                 data.append('condition', this.condition)
-                data.append('unique', (!this.exists_resource).toString())
-                let postListingResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/new-listing/`, {
+                let putListingResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/new-listing/`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
@@ -459,15 +465,15 @@
                     },
                     body: data
                 })
-                if (!postListingResponse.ok) {
-                    console.error(is_draft ? 'Error saving listing as draft' : 'Error posting listing')
-                    alert(is_draft ? 'Error saving listing as draft' : 'Error posting listing')
+                if (!putListingResponse.ok) {
+                    console.error(is_draft ? 'Error updating listing as draft' : 'Error updating listing')
+                    alert(is_draft ? 'Error updating listing as draft' : 'Error updating listing')
                     return
                 }
-                const postListingData: Resource = await postListingResponse.json()
-                useUserStore().addListing(postListingData)
+                const putListingData: Resource = await putListingResponse.json()
+                useUserStore().updateListing(putListingData)
                 useUsersStore().updateUser(this.user)
-                window.location.href = '/listings'
+                useResourcesStore().updateResource(putListingData)
             },
             remove_video(event:Event): void {
                 event.preventDefault()
@@ -490,8 +496,9 @@
                 vid.src = URL.createObjectURL(video)
                 vid.style.display = 'block'
                 this.video1 = video
+                this.videoChanged = true
             },
-            remove_image(event:Event, image_number: number): void {
+            remove_image(event: Event, image_number: number): void {
                 event.preventDefault()
                 const img: HTMLImageElement = document.getElementById(image_number === 1 ? 'img1' : 'img2') as HTMLImageElement
                 const image: HTMLInputElement = document.getElementById(image_number === 1 ? 'image1' : 'image2') as HTMLInputElement
@@ -517,8 +524,10 @@
                 img.style.display = 'block'
                 if (image_number === 1) {
                     this.image1 = image
+                    this.image1Changed = true
                 } else {
                     this.image2 = image
+                    this.image2Changed = true
                 }
             },
             new_listing():void {
@@ -530,126 +539,107 @@
                 let user: User = useUserStore().user
                 return user
             },
-            resources(): Resource[] {
-                return useResourcesStore().resources
-            },
-            all_subjects(): string[] {
-                let subjects = [] as string[]
-                for (let resource of this.resources) {
-                    if (!subjects.includes(resource.subject)) {
-                        subjects.push(resource.subject)
-                    }
+            resource(): Resource {
+                const emptyResource: Resource = {
+                    id: -1,
+                    name: '',
+                    reviews: [],
+                    description: '',
+                    height: -1,
+                    width: -1,
+                    weight: -1,
+                    price: -1,
+                    stock: -1,
+                    estimated_delivery_time: -1,
+                    subject: '',
+                    author: '',
+                    self_made: false,
+                    is_draft: false,
+                    page_start: -1,
+                    page_end: -1,
+                    height_unit: 'cm',
+                    width_unit: 'cm',
+                    image1: '',
+                    image2: '',
+                    video: '',
+                    weight_unit: 'kg',
+                    price_currency: 'GBP',
+                    estimated_delivery_units: 'day',
+                    type: 'Textbook',
+                    colour: 'Black',
+                    rating: -1,
+                    source: 'None',
+                    condition: 'New',
+                    media: 'Online',
+                    delivery_option: 'Delivery',
+                    upload: '',
+                    user: this.user.id,
+                    unique: true
                 }
-                return subjects
+                const url: string | undefined = window.location.href
+                if (url === undefined) return emptyResource
+                const urlArray: string | undefined = url.split('/').pop()
+                if (urlArray === undefined) return emptyResource
+                const resourceId: number = parseInt(urlArray) as number
+
+                let resource: Resource = useUserStore().user.listings?.find(listing => listing.id === resourceId) as Resource
+                return resource
             }
         },
         watch: {
-            user(new_user): void {
+            user(new_user: User): void {
                 this.currency = new_user.currency
             },
-            subject(new_subject: string): void {
-                if (this.resources.map(resource => resource.subject).includes(new_subject)) {
-                    this.subject_select = new_subject
-                } else {
-                    this.subject_select = ''
-                }
-            },
-            subject_select(new_subject: string): void {
-                if (new_subject !== '') {
-                    this.subject = new_subject
-                }
-            },
-            name(new_name: string): void {
-                if (this.self_made) return
-                for (let resource of this.resources) {
-                    if (new_name === resource.name) {
-                        if (this.resources.filter(resource => resource.name === new_name && !resource.unique).map(resource => resource.user).includes(this.user.id)) {
-                            this.duplicate_resource = true
-                            return
-                        }
-                        this.exists_resource = true
-                        this.existing_resource = resource
-                        return
-                    }
-                }
-                this.existing_resource = {} as Resource
-                this.duplicate_resource = false
-                this.exists_resource = false
-            },
-            self_made(new_self_made: boolean): void {
-                if (new_self_made) {
-                    this.author = this.user.username
-                    this.existing_resource = {} as Resource
-                    this.exists_resource = false
-                    this.duplicate_resource = false
-                    return
-                }
-                for (let resource of this.resources) {
-                    if (this.name === resource.name) {
-                        if (this.resources.filter(resource => resource.name === this.name).map(resource => resource.user).includes(this.user.id)) {
-                            this.duplicate_resource = true
-                            return
-                        }
-                        this.exists_resource = true
-                        this.existing_resource = resource
-                        return
-                    }
-                }
-                this.existing_resource = {} as Resource
-                this.exists_resource = false
-            },
-            author(new_author: string): void {
-                if (new_author !== this.user.username) {
-                    this.self_made = false
-                } 
-                if (Object.keys(this.existing_resource).length > 0) {
-                    if (this.author !== this.existing_resource.author) {
-                        this.exists_resource = false
-                    } else {
-                        this.exists_resource = true
-                    }
-                } 
-                const duplicate_resource = this.resources.find(resource => resource.name === this.name && resource.user === this.user.id)
-                if (duplicate_resource) {
-                    if (this.author !== duplicate_resource.author) {
-                        this.duplicate_resource = false
-                    } else {
-                        this.duplicate_resource = true
-                    }
-                }
-            },
-            existing_resource(new_existing_resource: Resource): void {
-                if (Object.keys(this.existing_resource).length > 0) {
-                    this.author = new_existing_resource.author
-                    this.description = new_existing_resource.description
-                    this.height = new_existing_resource.height
-                    this.dimension_unit = new_existing_resource.height_unit
-                    this.width = new_existing_resource.width
-                    this.weight = new_existing_resource.weight
-                    this.weight_unit = new_existing_resource.weight_unit
-                    this.subject = new_existing_resource.subject
-                    this.colour = new_existing_resource.colour
-                }
-            }
-        },
-        mounted(): void {
-            this.currency = this.user.currency
-            if (window.location.href.includes('notes')) {
-                this.type = 'Notes'
-            } else if (window.location.href.includes('stationery')) {
-                this.type = 'Stationery'
+            resource(new_resource: Resource): void{
+                this.currency = this.user.currency
+                this.name = new_resource.name
+                this.description = new_resource.description
+                this.height = new_resource.height
+                this.dimension_unit = new_resource.height_unit
+                this.width = new_resource.width
+                this.weight = new_resource.weight
+                this.weight_unit = new_resource.weight_unit
+                this.type = new_resource.type
+                this.media = new_resource.media
+                this.page_start = new_resource.page_start
+                this.page_end = new_resource.page_end
+                this.subject = new_resource.subject
+                this.colour = new_resource.colour
+                this.author = new_resource.author
+                this.self_made = new_resource.self_made
+                this.source = new_resource.source
+                this.condition = new_resource.condition
+                this.price = new_resource.price
+                this.currency = new_resource.price_currency
+                this.stock = new_resource.stock
+                this.is_draft = new_resource.is_draft
+                this.delivery_options = new_resource.delivery_option
+                this.estimated_delivery_number = parseFloat(new_resource.estimated_delivery_time.toString())
+                this.estimated_delivery_units = new_resource.estimated_delivery_units
+                const image1: HTMLImageElement = document.getElementById('img1') as HTMLImageElement
+                image1.src = `http://localhost:8000${new_resource.image1}`
+                image1.style.display = 'block'
+                this.image1 = new File([], image1.src)
+                const image2: HTMLImageElement = document.getElementById('img2') as HTMLImageElement
+                image2.src = `http://localhost:8000${new_resource.image2}`
+                this.image2 = new File([], image2.src)
+                image2.style.display = 'block'
+                const vid: HTMLImageElement = document.getElementById('vid1') as HTMLImageElement
+                vid.src = `http://localhost:8000${new_resource.video}`
+                vid.style.display = 'block'
+                this.video1 = new File([], vid.src)
             }
         }
     })
 </script>
 <style scoped>
     #new-listing {
-        height: 58.5rem;
+        height: 53rem;
         overflow-y: auto;
         padding-right: 10rem;
         padding-left: 3rem;
+        margin-bottom: 1rem;
         margin-top: 2rem;
-        padding-bottom: 3rem !important;
     }
 
     h1 {
@@ -809,7 +799,6 @@
         display: none;
         max-height: 100%;
         width: 100%;
-        background-color: yellow;
     }
 
     #header {
@@ -879,35 +868,12 @@
         justify-content: flex-end;
     }
 
-    #resource_exists {
-        display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
-        background-color: #0DCAF0;
-        border-radius: 0.5rem;
-        padding: 0.5rem;
-    }
-
-    #dark #resource_exists {
-        background-color: darkgray;
-    }
-
-    #duplicate {
-        display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
-        background-color: red;
-        color: white;
-        border-radius: 0.5rem;
-        padding: 0.5rem;
-    }
-
-    #images-label, #videos-label {
-        display: flex;
-        margin-right: auto;
-        background-color: red;
+    .delete_listing {
         color: white !important;
-        padding: 0.5rem;
-        border-radius: 0.5rem;
+        background-color: red !important;
+    }
+
+    .delete_listing:hover {
+        background-color: rgb(133, 21, 21) !important;
     }
 </style>

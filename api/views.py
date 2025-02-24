@@ -279,6 +279,7 @@ def new_listing(request: HttpRequest, id: int) -> JsonResponse:
             source=data.get('source'),
             condition=data.get('condition'),
             media=data.get('media'),
+            unique=data.get('unique'),
             delivery_option=data.get('delivery'),
             user=user
         )
