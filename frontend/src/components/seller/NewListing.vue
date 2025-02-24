@@ -214,8 +214,8 @@
             </div>
         </div>
         <div id="buttons1" v-if="!duplicate_resource">
-            <button :disabled="duplicate_resource" @click="submit(false)">List Item</button>
-            <button :disabled="duplicate_resource" @click="submit(true)">Save as Draft</button>
+            <button @click="submit(false)">List Item</button>
+            <button @click="submit(true)">Save as Draft</button>
         </div>
     </div>
 </template>
