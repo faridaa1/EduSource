@@ -105,7 +105,7 @@
                 let generic_items = [] as string[]
                 let newAllResources = [] as Resource[]
                 for (let resource of allResources) {
-                    if (parseInt(resource.stock.toString()) === 0) continue
+                    if (parseInt(resource.stock.toString()) === 0 || resource.is_draft) continue
                     if (!resource.unique) {
                         if (!(generic_items.includes(resource.name))) {
                             newAllResources.push(resource)

@@ -6,7 +6,7 @@
             </div>
             <div id="seller" v-for="resource in listed_resources">
                 <div id="profile-pic">
-                    <div id="profile-section">
+                    <div id="profile-section" @click="view_seller(resource.user)">
                         <i class="bi bi-person-circle icon"></i>
                         <p>{{ users.find(user => user.id === resource.user)?.username }}</p>
                     </div>
@@ -60,7 +60,7 @@
                 <div id="buttons" v-if="Object.keys(user).length > 0">
                     <button v-if="seller !== resource.id" @click="$emit('update_seller', resource.id)">Select</button>
                     <button id="selected" v-if="seller === resource.id" @click="$emit('update_seller', resource.id)">Selected</button>
-                    <button>Message</button>
+                    <button v-if="resource.user !== user.id">Message</button>
                 </div>
                 <div id="media">
                     <img class="hoverable" :src="`http://localhost:8000${resource.image1}`" alt="Image1" @click="media_clicked=`${resource.id}image1`">
@@ -122,6 +122,9 @@
             media_clicked: ''
         }},
         methods: {
+            view_seller(seller_id: number): void {
+                window.location.href = this.user.id === seller_id ? '/listings' : `/seller/${this.users.find(user => user.id === seller_id)?.username}`
+            },
             unauth_currency(resource: Resource): string {
                 return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
             },
@@ -176,9 +179,6 @@
                     if (user_b && user_a) return user_b.rating - user_a.rating
                     return 0
                 })
-                if (Object.keys(this.user).length > 0) {
-                    sorted_resources = sorted_resources.filter(resource => resource.user !== this.user.id)
-                }
                 return sorted_resources
             }
         },
@@ -220,6 +220,14 @@
         display: flex;
         align-items: center;
         gap: 1rem;
+    }
+
+    #profile-section:hover {
+        cursor: pointer;
+    }
+
+    #profile-section p:hover {
+        text-decoration: underline;
     }
 
     #stars {
