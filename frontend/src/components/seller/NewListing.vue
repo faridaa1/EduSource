@@ -2,7 +2,7 @@
     <div id="new-listing">
         <div id="header">
             <h1>New Resource Listing</h1>
-            <div id="buttons">
+            <div id="buttons" v-if="!duplicate_resource">
                 <button @click="submit(false)">List Item</button>
                 <button @click="submit(true)">Save as Draft</button>
             </div>
@@ -21,9 +21,13 @@
             <div class="form-item">
                 <label for="">Name <span class="required">*</span></label>
                 <input type="text" name="" id="name" v-model="name">
-                <div id="resource_exists" v-if="Object.keys(existing_resource).length > 0">
+                <div id="resource_exists" v-if="exists_resource">
                     <p>A resource exists with this name, so certain details below cannot be changed.</p>
-                    <p>Select 'Resource was self-made', or update the resource name to be able to edit all details.</p>
+                    <p>Select 'Resource was self-made', or change the resource name to be able to edit all details.</p>
+                </div>
+                <div id="duplicate" v-if="duplicate_resource">
+                    <p>You already sell this resource.</p>
+                    <p>Select 'Resource was self-made', or change the resource name to be able to save this item.</p>
                 </div>
             </div>
             <div class="form-item">
@@ -209,9 +213,9 @@
                 </div>
             </div>
         </div>
-        <div id="buttons1">
-            <button @click="submit(false)">List Item</button>
-            <button @click="submit(true)">Save as Draft</button>
+        <div id="buttons1" v-if="!duplicate_resource">
+            <button :disabled="duplicate_resource" @click="submit(false)">List Item</button>
+            <button :disabled="duplicate_resource" @click="submit(true)">Save as Draft</button>
         </div>
     </div>
 </template>
@@ -224,6 +228,7 @@
     import { useResourcesStore } from '@/stores/resources';
     export default defineComponent({
         data(): {
+            duplicate_resource: boolean,
             existing_resource: Resource,
             exists_resource: boolean,
             name: string,
@@ -259,6 +264,7 @@
             page_start: number,
             page_end: number,
         } { return {
+            duplicate_resource: false,
             exists_resource: false,
             name: '',
             existing_resource: {} as Resource,
@@ -556,12 +562,17 @@
                 if (this.self_made) return
                 for (let resource of this.resources) {
                     if (new_name === resource.name) {
+                        if (this.resources.filter(resource => resource.name === new_name).map(resource => resource.user).includes(this.user.id)) {
+                            this.duplicate_resource = true
+                            return
+                        }
                         this.exists_resource = true
                         this.existing_resource = resource
                         return
                     }
                 }
                 this.existing_resource = {} as Resource
+                this.duplicate_resource = false
                 this.exists_resource = false
             },
             self_made(new_self_made: boolean): void {
@@ -569,10 +580,15 @@
                     this.author = this.user.username
                     this.existing_resource = {} as Resource
                     this.exists_resource = false
+                    this.duplicate_resource = false
                     return
                 }
                 for (let resource of this.resources) {
                     if (this.name === resource.name) {
+                        if (this.resources.filter(resource => resource.name === this.name).map(resource => resource.user).includes(this.user.id)) {
+                            this.duplicate_resource = true
+                            return
+                        }
                         this.exists_resource = true
                         this.existing_resource = resource
                         return
@@ -614,12 +630,12 @@
 </script>
 <style scoped>
     #new-listing {
-        height: 53rem;
+        height: 58.5rem;
         overflow-y: auto;
         padding-right: 10rem;
         padding-left: 3rem;
-        margin-bottom: 1rem;
         margin-top: 2rem;
+        padding-bottom: 3rem !important;
     }
 
     h1 {
@@ -853,5 +869,22 @@
         display: flex;
         flex-direction: column;
         gap: 0.4rem;
+        background-color: #0DCAF0;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    #dark #resource_exists {
+        background-color: darkgray;
+    }
+
+    #duplicate {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        background-color: red;
+        color: white;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
     }
 </style>
