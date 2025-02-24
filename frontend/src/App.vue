@@ -3,7 +3,7 @@
     <div id="light">
       <header id="main-header">
         <img id='logo' src="/logo-light.svg" alt="EduSource" width="125" height="125" v-pre/>
-        <RouterLink to="/" class="hide-on-mobile link">Home</RouterLink>
+        <RouterLink :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="hide-on-mobile link">Home</RouterLink>
         <div id="profile-div" class="hide-on-mobile" @click="show_profile('desktop')">
           <p id="profile-header" v-if="authenticated">Profile</p>
           <div id="profile-nav">
@@ -119,7 +119,7 @@
     async mounted(): Promise<void> {
       document.addEventListener('click', (event) => {
         let target: HTMLElement = event.target as HTMLElement
-        if (target.id === 'logo' && !(window.location.pathname === '/')) this.go_home()
+        if (target.id === 'logo' && !(window.location.pathname === '/') && !(window.location.pathname === '/listings')) this.go_home()
       })
       let usersResponse: Response = await fetch('http://localhost:8000/api/users/', {
         method: 'GET',
@@ -176,7 +176,7 @@
     },
     methods: {
       go_home(): void {
-        window.location.href = '/'
+        window.location.href = Object.keys(this.user).length === 0 || this.user.mode === 'buyer' ? '/' : '/listings'
       },
       async sign_out(): Promise<void> {
         await fetch(`http://localhost:8000/signout/`, {

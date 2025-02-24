@@ -7,14 +7,28 @@
                 <button @click="submit(true)">Save as Draft</button>
             </div>
         </div>
+
         <div id="form" @input="clear_errors" @change="clear_errors">
+            <div class="form-item" id="author">
+                <label for="" id="author-container">Author <span class="required">*</span></label>
+                <input type="text" v-model="author" id="author-field" :disabled="exists_resource">
+                <div id="author-div">
+                    <label for="">Resource was self-made</label>
+                    <input type="checkbox" :checked="self_made" @click="self_made = !self_made">
+                </div>
+                <p v-if="self_made">Author will show up as your username, <span>{{ user.username }}</span></p>
+            </div>
             <div class="form-item">
                 <label for="">Name <span class="required">*</span></label>
                 <input type="text" name="" id="name" v-model="name">
+                <div id="resource_exists" v-if="Object.keys(existing_resource).length > 0">
+                    <p>A resource exists with this name, so certain details below cannot be changed.</p>
+                    <p>Select 'Resource was self-made', or update the resource name to be able to edit all details.</p>
+                </div>
             </div>
             <div class="form-item">
                 <label for="">Description <span class="required">*</span></label>
-                <textarea name="" id="description" v-model="description"></textarea>
+                <textarea name="" id="description" v-model="description" :disabled="exists_resource"></textarea>
             </div>
             <div id="dimensions" class="form-item">
                 <label for="">Dimensions <span class="required">*</span></label>
@@ -22,8 +36,8 @@
                     <div class="dimension">
                         <label for="">Height</label>
                         <div>
-                            <input required type="number" min="1" max="1000.00" step="0.01" v-model="height">
-                            <select name="" id="height_dimension" v-model="dimension_unit">
+                            <input required type="number" min="1" max="1000.00" step="0.01" v-model="height" :disabled="exists_resource">
+                            <select name="" id="height_dimension" v-model="dimension_unit" :disabled="exists_resource">
                                 <option value="cm">cm</option>
                                 <option value="m">m</option>
                                 <option value="in">in</option>
@@ -33,8 +47,8 @@
                     <div class="dimension">
                         <label for="">Width</label>
                         <div>
-                            <input required type="number" max="1000.00" min="1" step="0.01" v-model="width">
-                            <select name="" id="width_dimension" v-model="dimension_unit">
+                            <input required type="number" max="1000.00" min="1" step="0.01" v-model="width" :disabled="exists_resource">
+                            <select name="" id="width_dimension" v-model="dimension_unit" :disabled="exists_resource">
                                 <option value="cm">cm</option>
                                 <option value="m">m</option>
                                 <option value="in">in</option>
@@ -44,8 +58,8 @@
                     <div class="dimension">
                         <label for="">Weight</label>
                         <div>
-                            <input required type="number" min="1" max="1000.00" step="0.01" v-model="weight">
-                            <select name="" id="weight_dimension" v-model="weight_unit">
+                            <input required type="number" min="1" max="1000.00" step="0.01" v-model="weight" :disabled="exists_resource">
+                            <select name="" id="weight_dimension" v-model="weight_unit" :disabled="exists_resource">
                                 <option value="kg">kg</option>
                                 <option value="ml">ml</option>
                                 <option value="L">L</option>
@@ -59,7 +73,7 @@
             </div>
             <div class="form-item" id="type-container">
                 <label for="">Type <span class="required">*</span></label>
-                <select name="" id="type" v-model="type">
+                <select name="" id="type" v-model="type" :disabled="exists_resource">
                     <option value="Textbook">Textbook</option>
                     <option value="Notes">Notes</option>
                     <option value="Stationery">Stationery</option>
@@ -83,8 +97,14 @@
             <div class="form-item" id="subject-container">
                 <label for="">Subject <span class="required">*</span></label>
                 <div>
-                    <input id="subject" type="text" v-model="subject">
-                    <select name="" v-model="subject">
+                    <input id="subject" type="text" v-model="subject" :disabled="exists_resource">
+                    <select v-model="subject_select" :disabled="exists_resource">
+                        <option value="" selected disabled hidden>
+                            Select
+                        </option>
+                        <option :value="subject" v-for="subject in all_subjects">
+                            {{ subject }}
+                        </option>
                     </select>
                 </div>
             </div>
@@ -103,15 +123,6 @@
                     <option value="Brown">Brown</option>
                     <option value="Grey">Grey</option>
                 </select>
-            </div>
-            <div class="form-item" id="author">
-                <label for="" id="author-container">Author <span class="required">*</span></label>
-                <input type="text" v-model="author" id="author-field">
-                <div id="author-div">
-                    <label for="">Resource was self-made</label>
-                    <input type="checkbox" name="" @click="self_made = !self_made">
-                </div>
-                <p v-if="self_made">Author will show up as <span>{{ user.username }}</span></p>
             </div>
             <div v-if="self_made" class="form-item" id="sources-container">
                 <label for="">Assisted Sources <span class="required">*</span></label>
@@ -209,9 +220,12 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent } from 'vue';
     import type { Resource, User } from '@/types';
-import { useUsersStore } from '@/stores/users';
+    import { useUsersStore } from '@/stores/users';
+    import { useResourcesStore } from '@/stores/resources';
     export default defineComponent({
         data(): {
+            existing_resource: Resource,
+            exists_resource: boolean,
             name: string,
             description: string,
             height: number,
@@ -221,6 +235,7 @@ import { useUsersStore } from '@/stores/users';
             dimension_unit: string,
             type: 'Textbook' | 'Notes' | 'Stationery'
             subject: string
+            subject_select: string
             colour: 'Black' | 'Red' | 'Yellow' | 'Pink'
                     | 'Purple' | 'Green' | 'Blue' | 'White'
                     | 'Orange' | 'Brown' | 'Grey'
@@ -244,7 +259,9 @@ import { useUsersStore } from '@/stores/users';
             page_start: number,
             page_end: number,
         } { return {
+            exists_resource: false,
             name: '',
+            existing_resource: {} as Resource,
             description: '',
             height: 1,
             width: 1,
@@ -253,6 +270,7 @@ import { useUsersStore } from '@/stores/users';
             dimension_unit: 'cm',
             type: 'Textbook',
             subject: '',
+            subject_select: '',
             colour: 'Black',
             author: '',
             condition: 'Used',
@@ -504,11 +522,84 @@ import { useUsersStore } from '@/stores/users';
             user(): User {
                 let user: User = useUserStore().user
                 return user
+            },
+            resources(): Resource[] {
+                return useResourcesStore().resources
+            },
+            all_subjects(): string[] {
+                let subjects = [] as string[]
+                for (let resource of this.resources) {
+                    if (!subjects.includes(resource.subject)) {
+                        subjects.push(resource.subject)
+                    }
+                }
+                return subjects
             }
         },
         watch: {
             user(new_user): void {
                 this.currency = new_user.currency
+            },
+            subject(new_subject: string): void {
+                if (this.resources.map(resource => resource.subject).includes(new_subject)) {
+                    this.subject_select = new_subject
+                } else {
+                    this.subject_select = ''
+                }
+            },
+            subject_select(new_subject: string): void {
+                if (new_subject !== '') {
+                    this.subject = new_subject
+                }
+            },
+            name(new_name: string): void {
+                if (this.self_made) return
+                for (let resource of this.resources) {
+                    if (new_name === resource.name) {
+                        this.exists_resource = true
+                        this.existing_resource = resource
+                        return
+                    }
+                }
+                this.existing_resource = {} as Resource
+                this.exists_resource = false
+            },
+            self_made(new_self_made: boolean): void {
+                if (new_self_made) {
+                    this.author = this.user.username
+                    this.existing_resource = {} as Resource
+                    this.exists_resource = false
+                    return
+                }
+                for (let resource of this.resources) {
+                    if (this.name === resource.name) {
+                        this.exists_resource = true
+                        this.existing_resource = resource
+                        return
+                    }
+                }
+                this.existing_resource = {} as Resource
+                this.exists_resource = false
+            },
+            author(new_author: string): void {
+                if (new_author !== this.user.username) {
+                    this.self_made = false
+                    return
+                }
+            },
+            existing_resource(new_existing_resource: Resource): void {
+                if (Object.keys(this.existing_resource).length > 0) {
+                    this.author = new_existing_resource.author
+                    this.description = new_existing_resource.description
+                    this.height = new_existing_resource.height
+                    this.dimension_unit = new_existing_resource.height_unit
+                    this.width = new_existing_resource.width
+                    this.weight = new_existing_resource.weight
+                    this.weight_unit = new_existing_resource.weight_unit
+                    this.subject = new_existing_resource.subject
+                    // this.subject_select = new_existing_resource.subject
+                    this.colour = new_existing_resource.colour
+                }
             }
         },
         mounted(): void {
@@ -756,5 +847,11 @@ import { useUsersStore } from '@/stores/users';
     #buttons1 {
         margin-top: 1rem;
         justify-content: flex-end;
+    }
+
+    #resource_exists {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
     }
 </style>
