@@ -280,7 +280,9 @@ def new_listing(request: HttpRequest, id: int) -> JsonResponse:
             condition=data.get('condition'),
             media=data.get('media'),
             unique=False if data.get('unique') == 'false' else True,
-            delivery_option=data.get('delivery'),
+            allow_delivery=False if data.get('allow_delivery') == 'false' else True,
+            allow_collection=False if data.get('allow_collection') == 'false' else True,
+            allow_return=False if data.get('allow_return') == 'false' else True,
             user=user
         )
         return JsonResponse(resource.as_dict())
@@ -317,6 +319,10 @@ def new_listing(request: HttpRequest, id: int) -> JsonResponse:
         resource.condition=data.get('condition')
         resource.media=data.get('media')
         resource.delivery_option=data.get('delivery')
+        resource.allow_delivery=False if data.get('allow_delivery') == 'false' else True
+        resource.unique=False if data.get('unique') == 'false' else True
+        resource.allow_collection=False if data.get('allow_collection') == 'false' else True
+        resource.allow_return=False if data.get('allow_return') == 'false' else True
         resource.user=user
         resource.save()
         return JsonResponse(resource.as_dict())

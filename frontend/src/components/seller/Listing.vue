@@ -159,11 +159,21 @@
                 <input id="price-field" required type="number" max="9999.00" v-model="stock" step="1" min="0">
             </div>
             <div class="form-item" id="delivery-container">
-                <label for="">Delivey Option <span class="required">*</span></label>
-                <select name="" id="delivery-field" v-model="delivery_options">
-                    <option value="Delivery">Delivery</option>
-                    <option value="Collection">Collection</option>
-                </select>
+                <label for="">Delivey Options <span class="required">*</span></label>
+                <div id="options">
+                    <div>
+                        <label for="">Delivery</label>
+                        <input type="checkbox" v-model="allow_delivery">
+                    </div>
+                    <div>
+                        <label for="">Collection</label>
+                        <input type="checkbox" v-model="allow_collection">
+                    </div>
+                    <div>
+                        <label for="">Allow Returns</label>
+                        <input type="checkbox" v-model="allow_return">
+                    </div>
+                </div>
             </div>
             <div class="form-item" id="price-container">
                 <label for="">Estimated Delivery Time <span class="required">*</span></label>
@@ -251,10 +261,12 @@
             currency: 'GBP' | 'EUR' | 'USD',
             image1: File,
             image2: File,
+            allow_delivery: boolean,
+            allow_collection: boolean,
+            allow_return: boolean,
             video1: File,
             estimated_delivery_number: number,
             estimated_delivery_units: 'day' | 'minute' | 'hour' | 'month' | 'week',
-            delivery_options: 'Delivery' | 'Collection',
             stock: number,
             is_draft: boolean,
             image_error: string,
@@ -275,6 +287,9 @@
             existing_resource: {} as Resource,
             name: '',
             description: '',
+            allow_delivery: false,
+            allow_collection: false,
+            allow_return: false,
             height: 1,
             width: 1,
             weight: 1,
@@ -295,7 +310,6 @@
             video1: new File([''], ''),
             estimated_delivery_number: 1.00,
             estimated_delivery_units: 'day',
-            delivery_options: 'Delivery',
             stock: 0,
             is_draft: true,
             image_error: '',
@@ -480,7 +494,9 @@
                 data.append('stock', this.stock.toString())
                 data.append('estimated_number', this.estimated_delivery_number.toString())
                 data.append('estimated_units', this.estimated_delivery_units)
-                data.append('delivery', this.delivery_options)
+                data.append('allow_delivery', this.allow_delivery.toString())
+                data.append('allow_return', this.allow_return.toString())
+                data.append('allow_collection', this.allow_collection.toString())
                 if (this.isPriorListing) {
                     if (this.image1Changed) data.append('image1', this.image1)
                     if (this.image2Changed) data.append('image2', this.image2)
@@ -664,7 +680,9 @@
                 this.currency = new_resource.price_currency
                 this.stock = new_resource.stock
                 this.is_draft = new_resource.is_draft
-                this.delivery_options = new_resource.delivery_option
+                this.allow_delivery = new_resource.allow_delivery
+                this.allow_collection = new_resource.allow_collection
+                this.allow_return = new_resource.allow_return
                 this.estimated_delivery_number = parseFloat(new_resource.estimated_delivery_time.toString())
                 this.estimated_delivery_units = new_resource.estimated_delivery_units
                 const image1: HTMLImageElement = document.getElementById('img1') as HTMLImageElement
@@ -796,7 +814,7 @@
         width: 4rem !important;
     }
 
-    #type-container select, #price-container input, #pages-container input, #colour-container select, #sources-container select, #condition-container select, #delivery-container select, .dimension input {
+    #type-container select, #price-container input, #pages-container input, #colour-container select, #sources-container select, #condition-container select, .dimension input {
         width: 8rem !important;
         text-align: center;
     }
@@ -822,7 +840,7 @@
         align-items: center;
     }
 
-    #author-div input {
+    #author-div input, #delivery-container #options div input, #returns-container input {
         width: 3.5rem !important;
         border-radius: 10rem !important;
         height: 1.3rem;
@@ -1015,4 +1033,20 @@
     .delete_listing:hover {
         background-color: rgb(133, 21, 21) !important;
     }
+
+    #delivery-container #options {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    #delivery-container #options div {
+        display: flex;
+        align-items: center;
+    }
+
+    #delivery-container #options label {
+        width: 8rem;
+    }
+
 </style>

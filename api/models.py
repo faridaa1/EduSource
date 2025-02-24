@@ -123,6 +123,9 @@ class Resource(models.Model):
     self_made = models.BooleanField(null=False, blank=False)
     is_draft = models.BooleanField(null=False, blank=False)
     unique = models.BooleanField(null=False, blank=False, default=True)
+    allow_delivery = models.BooleanField(null=False, blank=False, default=False)
+    allow_collection = models.BooleanField(null=False, blank=False, default=False)
+    allow_return = models.BooleanField(null=False, blank=False, default=False)
     page_start = models.IntegerField(null=False, blank=True)
     page_end = models.IntegerField(null=False, blank=True)
     HEIGHT_UNITS: list [tuple[str, str]] = [('cm', 'cm'), ('m', 'm'), ('in', 'in')]
@@ -170,9 +173,6 @@ class Resource(models.Model):
     MEDIUM: list [tuple[str, str]] = [('Online', 'Online'), ('Paper', 'Paper')]
     media = models.CharField(max_length=6, choices=MEDIUM, null=False, blank=True)
 
-    DELIVERY_OPTIONS: list [tuple[str, str]] = [('Delivery', 'Delivery'), ('Collection', 'Collection')]
-    delivery_option = models.CharField(max_length=10, choices=DELIVERY_OPTIONS, null=False, blank=False)
-
     def as_dict(self) -> str:
         reviews = Review.objects.filter(resource=self.id)
         return {
@@ -205,7 +205,9 @@ class Resource(models.Model):
             'source': self.source,
             'condition': self.condition,
             'media': self.media,
-            'delivery_option': self.delivery_option,
+            'allow_delivery': self.allow_delivery,
+            'allow_collection': self.allow_collection,
+            'allow_return': self.allow_return,
             'user': self.user.id,
             'reviews': [review.as_dict() for review in reviews],
             'upload': self.upload_date,
