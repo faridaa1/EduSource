@@ -135,6 +135,7 @@ class Resource(models.Model):
     image2 = models.ImageField(null=False, blank=False, upload_to='resource_images/')
     video = models.FileField(upload_to='resource_videos/')
     upload_date = models.DateTimeField(default=timezone.now)
+    last_edited = models.DateTimeField(auto_now=True)
     rating = models.DecimalField(null=False, blank=True, default=0.0, max_digits=2, decimal_places=1, validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='listing')
 
@@ -196,6 +197,7 @@ class Resource(models.Model):
             'image1': self.image1.url,
             'image2': self.image2.url,
             'video': self.video.url,
+            'last_edited': self.last_edited,
             'weight_unit': self.weight_unit,
             'price_currency': self.price_currency,
             'estimated_delivery_units': self.estimated_delivery_units,

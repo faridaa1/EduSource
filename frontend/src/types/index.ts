@@ -55,6 +55,7 @@ export interface Resource {
     allow_collection: boolean,
     allow_return: boolean,
     user: number,
+    last_edited: string,
     reviews: Review[],
     upload: string,
     unique: boolean

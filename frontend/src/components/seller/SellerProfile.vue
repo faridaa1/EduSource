@@ -32,6 +32,12 @@
                     <p> {{ viewing_profile ? '' : textbookMessage }} Textbooks</p>
                     <button v-if="!viewing_profile && all_textbooks.length > 0" @click="updateTextbookMessage(true)" class="drafted">View {{ textbookMessage === 'All' ? 'Sold' : 'All'}}</button>
                     <button v-if="!viewing_profile && all_textbooks.length > 0" @click="updateTextbookMessage(false)" class="all">View {{ textbookMessage === 'All' ? 'Drafted' : textbookMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
+                    <select class="filter" v-if="!viewing_profile && all_textbooks.length > 0" v-model="textbook_filter">
+                        <option value="listing-new">Listing: New to Old</option>
+                        <option value="listing-old">Listing: Old to New</option>
+                        <option v-if="!viewing_profile" value="edit-new">Edited: New to Old</option>
+                        <option v-if="!viewing_profile" value="edit-old">Edited: Old to New</option>
+                    </select>
                 </div>
                 <button v-if="!viewing_profile" @click="new_listing('textbook')"><i class="bi bi-plus-circle"></i></button>
             </div>
@@ -51,6 +57,12 @@
                     <p>{{ viewing_profile ? '' :  notesMessage }} Notes</p>
                     <button v-if="!viewing_profile && all_notes.length > 0" @click="updateNotesMessage(true)" class="drafted">View {{ notesMessage === 'All' ? 'Sold' : 'All'}}</button>
                     <button v-if="!viewing_profile && all_notes.length > 0" @click="updateNotesMessage(false)" class="all">View {{ notesMessage === 'All' ? 'Drafted' : notesMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
+                    <select class="filter" v-if="!viewing_profile && all_notes.length > 0" v-model="notes_filter">
+                        <option value="listing-new">Listing: New to Old</option>
+                        <option value="listing-old">Listing: Old to New</option>
+                        <option v-if="!viewing_profile" value="edit-new">Edited: New to Old</option>
+                        <option v-if="!viewing_profile" value="edit-old">Edited: Old to New</option>
+                    </select>
                 </div>
                 <button v-if="!viewing_profile" @click="new_listing('notes')"><i class="bi bi-plus-circle"></i></button>
             </div>
@@ -71,6 +83,12 @@
                         <p>{{ viewing_profile ? '' : stationeryMessage }} Stationery</p>
                         <button v-if="!viewing_profile && all_stationery.length > 0" @click="updateStationeryMessage(true)" class="drafted">View {{ stationeryMessage === 'All' ? 'Sold' : 'All'}}</button>
                         <button v-if="!viewing_profile && all_stationery.length > 0" @click="updateStationeryMessage(false)" class="all">View {{ stationeryMessage === 'All' ? 'Drafted' : stationeryMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
+                        <select class="filter" v-if="!viewing_profile && all_stationery.length > 0" v-model="stat_filter">
+                            <option value="listing-new">Listing: New to Old</option>
+                            <option value="listing-old">Listing: Old to New</option>
+                            <option v-if="!viewing_profile" value="edit-new">Edited: New to Old</option>
+                            <option v-if="!viewing_profile" value="edit-old">Edited: Old to New</option>
+                        </select>
                     </div>
                     <button v-if="!viewing_profile" @click="new_listing('stationery')"><i class="bi bi-plus-circle"></i></button>
                 </div>
@@ -101,12 +119,18 @@
             this.fill_stars()
         },
         data(): {
+            textbook_filter: 'listing-new' | 'listing-old' | 'edit-new' | 'edit-old',
+            notes_filter: 'listing-new' | 'listing-old' | 'edit-new' | 'edit-old',
+            stat_filter: 'listing-new' | 'listing-old' | 'edit-new' | 'edit-old',
             viewing_profile: boolean,
             editingDescription: boolean
             textbookMessage: 'All' | 'Sold' | 'Drafted',
             notesMessage: 'All' | 'Sold' | 'Drafted',
             stationeryMessage: 'All' | 'Sold' | 'Drafted',
         } { return {
+            textbook_filter: 'listing-new',
+            notes_filter: 'listing-new',
+            stat_filter: 'listing-new',
             viewing_profile: false,
             editingDescription: false,
             textbookMessage: 'All',
@@ -270,30 +294,65 @@
             },
             textbooks(): Resource[] {
                 if (!this.user || !this.user.listings) return []
-                if (this.textbookMessage === 'All') {
-                    return this.user.listings.filter(listing => listing.type === 'Textbook')
-                } else if (this.textbookMessage === 'Sold') {
-                    return this.user.listings.filter(listing => listing.type === 'Textbook' && !listing.is_draft)
+                let textbooks = this.all_textbooks
+                if (this.textbookMessage === 'Sold') {
+                    textbooks = this.user.listings.filter(listing => listing.type === 'Textbook' && !listing.is_draft)
+                } else if (this.textbookMessage === 'Drafted') {
+                    textbooks = this.user.listings.filter(listing => listing.type === 'Textbook' && listing.is_draft)
                 }
-                return this.user.listings.filter(listing => listing.type === 'Textbook' && listing.is_draft)
+                textbooks = textbooks.sort((a, b) => {
+                    if (this.textbook_filter === 'edit-new') {
+                        return new Date(b.last_edited).getTime() - new Date(a.last_edited).getTime() 
+                    } else if (this.textbook_filter === 'edit-old') {
+                        return new Date(a.last_edited).getTime()  - new Date(b.last_edited).getTime() 
+                    } else if (this.textbook_filter === 'listing-new') {
+                        return b.id - a.id
+                    }else {
+                        return a.id - b.id
+                    }
+                })
+                return textbooks
             },
             notes(): Resource[] {
                 if (!this.user || !this.user.listings) return []
-                if (this.notesMessage === 'All') {
-                    return this.user.listings.filter(listing => listing.type === 'Notes')
-                } else if (this.notesMessage === 'Sold') {
-                    return this.user.listings.filter(listing => listing.type === 'Notes' && !listing.is_draft)
+                let notes = this.all_notes
+                if (this.notesMessage === 'Sold') {
+                    notes = this.user.listings.filter(listing => listing.type === 'Notes' && !listing.is_draft)
+                } else if (this.notesMessage === 'Drafted') {
+                    notes = this.user.listings.filter(listing => listing.type === 'Notes' && listing.is_draft)
                 }
-                return this.user.listings.filter(listing => listing.type === 'Notes' && listing.is_draft)
+                notes = notes.sort((a, b) => {
+                    if (this.notes_filter === 'edit-new') {
+                        return new Date(b.last_edited).getTime() - new Date(a.last_edited).getTime() 
+                    } else if (this.notes_filter === 'edit-old') {
+                        return new Date(a.last_edited).getTime()  - new Date(b.last_edited).getTime() 
+                    } else if (this.notes_filter === 'listing-new') {
+                        return b.id - a.id
+                    }else {
+                        return a.id - b.id
+                    }
+                })
+                return notes
             },
             stationery(): Resource[] {
-                if (!this.user || !this.user.listings) return []
-                if (this.stationeryMessage === 'All') {
-                    return this.user.listings.filter(listing => listing.type === 'Stationery')
-                } else if (this.stationeryMessage === 'Sold') {
-                    return this.user.listings.filter(listing => listing.type === 'Stationery' && !listing.is_draft)
+                let stationery = this.all_stationery
+                if (this.stationeryMessage === 'Sold') {
+                    stationery = this.user.listings.filter(listing => listing.type === 'Stationery' && !listing.is_draft)
+                } else if (this.stationeryMessage === 'Drafted') {
+                    stationery = this.user.listings.filter(listing => listing.type === 'Stationery' && listing.is_draft)
                 }
-                return this.user.listings.filter(listing => listing.type === 'Stationery' && listing.is_draft)
+                stationery = stationery.sort((a, b) => {
+                    if (this.stat_filter === 'edit-new') {
+                        return new Date(b.last_edited).getTime() - new Date(a.last_edited).getTime() 
+                    } else if (this.stat_filter === 'edit-old') {
+                        return new Date(a.last_edited).getTime()  - new Date(b.last_edited).getTime() 
+                    } else if (this.stat_filter === 'listing-new') {
+                        return b.id - a.id
+                    }else {
+                        return a.id - b.id
+                    }
+                })
+                return stationery
             }
         },
         watch: {
@@ -500,26 +559,31 @@
         margin-right: 1rem;
     }
 
-    .viewing button {
+    .viewing button, .filter {
         border-radius: 0.5rem;
         padding: 0.5rem;
     }
 
-    .drafted, .all {
+    option {
+        background-color: white !important;
+    }
+
+    .drafted, .all, .filter {
         background-color: #0DCAF0 !important; 
     }
 
-    #dark .drafted, #dark .all {
+    #dark .drafted, #dark .all, #dark .filter {
         background-color: white !important; 
     }
 
-    .drafted, .all {
-        background-color: #0DCAF0 !important; 
-    }
-
     .drafted:hover, .all:hover {
+        cursor: pointer;
         background-color: #3b90a1 !important; 
         color: black !important;
+    }
+
+    .filter:hover {
+        cursor: pointer;
     }
 
     #dark .drafted:hover, #dark .all:hover {

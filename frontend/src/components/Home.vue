@@ -8,7 +8,7 @@
                 <div v-for="listing in textbooks">
                     <div class="listed" v-if="listing.type === 'Textbook'" @click="showResourcePage(listing)">
                         <img :src="`http://localhost:8000${listing.image1}`" alt="Textbook">
-                        {{ listing.price }}
+                        {{ currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
             </div>
@@ -21,7 +21,7 @@
                 <div v-for="listing in textbooks">
                     <div class="listed" v-if="listing.type === 'Textbook'" @click="showResourcePage(listing)">
                         <img :src="`http://localhost:8000${listing.image1}`" alt="Textbook">
-                        {{ Object.keys(user).length === 0 ? currency(listing) : '' }}{{ listing.price }}
+                        {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
             </div>
@@ -34,7 +34,7 @@
                 <div v-for="listing in notes">
                     <div class="listed" @click="showResourcePage(listing)">
                         <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
-                        {{ Object.keys(user).length === 0 ? currency(listing) : '' }}{{ listing.price }}
+                        {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
             </div>
@@ -46,7 +46,7 @@
                     <div v-for="listing in stationery">
                         <div class="listed" @click="showResourcePage(listing)">
                             <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
-                            {{ Object.keys(user).length === 0 ? currency(listing) : '' }}{{ listing.price }}
+                            {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                         </div>
                     </div>
                 </div>
@@ -92,11 +92,14 @@
             showResourcePage(resource: Resource): void {
                 window.location.href = `/view/${resource.id}`
             },
-            currency(resource: Resource): string {
+            unauth_currency(resource: Resource): string {
                 return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
             },
         },
         computed: {
+            currency(): string {
+                return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
+            },
             user(): User {
                 return useUserStore().user
             },
