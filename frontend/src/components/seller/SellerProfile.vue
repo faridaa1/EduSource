@@ -1,31 +1,39 @@
 <template>
-    <div id="seller-home" v-if="seller">
+    <div id="seller-home" v-if="!viewing_profile || (viewing_profile && seller !== undefined)">
         <div id="user">
             <div id="profile-picture">
                 <i class="bi bi-person-circle"></i>
             </div>
             <div id="user-rating">
-                <p>{{ seller.username }}</p>
+                <p>{{ viewing_profile ? seller?.username : user.username }}</p>
                 <div id="rating">
                     <i id="one" class="bi bi-star-fill"></i>
                     <i id="two" class="bi bi-star-fill"></i>
                     <i id="three" class="bi bi-star-fill"></i>
                     <i id="four" class="bi bi-star-fill"></i>
                     <i id="five" class="bi bi-star-fill"></i>
-                    <p>{{ seller.rating }}</p>
+                    <p>{{ viewing_profile ? seller?.rating : user.rating }}</p>
                 </div>
-                <button id="message_seller" v-if="Object.keys(user).length > 0">Message Seller</button>
+                <button id="message_seller" v-if="viewing_profile && Object.keys(user).length > 0">Message Seller</button>
             </div>
         </div>
         <div id="about-me">
             <p>Seller Description</p>
-            <textarea id="desc" :v-model="user.description" disabled>{{ seller.description }}</textarea>
+            <div>
+                <textarea @input="clear" name="" id="desc" :v-model="user.description" :disabled="!editingDescription">{{ viewing_profile ? seller?.description : user.description }}</textarea>
+                <button v-if="!viewing_profile && !editingDescription" @click="editingDescription=true"><i class="bi bi-pencil-fill"></i></button>
+                <button id="save" class="save" @click="saveDescription" v-if="editingDescription"><i class="bi bi-floppy-fill"></i></button>
+                <button id="revert" class="revert" v-if="editingDescription" @click="revert"><i class="bi bi-x-lg"></i></button>
+            </div>
         </div>
         <div id="textbooks">
             <div class="header">
                 <div class="viewing">
-                    <p> Textbooks</p>
+                    <p> {{ viewing_profile ? '' : textbookMessage }} Textbooks</p>
+                    <button v-if="!viewing_profile && all_textbooks.length > 0" @click="updateTextbookMessage(true)" class="drafted">View {{ textbookMessage === 'All' ? 'Sold' : 'All'}}</button>
+                    <button v-if="!viewing_profile && all_textbooks.length > 0" @click="updateTextbookMessage(false)" class="all">View {{ textbookMessage === 'All' ? 'Drafted' : textbookMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
                 </div>
+                <button v-if="!viewing_profile" @click="new_listing('textbook')"><i class="bi bi-plus-circle"></i></button>
             </div>
             <div class="displays">
                 <p v-if="textbooks.length === 0">No textbook listings to display</p>
@@ -40,15 +48,18 @@
         <div id="notes">
             <div class="header">
                 <div class="viewing">
-                    <p> Notes</p>
+                    <p>{{ viewing_profile ? '' :  notesMessage }} Notes</p>
+                    <button v-if="!viewing_profile && all_notes.length > 0" @click="updateNotesMessage(true)" class="drafted">View {{ notesMessage === 'All' ? 'Sold' : 'All'}}</button>
+                    <button v-if="!viewing_profile && all_notes.length > 0" @click="updateNotesMessage(false)" class="all">View {{ notesMessage === 'All' ? 'Drafted' : notesMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
                 </div>
+                <button v-if="!viewing_profile" @click="new_listing('notes')"><i class="bi bi-plus-circle"></i></button>
             </div>
             <div class="displays">
                 <p v-if="notes.length === 0">No note listings to display</p>
                 <div v-for="listing in notes">
                     <div class="listed" @click="showResourcePage(listing.id)">
                         <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
-                        {{ listing.price }}
+                        {{ Object.keys(user).length === 0 ? unauth_currency(listing) : '' }}{{ listing.price }}
                     </div>
                 </div>
             </div>
@@ -57,15 +68,18 @@
             <div>
                 <div class="header">
                     <div class="viewing">
-                        <p>Stationery</p>
+                        <p>{{ viewing_profile ? '' : stationeryMessage }} Stationery</p>
+                        <button v-if="!viewing_profile && all_stationery.length > 0" @click="updateStationeryMessage(true)" class="drafted">View {{ stationeryMessage === 'All' ? 'Sold' : 'All'}}</button>
+                        <button v-if="!viewing_profile && all_stationery.length > 0" @click="updateStationeryMessage(false)" class="all">View {{ stationeryMessage === 'All' ? 'Drafted' : stationeryMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
                     </div>
+                    <button v-if="!viewing_profile" @click="new_listing('stationery')"><i class="bi bi-plus-circle"></i></button>
                 </div>
                 <div class="displays">
                     <p v-if="stationery.length === 0">No stationery listings to display</p>
                     <div v-for="listing in stationery">
                         <div class="listed" @click="showResourcePage(listing.id)">
                             <img :src="`http://localhost:8000${listing.image1}`" alt="Stationery">
-                            {{ listing.price }}
+                            {{ Object.keys(user).length === 0 ? unauth_currency(listing) : '' }}{{ listing.price }}
                         </div>
                     </div>
                 </div>
@@ -76,16 +90,23 @@
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent, nextTick } from 'vue';
+    import { defineComponent } from 'vue';
     import type { Resource, User } from '@/types';
-import { useUsersStore } from '@/stores/users';
+    import { useUsersStore } from '@/stores/users';
     export default defineComponent({
+        mounted(): void {
+            if (window.location.href.includes('seller')) {
+                this.viewing_profile = true
+            }
+        },
         data(): {
+            viewing_profile: boolean,
             editingDescription: boolean
             textbookMessage: 'All' | 'Sold' | 'Drafted',
             notesMessage: 'All' | 'Sold' | 'Drafted',
             stationeryMessage: 'All' | 'Sold' | 'Drafted',
         } { return {
+            viewing_profile: false,
             editingDescription: false,
             textbookMessage: 'All',
             notesMessage: 'All',
@@ -95,8 +116,53 @@ import { useUsersStore } from '@/stores/users';
             unauth_currency(resource: Resource): string {
                 return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
             },
+            updateStationeryMessage(clickedByFirstButton: boolean): void {
+                if (clickedByFirstButton) {
+                    if (this.stationeryMessage === 'All') {
+                        this.stationeryMessage = 'Sold'
+                    } else {
+                        this.stationeryMessage = 'All'
+                    }
+                } else {
+                    if (this.stationeryMessage === 'Drafted') {
+                        this.stationeryMessage = 'Sold'
+                    } else {
+                        this.stationeryMessage = 'Drafted'
+                    }
+                }
+            },
+            updateNotesMessage(clickedByFirstButton: boolean): void {
+                if (clickedByFirstButton) {
+                    if (this.notesMessage === 'All') {
+                        this.notesMessage = 'Sold'
+                    } else {
+                        this.notesMessage = 'All'
+                    }
+                } else {
+                    if (this.notesMessage === 'Drafted') {
+                        this.notesMessage = 'Sold'
+                    } else {
+                        this.notesMessage = 'Drafted'
+                    }
+                }
+            },
+            updateTextbookMessage(clickedByFirstButton: boolean): void {
+                if (clickedByFirstButton) {
+                    if (this.textbookMessage === 'All') {
+                        this.textbookMessage = 'Sold'
+                    } else {
+                        this.textbookMessage = 'All'
+                    }
+                } else {
+                    if (this.textbookMessage === 'Drafted') {
+                        this.textbookMessage = 'Sold'
+                    } else {
+                        this.textbookMessage = 'Drafted'
+                    }
+                }
+            },
             showResourcePage(resourceId: number): void {
-                window.location.href = `/view/${resourceId}`
+                window.location.href = this.viewing_profile ? `/view/${resourceId}` : `/resource/${resourceId}`
             },
             clear(): void {
                 const textarea: HTMLTextAreaElement = document.getElementById('desc') as HTMLTextAreaElement
@@ -115,55 +181,122 @@ import { useUsersStore } from '@/stores/users';
                 let returnedPrice: {new_price: number} = await convertedPrice.json()
                 return returnedPrice.new_price
             },
-            fill_stars(): void {
-                nextTick(() => {
-                    const star1: HTMLElement = document.getElementById('one') as HTMLElement
-                    const star2: HTMLElement = document.getElementById('two') as HTMLElement
-                    const star3: HTMLElement = document.getElementById('three') as HTMLElement
-                    const star4: HTMLElement = document.getElementById('four') as HTMLElement
-                    const star5: HTMLElement = document.getElementById('five') as HTMLElement
-                    console.log(this.seller, star1, star2, star3, star4, star5)
-                    if (star1 && star2 && star3 && star4 && star5 && this.seller) {
-                        console.log('am i updating')
-                        star1.style.color = this.seller.rating >= 1 ? 'orange' : ''
-                        star2.style.color = this.seller.rating >= 2 ? 'orange' : ''
-                        star3.style.color = this.seller.rating >= 3 ? 'orange' : ''
-                        star4.style.color = this.seller.rating >= 4 ? 'orange' : ''
-                        star5.style.color = this.seller.rating == 5 ? 'orange' : ''
-                    }
+            async saveDescription(): Promise<void> {
+                const textarea: HTMLTextAreaElement = document.getElementById('desc') as HTMLTextAreaElement
+                if (textarea.value.length === 0) {
+                    textarea.setCustomValidity('Cannot be empty')
+                    textarea.reportValidity()
+                    return
+                } else if (!textarea.value.match(/^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*('[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*$/)) {
+                    textarea.setCustomValidity('Incorrect format')
+                    textarea.reportValidity()
+                    return
+                }
+                const saveButton: HTMLButtonElement = document.getElementById('save') as HTMLButtonElement
+                saveButton.disabled = true
+                const revertButton: HTMLButtonElement = document.getElementById('revert') as HTMLButtonElement
+                revertButton.disabled = true
+                let updateDecriptionResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/description/`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                    'X-CSRFToken' : useUserStore().csrf
+                    },
+                    body: JSON.stringify(textarea.value)
                 })
+                if (!updateDecriptionResponse.ok) {
+                    console.error('Error updating description')
+                    alert('Error updating description')
+                    return
+                }
+                const updatedUser: User = await updateDecriptionResponse.json()
+                useUserStore().saveUser(updatedUser)
+                useUsersStore().updateUser(this.user)
+                this.editingDescription = false
+            },
+            revert(): void {
+                const textarea: HTMLTextAreaElement = document.getElementById('desc') as HTMLTextAreaElement
+                if (textarea) {
+                    textarea.value = this.user.description
+                    this.editingDescription = false
+                }
+            },
+            new_listing(url: string): void {
+                window.location.href = `/new-listing/${url}`
+            },
+            fill_stars(): void {
+                const star1: HTMLElement = document.getElementById('one') as HTMLElement
+                const star2: HTMLElement = document.getElementById('two') as HTMLElement
+                const star3: HTMLElement = document.getElementById('three') as HTMLElement
+                const star4: HTMLElement = document.getElementById('four') as HTMLElement
+                const star5: HTMLElement = document.getElementById('five') as HTMLElement
+                if (star1 && star2 && star3 && star4 && star5) {
+                    star1.style.color = this.user.rating >= 1 ? 'orange' : ''
+                    star2.style.color = this.user.rating >= 2 ? 'orange' : ''
+                    star3.style.color = this.user.rating >= 3 ? 'orange' : ''
+                    star4.style.color = this.user.rating >= 4 ? 'orange' : ''
+                    star5.style.color = this.user.rating == 5 ? 'orange' : ''
+                }
             }
         },
         computed: {
-            user(): User {
-                return useUserStore().user
-            },
             users(): User[] {
                 return useUsersStore().users
-            },
-            textbooks(): Resource[] {
-                if (!this.seller || !this.seller.listings) return []
-                return this.seller.listings.filter(listing => listing.type === 'Textbook' && !listing.is_draft)
-            },
-            notes(): Resource[] {
-                if (!this.seller || !this.seller.listings) return []
-                return this.seller.listings.filter(listing => listing.type === 'Notes' && !listing.is_draft)
-            },
-            stationery(): Resource[] {
-                if (!this.seller || !this.seller.listings) return []
-                return this.seller.listings.filter(listing => listing.type === 'Stationery' && !listing.is_draft)
             },
             seller(): User | undefined {
                 const window_location: string[] = window.location.href.split('/')
                 const username: string = window_location[window_location.length-1]
                 return this.users.find(user => user.username === username)
-            },  
+            },
+            user(): User {
+                let user: User = useUserStore().user
+                return user
+            },
+            all_textbooks(): Resource[] {
+                if (!this.user || !this.user.listings) return []
+                return this.user.listings.filter(listing => listing.type === 'Textbook')
+            },
+            all_notes(): Resource[] {
+                if (!this.user || !this.user.listings) return []
+                return this.user.listings.filter(listing => listing.type === 'Notes')
+            },
+            all_stationery(): Resource[] {
+                if (!this.user || !this.user.listings) return []
+                return this.user.listings.filter(listing => listing.type === 'Stationery')
+            },
+            textbooks(): Resource[] {
+                if (!this.user || !this.user.listings) return []
+                if (this.textbookMessage === 'All') {
+                    return this.user.listings.filter(listing => listing.type === 'Textbook')
+                } else if (this.textbookMessage === 'Sold') {
+                    return this.user.listings.filter(listing => listing.type === 'Textbook' && !listing.is_draft)
+                }
+                return this.user.listings.filter(listing => listing.type === 'Textbook' && listing.is_draft)
+            },
+            notes(): Resource[] {
+                if (!this.user || !this.user.listings) return []
+                if (this.notesMessage === 'All') {
+                    return this.user.listings.filter(listing => listing.type === 'Notes')
+                } else if (this.notesMessage === 'Sold') {
+                    return this.user.listings.filter(listing => listing.type === 'Notes' && !listing.is_draft)
+                }
+                return this.user.listings.filter(listing => listing.type === 'Notes' && listing.is_draft)
+            },
+            stationery(): Resource[] {
+                if (!this.user || !this.user.listings) return []
+                if (this.stationeryMessage === 'All') {
+                    return this.user.listings.filter(listing => listing.type === 'Stationery')
+                } else if (this.stationeryMessage === 'Sold') {
+                    return this.user.listings.filter(listing => listing.type === 'Stationery' && !listing.is_draft)
+                }
+                return this.user.listings.filter(listing => listing.type === 'Stationery' && listing.is_draft)
+            }
         },
         watch: {
-            async seller(new_seller: User): Promise<void> {
+            async user(new_user: User): Promise<void> {
+                // this.user = new_user
                 this.fill_stars()
-                if (!this.seller || Object.keys(this.user).length === 0) return
-                for (const resource of this.seller.listings) {
+                for (const resource of this.user.listings) {
                     resource.price = await this.listedprice(resource)
                 }
             },

@@ -1,9 +1,7 @@
 import Home from '@/components/Home.vue'
 import Resource from '@/components/buyer/Resource.vue'
 import Details from '@/components/Details.vue'
-import NewListing from '@/components/seller/NewListing.vue'
 import Listing from '@/components/seller/Listing.vue'
-import Listings from '@/components/seller/Listings.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import Cart from '@/components/Cart.vue'
 import Wishlist from '@/components/Wishlist.vue'
@@ -20,7 +18,7 @@ const router = createRouter({
     { path: '/details', name: 'details', component: Details },
     { path: '/new-listing/:catchAll(.*)', name: 'new listing', component: Listing },
     { path: '/resource/:id', name: 'resource', component: Listing },
-    { path: '/listings', name: 'listings', component: Listings },
+    { path: '/listings', name: 'listings', component: SellerProfile },
     { path: '/view/:id', name: 'buyer resource', component: Resource },
     { path: '/cart', name: 'cart', component: Cart },
     { path: '/wishlist', name: 'wishlist', component: Wishlist },

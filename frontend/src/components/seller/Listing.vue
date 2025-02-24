@@ -3,8 +3,8 @@
         <div id="header">
             <h1>{{ isPriorListing ? '' : 'New' }} Resource Listing</h1>
             <div id="buttons">
-                <button v-if="!duplicate_resource" @click="submit(resource.is_draft)">Update Details</button>
-                <button v-if="!duplicate_resource" @click="submit(resource.is_draft ? false : true)">{{ resource && resource.is_draft ? 'List Item' : 'Save as Draft'}}</button>
+                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft : false)">{{ isPriorListing ? 'Update Details' : 'List Item' }}</button>
+                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft ? false : true : true)">{{ resource && resource.is_draft ? 'List Item' : 'Save as Draft'}}</button>
                 <button class="delete_listing" @click="delete_listing">Delete Listing</button>
             </div>
         </div>
@@ -21,6 +21,14 @@
             <div class="form-item">
                 <label for="">Name <span class="required">*</span></label>
                 <input type="text" name="" id="name" v-model="name">
+                <div id="resource_exists" v-if="exists_resource">
+                    <p>A resource exists with this name, so certain details below cannot be changed.</p>
+                    <p>Select 'Resource was self-made', change the resource name,  or change the resource author name to be able to edit all details.</p>
+                </div>
+                <div id="duplicate" v-if="duplicate_resource">
+                    <p>You already sell this resource.</p>
+                    <p>Select 'Resource was self-made', change the resource name, or change the author name to be able to save this item.</p>
+                </div>
             </div>
             <div class="form-item">
                 <label for="">Description <span class="required">*</span></label>
@@ -205,18 +213,18 @@
                 </div>
             </div>
         </div>
-        <div id="buttons1" v-if="!duplicate_resource">
-            <button v-if="!duplicate_resource" @click="submit(resource.is_draft)">Update Details</button>
-            <button v-if="!duplicate_resource" @click="submit(resource.is_draft ? false : true)">{{ resource && resource.is_draft ? 'List Item' : 'Save as Draft'}}</button>
-            <button class="delete_listing" @click="delete_listing">Delete Listing</button>
-        </div>
+        <div id="buttons1">
+                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft : false)">{{ isPriorListing ? 'Update Details' : 'List Item' }}</button>
+                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft ? false : true : true)">{{ resource && resource.is_draft ? 'List Item' : 'Save as Draft'}}</button>
+                <button class="delete_listing" @click="delete_listing">Delete Listing</button>
+            </div>
     </div>
 </template>
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent } from 'vue';
-    import type { Resource, User } from '@/types';
+    import { defineComponent, nextTick } from 'vue';
+    import type { CartResource, Resource, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
@@ -413,8 +421,10 @@
                 // ensuring images are uploaded
                 if (this.image1.name === '' && this.image2.name === '') {
                     this.image_error = 'Upload 2 supporting images'
-                    const imageInputField: HTMLInputElement = document.getElementById('images-label') as HTMLInputElement
-                    imageInputField.scrollIntoView()
+                    nextTick(() => {
+                        const imageInputField: HTMLInputElement = document.getElementById('images-label') as HTMLInputElement
+                        imageInputField.scrollIntoView()
+                    })
                 } else if ((this.image1.name === '' || this.image2.name === '')) {
                     this.image_error = 'Upload 1 supporting image'
                     const imageInputField: HTMLInputElement = document.getElementById('images-label') as HTMLInputElement
@@ -424,8 +434,10 @@
                 // ensuring video is uploaded
                 if (this.video1.name === '') {
                     this.video_error = 'Upload 1 supporting video'
-                    const videoInputField: HTMLInputElement = document.getElementById('videos-label') as HTMLInputElement
-                    videoInputField.scrollIntoView()
+                    nextTick(() => {
+                        const videoInputField: HTMLInputElement = document.getElementById('videos-label') as HTMLInputElement
+                        videoInputField.scrollIntoView()
+                    })
                     return
                 } 
 
@@ -573,6 +585,28 @@
             },
             new_listing():void {
                 window.location.href = '/new-listing'
+            },
+            duplicated_resource(compared_resource: Resource): boolean {
+                // if it is a shared resource user cannot duplicate it unless they change the author
+                const potential_duplicates: Resource | undefined = this.resources.find(resource => resource.user === this.user.id && !resource.unique && resource.name === compared_resource.name && resource.author === this.author)
+                return potential_duplicates === undefined ? false : true
+            },
+            duplicate_resource_checks(): void {
+                for (let resource of this.resources) {
+                    if ((this.name !== resource.name) || resource.unique) continue
+                    if (this.duplicated_resource(resource)) {
+                        this.duplicate_resource = true
+                        return
+                    } 
+                    if (resource.user !== this.user.id && this.author === resource.author) {
+                        this.exists_resource = true
+                        this.existing_resource = resource
+                        return
+                    }
+                }
+                this.existing_resource = {} as Resource
+                this.duplicate_resource = false
+                this.exists_resource = false
             }
         },
         computed: {
@@ -601,7 +635,7 @@
                     }
                 }
                 return subjects
-            }
+            },
         },
         watch: {
             user(new_user: User): void {
@@ -660,20 +694,7 @@
             },
             name(new_name: string): void {
                 if (this.self_made) return
-                for (let resource of this.resources) {
-                    if (new_name === resource.name) {
-                        if (this.resources.filter(resource => resource.name === new_name && !resource.unique).map(resource => resource.user).includes(this.user.id)) {
-                            this.duplicate_resource = true
-                            return
-                        }
-                        this.exists_resource = true
-                        this.existing_resource = resource
-                        return
-                    }
-                }
-                this.existing_resource = {} as Resource
-                this.duplicate_resource = false
-                this.exists_resource = false
+                this.duplicate_resource_checks()
             },
             self_made(new_self_made: boolean): void {
                 if (new_self_made) {
@@ -683,39 +704,13 @@
                     this.duplicate_resource = false
                     return
                 }
-                for (let resource of this.resources) {
-                    if (this.name === resource.name) {
-                        if (this.resources.filter(resource => resource.name === this.name).map(resource => resource.user).includes(this.user.id)) {
-                            this.duplicate_resource = true
-                            return
-                        }
-                        this.exists_resource = true
-                        this.existing_resource = resource
-                        return
-                    }
-                }
-                this.existing_resource = {} as Resource
-                this.exists_resource = false
+                this.duplicate_resource_checks()
             },
             author(new_author: string): void {
                 if (new_author !== this.user.username) {
                     this.self_made = false
                 } 
-                if (Object.keys(this.existing_resource).length > 0) {
-                    if (this.author !== this.existing_resource.author) {
-                        this.exists_resource = false
-                    } else {
-                        this.exists_resource = true
-                    }
-                } 
-                const duplicate_resource = this.resources.find(resource => resource.name === this.name && resource.user === this.user.id)
-                if (duplicate_resource) {
-                    if (this.author !== duplicate_resource.author) {
-                        this.duplicate_resource = false
-                    } else {
-                        this.duplicate_resource = true
-                    }
-                }
+                this.duplicate_resource_checks()
             },
             existing_resource(new_existing_resource: Resource): void {
                 if (Object.keys(this.existing_resource).length > 0) {
