@@ -49,7 +49,7 @@
                 <div class="viewing">
                     <p>{{ notesMessage }} Notes</p>
                     <button v-if="all_notes.length > 0" @click="updateNotesMessage(true)" class="drafted">View {{ notesMessage === 'All' ? 'Sold' : 'All'}}</button>
-                    <button v-if="all_notes.length > 0" @click="updateNotesMessage(false)" class="all">View {{ textbookMessage === 'All' ? 'Drafted' : notesMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
+                    <button v-if="all_notes.length > 0" @click="updateNotesMessage(false)" class="all">View {{ notesMessage === 'All' ? 'Drafted' : notesMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
                 </div>
                 <button @click="new_listing('notes')"><i class="bi bi-plus-circle"></i></button>
             </div>

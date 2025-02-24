@@ -3,8 +3,8 @@
         <div id="header">
             <h1>{{ isPriorListing ? '' : 'New' }} Resource Listing</h1>
             <div id="buttons">
-                <button @click="submit(resource.is_draft)">Update Details</button>
-                <button @click="submit(resource.is_draft ? false : true)">{{ resource && resource.is_draft ? 'List Item' : 'Save as Draft'}}</button>
+                <button v-if="!duplicate_resource" @click="submit(resource.is_draft)">Update Details</button>
+                <button v-if="!duplicate_resource" @click="submit(resource.is_draft ? false : true)">{{ resource && resource.is_draft ? 'List Item' : 'Save as Draft'}}</button>
                 <button class="delete_listing" @click="delete_listing">Delete Listing</button>
             </div>
         </div>
@@ -206,8 +206,8 @@
             </div>
         </div>
         <div id="buttons1" v-if="!duplicate_resource">
-            <button @click="submit(resource.is_draft)">Update Details</button>
-            <button @click="submit(resource.is_draft ? false : true)">{{ resource && resource.is_draft ? 'List Item' : 'Save as Draft'}}</button>
+            <button v-if="!duplicate_resource" @click="submit(resource.is_draft)">Update Details</button>
+            <button v-if="!duplicate_resource" @click="submit(resource.is_draft ? false : true)">{{ resource && resource.is_draft ? 'List Item' : 'Save as Draft'}}</button>
             <button class="delete_listing" @click="delete_listing">Delete Listing</button>
         </div>
     </div>
