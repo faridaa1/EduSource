@@ -30,7 +30,7 @@
                 <div id="data">
                     <div class="data-item">
                         <label>Price</label>
-                        <p>{{ resource.price }}</p>
+                        <p>{{ Object.keys(user).length === 0 ? unauth_currency(resource as Resource) : '' }}{{ resource.price }}</p>
                     </div>
                     <div class="data-item">
                         <label>Condition</label>
@@ -44,8 +44,20 @@
                         <label>Assisted Sources</label>
                         <p>{{ resource.source }}</p>
                     </div>
+                    <div class="data-item" v-if="resource.type !== 'Stationery'">
+                        <label>Pages</label>
+                        <p>{{ resource.page_start }} - {{ resource.page_end }}</p>
+                    </div>
+                    <div class="data-item">
+                        <label>Estimated Delivery</label>
+                        <p>{{ parseFloat(resource.estimated_delivery_time.toString()) }} {{ resource.estimated_delivery_units }}</p>
+                    </div>
+                    <div class="data-item">
+                        <label>Delivery Options</label>
+                        <p>{{ resource.delivery_option }}</p>
+                    </div>
                 </div>
-                <div id="buttons">
+                <div id="buttons" v-if="Object.keys(user).length > 0">
                     <button v-if="seller !== resource.id" @click="$emit('update_seller', resource.id)">Select</button>
                     <button id="selected" v-if="seller === resource.id" @click="$emit('update_seller', resource.id)">Selected</button>
                     <button>Message</button>
@@ -110,6 +122,9 @@
             media_clicked: ''
         }},
         methods: {
+            unauth_currency(resource: Resource): string {
+                return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
+            },
             to_date(date: string): string {
                 const full_date: Date = new Date(date) 
                 const year = full_date.getFullYear()
@@ -131,6 +146,7 @@
                 return `${day} ${month} ${year}`
             },
             async listedprice(resource: Resource): Promise<number> {
+                if (Object.keys(this.user).length === 0) return resource.price
                 if (resource === undefined) return 0
                 let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
