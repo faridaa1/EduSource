@@ -117,6 +117,10 @@
       }
     },
     async mounted(): Promise<void> {
+      document.addEventListener('click', (event) => {
+        let target: HTMLElement = event.target as HTMLElement
+        if (target.id === 'logo' && !(window.location.pathname === '/')) this.go_home()
+      })
       let usersResponse: Response = await fetch('http://localhost:8000/api/users/', {
         method: 'GET',
         credentials: 'include',
@@ -328,6 +332,10 @@
     height: 1.6rem;
     padding: 0;
     margin: 0;
+  }
+
+  #logo:hover {
+    cursor: pointer;
   }
   
   #app-vue header {
