@@ -170,13 +170,15 @@
                 return useUsersStore().users
             },
             listed_resources(): Resource[] { 
-                let filtered_resources: Resource[] = this.resources.filter(resource => resource.user !== this.user.id && !resource.unique)
-                let sorted_resources = filtered_resources.filter(resource => resource.user !== this.user.id && !resource.unique).sort((a, b) => {
+                let sorted_resources = this.resources.sort((a, b) => {
                     const user_b: User | undefined = this.users.find(user => user.id === b.user)
                     const user_a: User | undefined = this.users.find(user => user.id === a.user)
                     if (user_b && user_a) return user_b.rating - user_a.rating
                     return 0
                 })
+                if (Object.keys(this.user).length > 0) {
+                    sorted_resources = sorted_resources.filter(resource => resource.user !== this.user.id)
+                }
                 return sorted_resources
             }
         },
