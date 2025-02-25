@@ -20,6 +20,7 @@ class Cart(models.Model):
             'total' : self.total
         }
 
+
 class Wishlist(models.Model):
     """Defining attributes and methods for Wishlist model"""
     items = models.IntegerField(null=False, blank=False, default=0, validators=[MinValueValidator(0)])
@@ -38,6 +39,7 @@ class Wishlist(models.Model):
 
 def create_wishlist(): 
     return Wishlist.objects.create()
+
 
 class User(AbstractUser):
     """Defining attrbiutes and methods for User model"""
@@ -70,6 +72,7 @@ class User(AbstractUser):
         address: Address = Address.objects.get(user=self)
         placed_orders = Order.objects.filter(buyer=self)
         sold_orders = Order.objects.filter(seller=self)
+        messages = Messages.objects.filter(user1=self, user2=self)
         return {
             'id': self.id,
             'email': self.email,
@@ -89,6 +92,7 @@ class User(AbstractUser):
             'listings': [listing.as_dict() for listing in self.listing.all()],
             'placed_orders': [order.as_dict() for order in placed_orders],
             'sold_orders': [order.as_dict() for order in sold_orders],
+            'messages': [message.as_dict() for message in messages],
             'cart': self.cart.as_dict(),
             'wishlist': self.wishlist.as_dict()
         }
@@ -306,4 +310,40 @@ class OrderResource(models.Model):
             'id': self.id,
             'resource': self.resource.id,
             'number': self.number,
+        }
+
+
+class Messages(models.Model):
+    """Defining attributes and methods for Messages model"""
+    user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user1')
+    user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user2')
+    user1_seen = models.DateTimeField(default=timezone.now)
+    user2_seen = models.DateTimeField(default=timezone.now)
+    def as_dict(self) -> str:
+        """Dictionary representation of Messages"""
+        messages = Message.objects.get(messages=self.id)
+        return {
+            'id': self.id,
+            'user1': self.user1.id,
+            'user2': self.user2.id,
+            'user1_seen': self.user1_seen,
+            'user2_seen': self.user2_seen,
+            'messages': [message.as_dict() for message in messages],
+        }
+
+
+class Message(models.Model):
+    """Defining attributes and methods for Message model"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user')
+    message = models.TextField(null=False, blank=True)
+    messages = models.ForeignKey(Messages, on_delete=models.CASCADE, related_name='message')
+    sent = models.DateTimeField(default=timezone.now)
+
+    def as_dict(self) -> str:
+        """Dictionary representation of Message"""
+        return {
+            'id': self.id,
+            'user': self.user.id,
+            'message': self.message,
+            'sent': self.sent,
         }

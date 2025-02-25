@@ -18,6 +18,7 @@ export interface User {
     placed_orders: Order[];
     sold_orders: Order[];
     cart: Cart;
+    messages: Messages[];
     wishlist: Wishlist;
 }
 
@@ -119,4 +120,20 @@ export interface OrderResource {
     id: number,
     resource: number,
     number: number
+}
+
+export interface Messages {
+    id: number,
+    user1: number,
+    user2: number,
+    user1_seen: number,
+    user2_seen: number,
+    messages: Message[]
+}
+
+export interface Message {
+    id: number,
+    user: number,
+    message: string,
+    sent: string
 }
