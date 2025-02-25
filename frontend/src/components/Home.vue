@@ -105,14 +105,14 @@
             },
             resources(): Resource[] {
                 const allResources: Resource[] = useResourcesStore().resources
-                let generic_items = [] as string[]
+                let generic_items = new Map()
                 let newAllResources = [] as Resource[]
                 for (let resource of allResources) {
-                    if (parseInt(resource.stock.toString()) === 0 || resource.is_draft) continue
+                    if (parseInt(resource.stock.toString()) < 1 || resource.is_draft || !(resource.allow_collection || resource.allow_delivery)) continue
                     if (!resource.unique) {
-                        if (!(generic_items.includes(resource.name))) {
+                        if (!(generic_items.get(resource.name)) || (generic_items.get(resource.name) !== resource.author)) {
                             newAllResources.push(resource)
-                            generic_items.push(resource.name)
+                            generic_items.set(resource.name, resource.author)
                         } 
                     } else {
                         newAllResources.push(resource)
@@ -122,15 +122,15 @@
             },
             textbooks(): Resource[] {
                 if (!this.resources) return []
-                return this.resources.filter(resource => resource.type === 'Textbook' && !resource.is_draft)
+                return this.resources.filter(resource => resource.type === 'Textbook')
             },
             notes(): Resource[] {
                 if (!this.resources) return []
-                return this.resources.filter(resource => resource.type === 'Notes' && !resource.is_draft)
+                return this.resources.filter(resource => resource.type === 'Notes')
             },
             stationery(): Resource[] {
                 if (!this.resources) return []
-                return this.resources.filter(resource => resource.type === 'Stationery' && !resource.is_draft)
+                return this.resources.filter(resource => resource.type === 'Stationery')
             },
         },
         watch: {

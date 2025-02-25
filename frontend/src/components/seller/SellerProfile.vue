@@ -32,7 +32,7 @@
                     <p> {{ viewing_profile ? '' : textbookMessage }} Textbooks</p>
                     <button v-if="!viewing_profile && all_textbooks.length > 0" @click="updateTextbookMessage(true)" class="drafted">View {{ textbookMessage === 'All' ? 'Sold' : 'All'}}</button>
                     <button v-if="!viewing_profile && all_textbooks.length > 0" @click="updateTextbookMessage(false)" class="all">View {{ textbookMessage === 'All' ? 'Drafted' : textbookMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
-                    <select class="filter" v-if="!viewing_profile && all_textbooks.length > 0" v-model="textbook_filter">
+                    <select class="filter" v-if="all_textbooks.length > 0" v-model="textbook_filter">
                         <option value="listing-new">Listing: New to Old</option>
                         <option value="listing-old">Listing: Old to New</option>
                         <option v-if="!viewing_profile" value="edit-new">Edited: New to Old</option>
@@ -57,7 +57,7 @@
                     <p>{{ viewing_profile ? '' :  notesMessage }} Notes</p>
                     <button v-if="!viewing_profile && all_notes.length > 0" @click="updateNotesMessage(true)" class="drafted">View {{ notesMessage === 'All' ? 'Sold' : 'All'}}</button>
                     <button v-if="!viewing_profile && all_notes.length > 0" @click="updateNotesMessage(false)" class="all">View {{ notesMessage === 'All' ? 'Drafted' : notesMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
-                    <select class="filter" v-if="!viewing_profile && all_notes.length > 0" v-model="notes_filter">
+                    <select class="filter" v-if="all_notes.length > 0" v-model="notes_filter">
                         <option value="listing-new">Listing: New to Old</option>
                         <option value="listing-old">Listing: Old to New</option>
                         <option v-if="!viewing_profile" value="edit-new">Edited: New to Old</option>
@@ -83,7 +83,7 @@
                         <p>{{ viewing_profile ? '' : stationeryMessage }} Stationery</p>
                         <button v-if="!viewing_profile && all_stationery.length > 0" @click="updateStationeryMessage(true)" class="drafted">View {{ stationeryMessage === 'All' ? 'Sold' : 'All'}}</button>
                         <button v-if="!viewing_profile && all_stationery.length > 0" @click="updateStationeryMessage(false)" class="all">View {{ stationeryMessage === 'All' ? 'Drafted' : stationeryMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
-                        <select class="filter" v-if="!viewing_profile && all_stationery.length > 0" v-model="stat_filter">
+                        <select class="filter" v-if="all_stationery.length > 0" v-model="stat_filter">
                             <option value="listing-new">Listing: New to Old</option>
                             <option value="listing-old">Listing: Old to New</option>
                             <option v-if="!viewing_profile" value="edit-new">Edited: New to Old</option>
@@ -108,13 +108,15 @@
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent } from 'vue';
+    import { defineComponent, nextTick } from 'vue';
     import type { Resource, User } from '@/types';
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         mounted(): void {
             if (window.location.href.includes('seller')) {
                 this.viewing_profile = true
+            } else {
+                this.viewing_profile = false
             }
             this.fill_stars()
         },
@@ -250,18 +252,22 @@
                 window.location.href = `/new-listing/${url}`
             },
             fill_stars(): void {
-                const star1: HTMLElement = document.getElementById('one') as HTMLElement
-                const star2: HTMLElement = document.getElementById('two') as HTMLElement
-                const star3: HTMLElement = document.getElementById('three') as HTMLElement
-                const star4: HTMLElement = document.getElementById('four') as HTMLElement
-                const star5: HTMLElement = document.getElementById('five') as HTMLElement
-                if (star1 && star2 && star3 && star4 && star5) {
-                    star1.style.color = this.user.rating >= 1 ? 'orange' : ''
-                    star2.style.color = this.user.rating >= 2 ? 'orange' : ''
-                    star3.style.color = this.user.rating >= 3 ? 'orange' : ''
-                    star4.style.color = this.user.rating >= 4 ? 'orange' : ''
-                    star5.style.color = this.user.rating == 5 ? 'orange' : ''
-                }
+                nextTick(() => {
+                    const star1: HTMLElement = document.getElementById('one') as HTMLElement
+                    const star2: HTMLElement = document.getElementById('two') as HTMLElement
+                    const star3: HTMLElement = document.getElementById('three') as HTMLElement
+                    const star4: HTMLElement = document.getElementById('four') as HTMLElement
+                    const star5: HTMLElement = document.getElementById('five') as HTMLElement
+                    if (this.viewing_profile && !this.seller) return
+                    if (!this.viewing_profile && !this.user) return
+                    if (star1 && star2 && star3 && star4 && star5) {
+                        star1.style.color = (this.viewing_profile ? (this.seller as User).rating : this.user.rating) >= 1 ? 'orange' : ''
+                        star2.style.color = (this.viewing_profile ? (this.seller as User).rating : this.user.rating) >= 2 ? 'orange' : ''
+                        star3.style.color = (this.viewing_profile ? (this.seller as User).rating : this.user.rating) >= 3 ? 'orange' : ''
+                        star4.style.color = (this.viewing_profile ? (this.seller as User).rating : this.user.rating) >= 4 ? 'orange' : ''
+                        star5.style.color = (this.viewing_profile ? (this.seller as User).rating : this.user.rating) == 5 ? 'orange' : ''
+                    }
+                })
             }
         },
         computed: {
@@ -277,23 +283,22 @@
                 return this.users.find(user => user.username === username)
             },
             user(): User {
-                let user: User = useUserStore().user
-                return user
+                return useUserStore().user
             },
             all_textbooks(): Resource[] {
-                if (!this.user || !this.user.listings) return []
-                return this.user.listings.filter(listing => listing.type === 'Textbook')
+                if ((!this.viewing_profile && (!this.user || !this.user.listings)) || (this.viewing_profile && (!this.seller || !this.seller?.listings))) return []
+                return this.viewing_profile ? (this.seller as User).listings.filter(listing => listing.type === 'Textbook') : this.user.listings.filter(listing => listing.type === 'Textbook')
             },
             all_notes(): Resource[] {
-                if (!this.user || !this.user.listings) return []
-                return this.user.listings.filter(listing => listing.type === 'Notes')
+                if ((!this.viewing_profile && (!this.user || !this.user.listings)) || (this.viewing_profile && (!this.seller || !this.seller?.listings))) return []
+                return this.viewing_profile ? (this.seller as User).listings.filter(listing => listing.type === 'Notes') : this.user.listings.filter(listing => listing.type === 'Notes')
             },
             all_stationery(): Resource[] {
-                if (!this.user || !this.user.listings) return []
-                return this.user.listings.filter(listing => listing.type === 'Stationery')
+                if ((!this.viewing_profile && (!this.user || !this.user.listings)) || (this.viewing_profile && (!this.seller || !this.seller?.listings))) return []
+                return this.viewing_profile ? (this.seller as User).listings.filter(listing => listing.type === 'Stationery') : this.user.listings.filter(listing => listing.type === 'Stationery')
             },
             textbooks(): Resource[] {
-                if (!this.user || !this.user.listings) return []
+                if ((!this.viewing_profile && (!this.user || !this.user.listings)) || (this.viewing_profile && (!this.seller || !this.seller?.listings))) return []
                 let textbooks = this.all_textbooks
                 if (this.textbookMessage === 'Sold') {
                     textbooks = this.user.listings.filter(listing => listing.type === 'Textbook' && !listing.is_draft)
@@ -311,10 +316,13 @@
                         return a.id - b.id
                     }
                 })
+                if (this.viewing_profile) {
+                    textbooks = textbooks.filter(listing => !listing.is_draft && listing.stock > 0)
+                }
                 return textbooks
             },
             notes(): Resource[] {
-                if (!this.user || !this.user.listings) return []
+                if ((!this.viewing_profile && (!this.user || !this.user.listings)) || (this.viewing_profile && (!this.seller || !this.seller?.listings))) return []
                 let notes = this.all_notes
                 if (this.notesMessage === 'Sold') {
                     notes = this.user.listings.filter(listing => listing.type === 'Notes' && !listing.is_draft)
@@ -332,9 +340,13 @@
                         return a.id - b.id
                     }
                 })
+                if (this.viewing_profile) {
+                    notes = notes.filter(listing => !listing.is_draft  && listing.stock > 0)
+                }
                 return notes
             },
             stationery(): Resource[] {
+                if ((!this.viewing_profile && (!this.user || !this.user.listings)) || (this.viewing_profile && (!this.seller || !this.seller?.listings))) return []
                 let stationery = this.all_stationery
                 if (this.stationeryMessage === 'Sold') {
                     stationery = this.user.listings.filter(listing => listing.type === 'Stationery' && !listing.is_draft)
@@ -352,6 +364,9 @@
                         return a.id - b.id
                     }
                 })
+                if (this.viewing_profile) {
+                    stationery = stationery.filter(listing => !listing.is_draft && listing.stock > 0)
+                }
                 return stationery
             }
         },
@@ -367,6 +382,9 @@
                 for (const resource of resources) {
                     resource.price = await this.listedprice(resource)
                 }
+            },
+            seller(new_seller: User) {
+                this.fill_stars()
             }
         },
         async created(): Promise<void> {

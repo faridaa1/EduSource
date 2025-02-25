@@ -54,7 +54,12 @@
                     </div>
                     <div class="data-item">
                         <label>Delivery Options</label>
-                        <p>{{ resource.delivery_option }}</p>
+                        <p>{{ resource.allow_collection ? 'Collection' : '' }}{{ resource.allow_collection && resource.allow_delivery ? ' & ' : '' }}{{ resource.allow_delivery ? 'Delivery' : '' }}</p>
+                        <p></p>
+                    </div>
+                    <div class="data-item">
+                        <label>Returns</label>
+                        <p>{{ resource.allow_return ? 'Available' : 'Unavailable' }}</p>
                     </div>
                 </div>
                 <div id="buttons" v-if="Object.keys(user).length > 0">
