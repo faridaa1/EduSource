@@ -187,7 +187,7 @@
             'X-CSRFToken' : useUserStore().csrf
           },
         })
-        location.reload()
+        window.location.href = '/'
       },
       async sign_in(): Promise<void> {
         // let csrf

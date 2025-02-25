@@ -1,319 +1,241 @@
 <template>
-    <div id="message-container" v-if="user && other_user">
-        <p id="header">{{ other_user.username }}</p>
-        <div id="messages" v-if="messages_set">
-            <div id="message-area" :class="message.user === user.id ? 'right' : 'left'" v-for="message in messages.messages.sort((a,b) => {return new Date(a.sent).getTime() - new Date(b.sent).getTime() })">
-                <p id="unread" v-if="message.id === unread_index"><hr>Unread Messages<hr></p>
-                <i @click="view_profile" v-if="message.user !== user.id" class="bi bi-person-circle icon"></i>
-                <p id="value" :class="message.user === user.id ? 'push' : ''" >{{ message.message }}</p>
-                <i v-if="message.user === user.id" class="bi bi-person-circle"></i>
+    <div id="main">
+        <p id="messages">Messages</p>
+        <div id="messages-container" v-if="user">
+            <div id="handle">
+                <div class="nav">
+                    <label >Filter</label>
+                    <select v-model="filter_by">
+                        <option value="all">Messages: All</option>
+                        <option value="read">Messages: Read</option>
+                        <option value="unread">Messages: Unread</option>
+                    </select>
+                </div>
+                <div class="nav">
+                    <label>Sort By</label>
+                    <select v-model="sort_by">
+                        <option value="new">Messages: New</option>
+                        <option value="old">Messages: Old</option>
+                    </select>
+                </div>
             </div>
-        </div>
-        <div id="message-box">
-            <textarea @input="clear" id="message-content" placeholder="Write a message here"></textarea>
-            <button @click="send_message"><i class="bi bi-send"></i></button>
+            <div id="overflow">
+                <div class="message" v-for="message in filtered_messages()">
+                    <i @click="view_profile(message.user1 === user.id ? users.find(user => user.id === message.user2) as User : users.find(user => user.id === message.user1) as User)" class="bi bi-person-circle icon"></i>
+                    <div class="message-block" @click="get_message(message.user1 === user.id ? message.user2 : message.user1)">
+                        <div class="date-head">
+                            <p class="username">{{ message.user1 === user.id ? users.find(user => user.id === message.user2)?.username :users.find(user => user.id === message.user1)?.username }}</p>
+                        </div>
+                        <p class="content">{{ most_recent_message(message).message }}</p>
+                    </div>
+                    <div class="message-block notiftime">
+                        <p id="datee"> {{ to_date(message.last_edited) }}</p>
+                        <p v-if="unseen(message)" id="notification"></p>
+                    </div>
+                </div>
+                <div id="nomes" v-if="filtered_messages().length < 1">No messages to display</div>
+            </div>
+
         </div>
     </div>
 </template>
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent, nextTick } from 'vue';
-    import type { Messages, Resource, User } from '@/types';
-    import { useResourcesStore } from '@/stores/resources';
+    import { defineComponent } from 'vue';
+    import type { Message, Messages, User } from '@/types';
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
-            messages: Messages,
-            messages_set: boolean,
-            unread_index: number,
+            filter_by : 'read' | 'unread' | 'all',
+            sort_by : 'new' | 'old'
         } { return {
-            unread_index: -1,
-            messages_set: false,
-            messages: {} as Messages
+            filter_by: 'all',
+            sort_by: 'new'
         }},
         methods: {
-            view_profile(): void {
-                window.location.href = `/seller/${this.other_user.username}`
-            },
-            async update_last_seen(): Promise<void> {
-                this.get_unread_message_index()
-                let messageResponse: Response = await fetch(`http://localhost:8000/api/message/${this.messages.id}/${this.user.id}/`, {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRFToken' : useUserStore().csrf
-                    },
-                })
-                if (!messageResponse.ok) {
-                    return
-                } 
-                let data: User[] = await messageResponse.json()
-                useUsersStore().updateUsers(data)
-                useUserStore().saveUser(this.users.find(u => u.id === this.user.id) as User)
-                const messages: Messages | undefined = this.user.messages.find(message => message.id === this.messages.id)
-                if (messages) {
-                    this.messages = messages
-                } 
-                this.scroll()
-            },
-            clear(): void {
-                const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
-                if (!message) return
-                // validation 
-                message.setCustomValidity('')
-                message.reportValidity()
-            },
-            async send_message(): Promise<void> {
-                const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
-                if (!message) return
-                
-                // validation 
-                if (message.value.trim() === '') {
-                    message.setCustomValidity('Enter a message')
-                    message.reportValidity()
-                    return
+            to_date(date: string): string {
+                const current_time = new Date()
+                let date_format = new Date(date)
+                if (current_time.getDate() === date_format.getDate() && current_time.getMonth() === date_format.getMonth() && current_time.getFullYear() === date_format.getFullYear()) {
+                    // show time if the day is the same
+                    return `${String(date_format.getHours()).padStart(2, '0')}:${String(date_format.getMinutes()).padEnd(2, '0')}`
                 }
-                this.clear()
-                let messageResponse: Response = await fetch(`http://localhost:8000/api/message/${this.messages.id}/${this.user.id}/`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRFToken' : useUserStore().csrf
-                    },
-                    body: JSON.stringify(message.value)
-                })
-                if (!messageResponse.ok) {
-                    console.error('Error sending message')
-                    return
-                } 
-                let data: User[] = await messageResponse.json()
-                useUsersStore().updateUsers(data)
-                useUserStore().saveUser(this.users.find(u => u.id === this.user.id) as User)
-                const messages: Messages | undefined = this.user.messages.find(message => message.id === this.messages.id)
-                if (messages) {
-                    this.messages = messages
-                } 
-                message.value = ''
-                this.update_last_seen()
+                // show date if it happened more than one day ago
+                return `${String(date_format.getDay()).padStart(2, '0')}/${String(date_format.getMonth()+1).padStart(2, '0')}/${String(date_format.getFullYear()).slice(-2)}`
             },
-            async create_messages(): Promise<void> {
-                if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
-                let messagesResponse: Response = await fetch(`http://localhost:8000/api/messages/${this.user.id}/${this.other_user.id}/`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRFToken' : useUserStore().csrf
-                    },
-                })
-                if (!messagesResponse.ok) {
-                    console.error('Error creating message')
-                    return
-                } 
-                let data: User[] = await messagesResponse.json()
-                useUsersStore().updateUsers(data)
-                useUserStore().saveUser(this.users.find(u => u.id === this.user.id) as User)
-                const messages: Messages | undefined = this.user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id))
-                if (messages) {
-                    this.messages = messages
-                } 
-                this.messages_set = true
+            view_profile(seller: User): void {
+                window.location.href = `/seller/${seller.username}`
             },
-            get_messages(): void {
-                if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
-                if (Object.keys(this.user.messages).length === 0) {
-                    this.create_messages()
-                    return
-                }
+            get_message(userID: number): void {
+                window.location.href = `/message/${this.user.id}/${userID}`
             },
-            get_unread_message_index(): void {
-                for (let message of this.messages.messages) {
-                    if (message.user === this.user.id) continue
-                    if ((this.messages.user2 === this.user.id && (new Date(message.sent).getTime() >= new Date(this.messages.user2_seen).getTime())) || (this.messages.user1 === this.user.id && (new Date(message.sent).getTime() >= new Date(this.messages.user1_seen).getTime()))) {
-                        console.log('here')
-                        this.unread_index = message.id
-                        return
-                    }
-                }
-                this.unread_index = -1
+            most_recent_message(message: Messages): Message {
+                const sorted_messages = message.messages.sort((a, b) => { return new Date(a.sent).getTime() - new Date(b.sent).getTime() })
+                return sorted_messages[sorted_messages.length-1]
             },
-            scroll(): void {
-                nextTick(() => {
-                    const messagesDiv: HTMLDivElement = document.getElementById('messages') as HTMLDivElement
-                    if (messagesDiv) {
-                        messagesDiv.scrollTo({ top: messagesDiv.scrollHeight })
+            unseen(message: Messages): boolean {
+                const other_user_messages: Message[] = message.messages.filter(message => message.user !== this.user.id)
+                if (!other_user_messages || other_user_messages.length < 1) return false
+                const last_message_time: number = new Date(other_user_messages.sort((a, b) => { return new Date(a.sent).getTime() - new Date(b.sent).getTime() })[other_user_messages.length-1].sent).getTime()
+                if (message.user1 === this.user.id) return last_message_time > new Date(message.user1_seen).getTime()
+                return last_message_time > new Date(message.user2_seen).getTime()
+            },
+            filtered_messages(): Messages[] {
+                if (!this.user.messages) return [] 
+                let messages: Messages[] = this.user.messages.sort((a,b) => {
+                    if (this.sort_by === 'new') {
+                        if (new Date(a.last_edited).getTime() > new Date(b.last_edited).getTime()) {
+                            return -1
+                        } 
+                        return 1
+                    } else {
+                        if (new Date(a.last_edited).getTime() < new Date(b.last_edited).getTime()) {
+                            return -1
+                        } 
+                        return 1
                     }
                 })
-                
+                if (this.filter_by === 'read' || this.filter_by === 'unread') {
+                    messages = messages.filter(message => this.filter_by === 'read' ? !this.unseen(message) : this.unseen(message))
+                }
+                return messages
             }
         },
         computed: {
-            users(): User[] {
-                return useUsersStore().users
-            },
             user(): User {
                 return useUserStore().user
             },
-            allResources(): Resource[] {
-                const window_location: string[] = window.location.href.split('/')
-                const id: string = window_location[window_location.length-1]
-                let returnedResources = [] as Resource[]
-                const initial_resource: Resource | undefined = useResourcesStore().resources.find(resource => resource.id === parseInt(id))
-                if (initial_resource === undefined) return []
-                if (initial_resource.unique) {
-                    returnedResources.push(initial_resource)
-                    return returnedResources
-                }
-                const resources: Resource[] = useResourcesStore().resources.filter(resource => resource.name === initial_resource.name && resource.author === initial_resource.author && !resource.unique && parseInt(resource.stock.toString()) > 0 && !resource.is_draft && (resource.allow_collection || resource.allow_delivery))
-                returnedResources.push(...resources)
-                return returnedResources
-            },
-            other_user(): User {
-                const window_location: string[] = window.location.href.split('/')
-                const other_seller: number = parseInt(window_location[window_location.length-1])
-                const user: User | undefined = this.users.find(user => user.id === other_seller)
-                if (user === undefined) return {} as User
-                return user
-            },
-        },
-        watch: {
-            user(new_user: User): void {
-                if (!this.messages_set && Object.keys(this.user.messages).length > 0) {
-                    const message = this.user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id) || (message.user2 === this.user.id && message.user1 === this.other_user.id))
-                    if (message) {
-                        this.messages = message
-                        this.messages_set = true
-                        this.update_last_seen()
-                        return
-                    }
-                }
-                if (!this.messages_set) {
-                    this.get_messages()
-                } 
-            },
-            other_user(new_user: User): void {
-                if (!this.messages_set && Object.keys(this.other_user.messages).length > 0) {
-                    const message = this.other_user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id) || (message.user2 === this.user.id && message.user1 === this.other_user.id))
-                    if (message) {
-                        this.messages = message
-                        this.messages_set = true
-                        this.update_last_seen()
-                        return
-                    }
-                }
-                if (!this.messages_set) {
-                    this.get_messages()
-                } 
-            },
-            messages(new_messages: Messages): void {
-                this.scroll()
+            users(): User[] {
+                return useUsersStore().users
             }
         },
     })
 </script>
 
 <style scoped>
-    #message-container {
-        margin-top: 2rem;
-        display: flex;
-        flex-direction: column;
+    .notiftime {
         align-items: center;
-        height: 55rem;
+        justify-content: start;
+        align-self: flex-start;
     }
 
-    #header {
-        font-size: 2rem;
-   }
-
-   #message-box {
-        margin-top: auto;
+    #datee {
+        color: rgb(81, 80, 80);
+        margin-left: auto;
+        margin-bottom: 0.5rem;
+    }
+   
+    .date-head {
         display: flex;
-        gap: 1rem;
-        align-items: center;
-   }
+        justify-content: space-between;
+    }
 
-   #message-box button {
-        background-color: green;
-        color: white;
-        border: none;
-        padding: 0.5rem;
-        border-radius: 0.5rem;
-   }
+    #nomes {
+        margin-top: 1rem;
+    }
 
-   #message-box button:hover {
-        background-color: rgb(27, 108, 27);
-        cursor: pointer;
-   }
-
-   #message-box textarea {
-        background-color: #D9D9D9;
-        border-radius: 1rem;
-        width: 30rem;
-        height: 6rem;
-        border-right: 2rem;
-        resize: none;
-        padding: 1rem;
-   }
-
-   #message-area {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: flex-start;
-        gap: 2rem;
-   }
-
-   #message-area i {
-        font-size: 2rem;
-   }
-
-   .icon:hover {
+    .icon:hover {
         color: darkgray;
         cursor: pointer;
-   }
+    }
 
-   #messages {
-        padding-right: 2rem;
-        overflow-y: scroll;
-        margin-top: 2rem;
-        height: 38rem;
+    .message-block {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-        width: 30rem;
-   }
-
-   .right {
-        margin-left: auto;
-   }
-
-   .left {
-        margin-right: auto;
-   }
-
-   #messages #value {
-        align-self: center;
-        max-width: 20rem;
-   }
-
-   #messages .push {
-        text-align: right;
-   }
-
-   #unread {
-        font-weight: bold;
-        text-align: center;
-        flex: 0 0 100%;
+        gap: 0.2rem;
+    }
+    
+    #main {
         display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    #overflow {
+        display: flex;
+        overflow-y: scroll;
+        flex-direction: column;
+        height: 47rem;
+        width: 40rem;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    #messages-container {
+        display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        text-align: center;
-        gap: 1rem;
-   }
+    }
 
-   hr {
-        background-color: black;
-        border: none;
-        height: 0.1rem;
-        width: 7rem;
-   }
+    .message {
+        display: flex;
+        gap: 1rem;
+        font-size: 1.3rem;
+        align-items: center;
+        padding: 1rem;
+    }
+
+    .message i {
+        font-size: 2rem;
+    }
+
+    .message .content {
+        width: 28rem;
+        height: 1.3rem;
+        padding: 0.5rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .message:hover {
+        background-color: #D9D9D9;
+        cursor: pointer;
+        border-radius: 0.5rem;
+    }
+
+    .username {
+        font-weight: bold;
+        padding-left: 0.5rem;
+    }
+
+    #messages {
+        font-weight: bold;
+        text-align: center;
+        font-size: 2rem;
+        margin-top: 2rem;
+    }
+
+    #notification {
+        height: 0.8rem;
+        width: 0.8rem;
+        background-color: darkcyan;
+        border-radius: 50%;
+    }
+
+    #dark #notification {
+        background-color: white;
+    }
+
+    .nav {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    #handle {
+        display: flex;
+        gap: 2rem;
+        align-self: flex-end;
+    }
+
+    .nav select {
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+    }
 </style>

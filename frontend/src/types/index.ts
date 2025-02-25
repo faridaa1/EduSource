@@ -128,6 +128,7 @@ export interface Messages {
     user2: number,
     user1_seen: number,
     user2_seen: number,
+    last_edited: string,
     messages: Message[]
 }
 

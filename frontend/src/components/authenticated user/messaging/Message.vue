@@ -1,6 +1,12 @@
 <template>
     <div id="message-container" v-if="user && other_user">
-        <p id="header">{{ other_user.username }}</p>
+        <div id="heading">
+            <div id="back" @click="back">
+                <i class="bi bi-arrow-left-circle-fill"></i>
+                <p id="back-msg">Messages</p>
+            </div>
+            <p id="header">{{ other_user.username }}</p>
+        </div>
         <div id="messages" v-if="messages_set">
             <div id="message-area" :class="message.user === user.id ? 'right' : 'left'" v-for="message in messages.messages.sort((a,b) => {return new Date(a.sent).getTime() - new Date(b.sent).getTime() })">
                 <p id="unread" v-if="message.id === unread_index"><hr>Unread Messages<hr></p>
@@ -19,8 +25,7 @@
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
     import { defineComponent, nextTick } from 'vue';
-    import type { Messages, Resource, User } from '@/types';
-    import { useResourcesStore } from '@/stores/resources';
+    import type { Messages, User } from '@/types';
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
@@ -33,6 +38,9 @@
             messages: {} as Messages
         }},
         methods: {
+            back(): void {
+                window.location.href = '/messages'
+            },
             view_profile(): void {
                 window.location.href = `/seller/${this.other_user.username}`
             },
@@ -121,7 +129,7 @@
             },
             get_messages(): void {
                 if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
-                if (Object.keys(this.user.messages).length === 0) {
+                if (Object.keys(this.user.messages).length === 0 || !(this.user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id)))) {
                     this.create_messages()
                     return
                 }
@@ -153,20 +161,6 @@
             },
             user(): User {
                 return useUserStore().user
-            },
-            allResources(): Resource[] {
-                const window_location: string[] = window.location.href.split('/')
-                const id: string = window_location[window_location.length-1]
-                let returnedResources = [] as Resource[]
-                const initial_resource: Resource | undefined = useResourcesStore().resources.find(resource => resource.id === parseInt(id))
-                if (initial_resource === undefined) return []
-                if (initial_resource.unique) {
-                    returnedResources.push(initial_resource)
-                    return returnedResources
-                }
-                const resources: Resource[] = useResourcesStore().resources.filter(resource => resource.name === initial_resource.name && resource.author === initial_resource.author && !resource.unique && parseInt(resource.stock.toString()) > 0 && !resource.is_draft && (resource.allow_collection || resource.allow_delivery))
-                returnedResources.push(...resources)
-                return returnedResources
             },
             other_user(): User {
                 const window_location: string[] = window.location.href.split('/')
@@ -213,6 +207,40 @@
 </script>
 
 <style scoped>
+    #heading {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    #back {
+        display: flex;
+        gap: 1rem;
+        font-size: 2rem;
+        align-items: center;
+        position: absolute;
+        margin-left: 2rem;
+    }
+
+    #back:hover {
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+    #back-msg {
+        font-size: 1.5rem;
+    }
+
+    #back i:hover {
+        cursor: pointer;
+        color: rgb(86, 85, 85);
+    }
+
+    #back i {
+        font-size: 1.5rem;
+    }
+
     #message-container {
         margin-top: 2rem;
         display: flex;
@@ -223,6 +251,7 @@
 
     #header {
         font-size: 2rem;
+        margin: auto;
    }
 
    #message-box {
@@ -258,7 +287,7 @@
    #message-area {
         display: flex;
         flex-wrap: wrap;
-        align-items: flex-start;
+        align-items: flex-end;
         gap: 2rem;
    }
 

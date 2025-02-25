@@ -320,6 +320,8 @@ class Messages(models.Model):
     user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user2')
     user1_seen = models.DateTimeField(default=timezone.now)
     user2_seen = models.DateTimeField(default=timezone.now)
+    last_edited = models.DateTimeField(auto_now=True)
+
     def as_dict(self) -> str:
         """Dictionary representation of Messages"""
         messages = self.message.all()
@@ -329,6 +331,7 @@ class Messages(models.Model):
             'user2': self.user2.id,
             'user1_seen': self.user1_seen,
             'user2_seen': self.user2_seen,
+            'last_edited': self.last_edited,
             'messages': [message.as_dict() for message in messages],
         }
 
