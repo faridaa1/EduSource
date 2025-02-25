@@ -14,7 +14,7 @@
                     <div class="details">
                         <p>{{ (allResources.find(res => res.id === resource.resource) as Resource)?.name }}</p>
                         <p>{{ (allResources.find(res => res.id === resource.resource) as Resource)?.price }}</p>
-                        <p id="view-details" @click="view_item((allResources.find(res => res.id === resource.resource) as Resource)?.name)">View Details</p>
+                        <p id="view-details" @click="view_item((allResources.find(res => res.id === resource.resource) as Resource)?.id)">View Details</p>
                     </div>
                 </div>
                 <div class="item-two">
@@ -136,8 +136,8 @@
                     this.edit_cart_item(resource, resource.number + value)
                 }
             },
-            view_item(name: string): void {
-                window.location.href = `/view/${name}`
+            view_item(id: number): void {
+                window.location.href = `/view/${id}`
             },
             cart_price(resource: CartResource): number {
                 const res = this.allResources.find(res => res.id === resource.resource)

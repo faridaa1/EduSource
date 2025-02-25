@@ -8,7 +8,7 @@
                 <div id="profile-pic">
                     <div id="profile-section" @click="view_seller(resource.user)">
                         <i class="bi bi-person-circle icon"></i>
-                        <p>{{ users.find(user => user.id === resource.user)?.username }}</p>
+                        <p>{{ users.find((user: User) => user.id === resource.user)?.username }}</p>
                     </div>
                     <p>{{ to_date(resource.upload) }}</p>
                     <div id="rating">
@@ -172,13 +172,15 @@
         },
         computed: {
             user(): User {
-                return useUserStore().user
+                const users: User = useUserStore().user
+                return users
             },
             reviews(): Review[] {
                 return []
             },
             users(): User[] {
-                return useUsersStore().users
+                const users: User[] = useUsersStore().users
+                return users
             },
             listed_resources(): Resource[] { 
                 let sorted_resources = this.resources.sort((a, b) => {

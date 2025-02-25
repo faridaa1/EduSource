@@ -6,7 +6,7 @@
             </div>
             <div id="user-rating">
                 <p>{{ viewing_profile ? seller?.username : user.username }}</p>
-                <div id="rating">
+                <div id="rating" v-if="!viewing_profile || (user.id !== seller?.id && seller?.listings && seller.listings.length > 0)">
                     <i id="one" class="bi bi-star-fill"></i>
                     <i id="two" class="bi bi-star-fill"></i>
                     <i id="three" class="bi bi-star-fill"></i>
@@ -17,8 +17,8 @@
                 <button id="message_seller" @click="message((seller as User).id)" v-if="viewing_profile && Object.keys(user).length > 0">Message</button>
             </div>
         </div>
-        <div id="about-me">
-            <p>Seller Description</p>
+        <div id="about-me" v-if="!viewing_profile || (user.id !== seller?.id && seller?.description)">
+            <p>Description</p>
             <div>
                 <textarea @input="clear" name="" id="desc" :v-model="user.description" :disabled="!editingDescription">{{ viewing_profile ? seller?.description : user.description }}</textarea>
                 <button v-if="!viewing_profile && !editingDescription" @click="editingDescription=true"><i class="bi bi-pencil-fill"></i></button>
@@ -617,6 +617,7 @@
         padding: 0.2rem;
         border: none;
         margin-top: 0.2rem;
+        width: 8rem;
     }
 
     #dark #message_seller { 

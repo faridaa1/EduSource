@@ -349,6 +349,7 @@ def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> Js
             number=1,
             cart=user.cart,
         )
+        print('hii')
         user.cart.items += 1
         user.cart.save()
         if WishlistResource.objects.filter(wishlist=user.wishlist, resource__name=resource.name).exists():

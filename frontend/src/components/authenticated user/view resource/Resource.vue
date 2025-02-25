@@ -33,6 +33,7 @@
                     <p id="cart-total">{{ cart_resource.number }}</p>
                     <div id="cart-toggle">
                         <p v-if="(Object.keys(currentResource).length === 0) || cart_resource.number < currentResource.stock" id="plus" @click="update_cart(1)">+</p>
+                        <hr id="separator">
                         <p v-if="cart_resource.number > 0" id="minus" @click="update_cart(-1)">-</p>
                     </div>
                 </div>
@@ -358,6 +359,36 @@
             image: new File([''], ''),
         }},
         methods: {
+            style_nav(): void {
+                nextTick(() => {
+                    let line: HTMLHRElement = document.getElementById('separator') as HTMLHRElement
+                    let plus: HTMLParagraphElement = document.getElementById('plus') as HTMLParagraphElement
+                    let minus: HTMLParagraphElement = document.getElementById('minus') as HTMLParagraphElement
+                    if (!line) return
+                    if (this.cart_resource.number === 0) {
+                        if (!plus) return
+                        line.style.display = 'none'
+                        plus.style.borderTopRightRadius = '0.4rem'
+                        plus.style.borderBottomRightRadius = '0.4rem'
+                    } else {
+                        const resource = this.allResources.find(resource => resource.id === this.cart_resource.resource)
+                        if (!resource || !minus) return
+                        if (parseFloat(resource.stock.toString()) !== this.cart_resource.number) {
+                            if (!plus) return
+                            line.style.display = 'block'
+                            line.style.width = '0.1rem'
+                            plus.style.borderTopRightRadius = '0rem'
+                            plus.style.borderBottomRightRadius = '0rem'
+                            minus.style.borderTopLeftRadius = '0rem'
+                            minus.style.borderBottomLeftRadius = '0rem'
+                        } else {
+                            line.style.display = 'none'
+                            minus.style.borderTopLeftRadius = '0.4rem'
+                            minus.style.borderBottomLeftRadius = '0.4rem'
+                        }
+                    }
+                })
+            },
             unauth_currency(resource: Resource): string {
                 return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
             },
@@ -412,10 +443,12 @@
                         if (cartResource.resource === resource.id) {
                             this.cart_resource = cartResource
                             this.seller = cartResource.resource
+                            this.style_nav()
                             return
                         } 
                     })
                 })
+                this.style_nav()
                 useUserStore().updateCart(data)
             },
             async update_cart_db(method: string, cart_number: number, resource: number): Promise<void> {
@@ -429,7 +462,7 @@
                     body: JSON.stringify(this.cart_resource.number)
                 })
                 if (!updateCart.ok) {
-                    console.error('Error deleting from cart')
+                    console.error('Error updating cart')
                     return
                 }
                 const data: {resource: CartResource, cart: Cart, wishlist: Wishlist} = await updateCart.json()
@@ -917,7 +950,20 @@
                 this.updateWishlist(wishlist)
             },
             async "cart_resource.number"(new_number: number): Promise<void> {
-                if (new_number === 0) this.seller = -1
+                if (this.cart_resource.number === 0) {
+                    nextTick(() => {
+                        let line: HTMLHRElement = document.getElementById('separator') as HTMLHRElement
+                        let plus: HTMLParagraphElement = document.getElementById('plus') as HTMLParagraphElement
+                        if (line && plus) {
+                            line.style.display = 'none'
+                            plus.style.borderTopRightRadius = '0.4rem'
+                            plus.style.borderBottomRightRadius = '0.4rem'
+                        }
+                    })
+                }
+                if (new_number === 0) {
+                    this.seller = -1
+                }
                 nextTick(async () => {
                     if (this.cart_resource.number === 0) {
                         this.cart_price = 0
@@ -1016,6 +1062,7 @@
             }
         },
         mounted(): void {
+            this.style_nav()
             this.fill_stars()
         },
     })
@@ -1651,9 +1698,15 @@
         padding-right: 0.4rem;
         padding-left: 0.4rem;
         background-color: white !important;
-        border-right: 1px solid black;
         border-top-left-radius: 0.4rem;
         border-bottom-left-radius: 0.4rem;
+    }
+
+    hr {
+        border: none;
+        height: 1.7rem;
+        width: 0.01rem;
+        background-color: black;
     }
 
     #cart-toggle #minus {

@@ -5,19 +5,19 @@
                 <i class="bi bi-arrow-left-circle-fill"></i>
                 <p id="back-msg">Messages</p>
             </div>
-            <p id="header">{{ other_user.username }}</p>
+            <p id="header" @click="view_profile(false)">{{ other_user.username }}</p>
         </div>
         <div id="messages" v-if="messages_set">
             <div id="message-area" :class="message.user === user.id ? 'right end' : 'left'" v-for="message in messages.messages.sort((a,b) => {return new Date(a.sent).getTime() - new Date(b.sent).getTime() })">
                 <p id="unread" v-if="message.id === unread_index"><hr>Unread Messages<hr></p>
                 <p id="unread1" v-if="new_date(message.id)">{{ convert_date(message.sent) }}</p>
-                <i @click="view_profile" v-if="message.user !== user.id" class="bi bi-person-circle icon"></i>
+                <i @click="view_profile(false)" v-if="message.user !== user.id" class="bi bi-person-circle icon"></i>
                 <div>
                     <p v-if="message.user === user.id" id="time">{{ String(new Date(message.sent).getHours()).padStart(2, '0') }}:{{ String(new Date(message.sent).getMinutes()).padStart(2, '0') }}</p>                    
                     <p v-if="message.user !== user.id" id="time1">{{ String(new Date(message.sent).getHours()).padStart(2, '0') }}:{{ String(new Date(message.sent).getMinutes()).padStart(2, '0') }}</p>                    
                     <p id="value" :class="message.user === user.id ? 'push' : ''" >{{ message.message }}</p>
                 </div>
-                <i v-if="message.user === user.id" class="bi bi-person-circle icon2"></i>
+                <i @click="view_profile(true)" v-if="message.user === user.id" class="bi bi-person-circle icon2"></i>
             </div>
         </div>
         <div id="message-box">
@@ -81,8 +81,8 @@
             back(): void {
                 window.location.href = '/messages'
             },
-            view_profile(): void {
-                window.location.href = `/seller/${this.other_user.username}`
+            view_profile(my_profile: boolean): void {
+                window.location.href = my_profile ? '/listings' : `/seller/${this.other_user.username}`
             },
             async update_last_seen(): Promise<void> {
                 this.get_unread_message_index()
@@ -304,6 +304,11 @@
         margin: auto;
    }
 
+   #header:hover {
+        text-decoration: underline;
+        cursor: pointer;
+   }
+
    #message-box {
         margin-top: auto;
         display: flex;
@@ -356,7 +361,7 @@
         margin-left: 2rem;
    }
 
-   .icon:hover {
+   .icon:hover, .icon2:hover {
         color: darkgray;
         cursor: pointer;
    }
