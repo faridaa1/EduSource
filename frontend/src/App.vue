@@ -9,6 +9,7 @@
           <div id="profile-nav">
             <RouterLink class="profile-item border-bottom rounded-top" to="/details" >Details</RouterLink>
             <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='buyer'">Orders</RouterLink>
+            <RouterLink class="profile-item border-bottom" to="/messages">Messages</RouterLink>
             <RouterLink class="profile-item border-bottom" to="/cart">Cart</RouterLink>
             <RouterLink class="profile-item rounded-bottom" to="/wishlist" v-if="user.mode==='buyer'">Wishlist</RouterLink>
             <RouterLink class="profile-item border-bottom" to="/listings" v-if="user.mode==='seller'">Listings</RouterLink>

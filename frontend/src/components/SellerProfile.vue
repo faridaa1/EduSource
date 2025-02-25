@@ -14,7 +14,7 @@
                     <i id="five" class="bi bi-star-fill"></i>
                     <p>{{ viewing_profile ? seller?.rating : user.rating }}</p>
                 </div>
-                <button id="message_seller" v-if="viewing_profile && Object.keys(user).length > 0">Message Seller</button>
+                <button id="message_seller" @click="message((seller as User).id)" v-if="viewing_profile && Object.keys(user).length > 0">Message Seller</button>
             </div>
         </div>
         <div id="about-me">
@@ -140,6 +140,9 @@
             stationeryMessage: 'All'
         }},
         methods: {
+            message(userID: number): void {
+                window.location.href = `/message/${this.user.id}/${userID}`
+            },
             unauth_currency(resource: Resource): string {
                 return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
             },

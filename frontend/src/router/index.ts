@@ -1,16 +1,17 @@
-import Home from '@/components/Home.vue'
-import Resource from '@/components/buyer/Resource.vue'
-import Details from '@/components/Details.vue'
-import Listing from '@/components/seller/Listing.vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import Cart from '@/components/Cart.vue'
-import Wishlist from '@/components/Wishlist.vue'
+import Home from '@/components/Home.vue'
+import Resource from '@/components/authenticated user/view resource/Resource.vue'
+import Details from '@/components/authenticated user/profile/Details.vue'
+import Listing from '@/components/authenticated user/seller/Listing.vue'
+import Cart from '@/components/authenticated user/cart/Cart.vue'
+import Wishlist from '@/components/authenticated user/wishlist/Wishlist.vue'
 import Checkout from '@/components/authenticated user/checkout/Checkout.vue'
 import OrderConfirmation from '@/components/authenticated user/checkout/OrderConfirmation.vue'
 import Orders from '@/components/authenticated user/orders/Orders.vue'
 import Order from '@/components/authenticated user/orders/Order.vue'
-import SellerProfile from '@/components/seller/SellerProfile.vue'
+import SellerProfile from '@/components/SellerProfile.vue'
 import Message from '@/components/authenticated user/messaging/Message.vue'
+import Messages from '@/components/authenticated user/messaging/Messages.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,6 +30,7 @@ const router = createRouter({
     { path: '/order/:id', name: 'order', component: Order },
     { path: '/seller/:name', name: 'seller profile', component: SellerProfile },
     { path: '/message/:user1/:user2s', name: 'message', component: Message },
+    { path: '/messages', name: 'messages', component: Messages },
   ],
 })
 
