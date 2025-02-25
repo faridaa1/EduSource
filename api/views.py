@@ -507,6 +507,16 @@ def message(request: HttpRequest, id: int, sender: int) -> JsonResponse:
         if messages.user1 == user:
             messages.user1_seen = timezone.now()
         else:
+            print('hii')
+            messages.user2_seen = timezone.now()
+        messages.save()
+        return users(request)
+    elif request.method == 'GET':
+        messages: Messages = get_object_or_404(Messages, id=id)
+        user: User = get_object_or_404(User, id=sender)
+        if messages.user1 == user:
+            messages.user1_seen = timezone.now()
+        else:
             messages.user2_seen = timezone.now()
         messages.save()
         return users(request)

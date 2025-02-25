@@ -3,14 +3,14 @@
         <p id="header">Messages</p>
         <div id="messages" v-if="messages_set">
             <div id="message-area" :class="message.user === user.id ? 'right' : 'left'" v-for="message in messages.messages.sort((a,b) => {return new Date(a.sent).getTime() - new Date(b.sent).getTime() })">
-                <p id="unread" v-if="message.id === get_unread_message_index()"><hr>Unread Messages<hr></p>
+                <p id="unread" v-if="message.id === unread_index"><hr>Unread Messages<hr></p>
                 <i v-if="message.user !== user.id" class="bi bi-person-circle"></i>
                 <p id="value" :class="message.user === user.id ? 'push' : ''" >{{ message.message }}</p>
                 <i v-if="message.user === user.id" class="bi bi-person-circle"></i>
             </div>
         </div>
         <div id="message-box">
-            <textarea id="message-content" placeholder="Write a message here"></textarea>
+            <textarea @input="clear" id="message-content" placeholder="Write a message here"></textarea>
             <button @click="send_message"><i class="bi bi-send"></i></button>
         </div>
     </div>
@@ -24,16 +24,54 @@
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
-            messages: Messages
+            messages: Messages,
             messages_set: boolean,
+            unread_index: number,
         } { return {
+            unread_index: -1,
             messages_set: false,
             messages: {} as Messages
         }},
         methods: {
+            async update_last_seen(): Promise<void> {
+                this.get_unread_message_index()
+                let messageResponse: Response = await fetch(`http://localhost:8000/api/message/${this.messages.id}/${this.user.id}/`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf
+                    },
+                })
+                if (!messageResponse.ok) {
+                    return
+                } 
+                let data: User[] = await messageResponse.json()
+                useUsersStore().updateUsers(data)
+                useUserStore().saveUser(this.users.find(u => u.id === this.user.id) as User)
+                const messages: Messages | undefined = this.user.messages.find(message => message.id === this.messages.id)
+                if (messages) {
+                    this.messages = messages
+                } 
+                this.scroll()
+            },
+            clear(): void {
+                const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
+                if (!message) return
+                // validation 
+                message.setCustomValidity('')
+                message.reportValidity()
+            },
             async send_message(): Promise<void> {
                 const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
                 if (!message) return
+                
+                // validation 
+                if (message.value.trim() === '') {
+                    message.setCustomValidity('Enter a message')
+                    message.reportValidity()
+                    return
+                }
+                this.clear()
                 let messageResponse: Response = await fetch(`http://localhost:8000/api/message/${this.messages.id}/${this.user.id}/`, {
                     method: 'POST',
                     credentials: 'include',
@@ -54,8 +92,7 @@
                     this.messages = messages
                 } 
                 message.value = ''
-                this.scroll()
-
+                this.update_last_seen()
             },
             async create_messages(): Promise<void> {
                 if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
@@ -86,19 +123,20 @@
                     return
                 }
             },
-            get_unread_message_index(): number {
+            get_unread_message_index(): void {
                 for (let message of this.messages.messages) {
                     if (message.user === this.user.id) continue
                     if ((this.messages.user2 === this.user.id && (new Date(message.sent).getTime() >= new Date(this.messages.user2_seen).getTime())) || (this.messages.user1 === this.user.id && (new Date(message.sent).getTime() >= new Date(this.messages.user1_seen).getTime()))) {
-                        return message.id
+                        console.log('here')
+                        this.unread_index = message.id
+                        return
                     }
                 }
-                return -1
+                this.unread_index = -1
             },
             scroll(): void {
                 nextTick(() => {
                     const messagesDiv: HTMLDivElement = document.getElementById('messages') as HTMLDivElement
-                    console.log(messagesDiv, this.messages)
                     if (messagesDiv) {
                         messagesDiv.scrollTo({ top: messagesDiv.scrollHeight })
                     }
@@ -137,28 +175,32 @@
         },
         watch: {
             user(new_user: User): void {
-                if (Object.keys(this.user.messages).length > 0) {
+                if (!this.messages_set && Object.keys(this.user.messages).length > 0) {
                     const message = this.user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id) || (message.user2 === this.user.id && message.user1 === this.other_user.id))
                     if (message) {
                         this.messages = message
                         this.messages_set = true
-                        this.scroll()
+                        this.update_last_seen()
                         return
                     }
                 }
-                if (!this.messages_set) this.get_messages()
+                if (!this.messages_set) {
+                    this.get_messages()
+                } 
             },
             other_user(new_user: User): void {
-                if (Object.keys(this.other_user.messages).length > 0) {
+                if (!this.messages_set && Object.keys(this.other_user.messages).length > 0) {
                     const message = this.other_user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id) || (message.user2 === this.user.id && message.user1 === this.other_user.id))
                     if (message) {
                         this.messages = message
                         this.messages_set = true
-                        this.scroll()
+                        this.update_last_seen()
                         return
                     }
                 }
-                if (!this.messages_set) this.get_messages()
+                if (!this.messages_set) {
+                    this.get_messages()
+                } 
             },
             messages(new_messages: Messages): void {
                 this.scroll()
