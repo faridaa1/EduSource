@@ -224,7 +224,7 @@ class Resource(models.Model):
 
 class WishlistResource(models.Model):
     """Defining attributes and methods for WishlistResource model"""
-    resource = models.OneToOneField(Resource, on_delete=models.CASCADE, related_name='wishlist_resource')
+    resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name='wishlist_resource')
     wishlist = models.ForeignKey(Wishlist, on_delete=models.CASCADE, related_name='wishlist_resource')
     
     def as_dict(self) -> str:
@@ -237,7 +237,7 @@ class WishlistResource(models.Model):
     
 class CartResource(models.Model):
     """Defining attributes and methods for CartResource model"""
-    resource = models.OneToOneField(Resource, on_delete=models.CASCADE, related_name='cart_resource')
+    resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name='cart_resource')
     number = models.IntegerField(null=False, blank=False)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='cart_resource')
     

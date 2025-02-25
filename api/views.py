@@ -344,12 +344,12 @@ def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> Js
     user: User = get_object_or_404(User, id=user)
     if request.method == 'POST':
         resource: Resource = get_object_or_404(Resource, id=resource)
+        print('hii', resource)
         cartResource: CartResource = CartResource.objects.create(
             resource=resource,
             number=1,
             cart=user.cart,
         )
-        print('hii')
         user.cart.items += 1
         user.cart.save()
         if WishlistResource.objects.filter(wishlist=user.wishlist, resource__name=resource.name).exists():

@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/components/Home.vue'
-import Resource from '@/components/authenticated user/view resource/Resource.vue'
+import Resource from '@/components/view resource/Resource.vue'
 import Details from '@/components/authenticated user/profile/Details.vue'
 import Listing from '@/components/authenticated user/seller/Listing.vue'
 import Cart from '@/components/authenticated user/cart/Cart.vue'
