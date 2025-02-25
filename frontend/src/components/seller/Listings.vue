@@ -174,7 +174,6 @@
             }
         },
         async mounted(): Promise<void> {
-            console.log('here')
             this.fill_stars()
         }
     })

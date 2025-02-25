@@ -46,7 +46,7 @@
                     </div>
                     <div class="data-item" v-if="resource.type !== 'Stationery'">
                         <label>Pages</label>
-                        <p>{{ resource.page_start }} - {{ resource.page_end }}</p>
+                        <p>{{ resource.page_start }} to {{ resource.page_end }}</p>
                     </div>
                     <div class="data-item">
                         <label>Estimated Delivery</label>
@@ -65,7 +65,7 @@
                 <div id="buttons" v-if="Object.keys(user).length > 0">
                     <button v-if="seller !== resource.id" @click="$emit('update_seller', resource.id)">Select</button>
                     <button id="selected" v-if="seller === resource.id" @click="$emit('update_seller', resource.id)">Selected</button>
-                    <button v-if="resource.user !== user.id">Message</button>
+                    <button v-if="resource.user !== user.id" @click="message(resource.user)">Message</button>
                 </div>
                 <div id="media">
                     <img class="hoverable" :src="`http://localhost:8000${resource.image1}`" alt="Image1" @click="media_clicked=`${resource.id}image1`">
@@ -127,6 +127,9 @@
             media_clicked: ''
         }},
         methods: {
+            message(userID: number): void {
+                window.location.href = `/message/${this.user.id}/${userID}`
+            },
             view_seller(seller_id: number): void {
                 window.location.href = this.user.id === seller_id ? '/listings' : `/seller/${this.users.find(user => user.id === seller_id)?.username}`
             },

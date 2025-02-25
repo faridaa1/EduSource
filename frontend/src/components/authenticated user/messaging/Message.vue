@@ -43,7 +43,6 @@
         <div id="view-sellers">
             <p @click="show_sellers">View Sellers</p>
         </div>
-        <ViewSellers :resources="allResources" :seller="seller" v-if="viewing_sellers" @close-view="viewing_sellers = false" @update_seller="update_seller" />
         <div id="resource-details">
             <div>Product Details</div>
             <div id="details">
@@ -80,7 +79,6 @@
             <div>
                 <p id="reviews-p">Reviews</p>
             </div>
-            <Stars />
         </div>
         <div id="my-review">
             <div id="filtering" v-if="!addingReview && !editing">
@@ -291,13 +289,10 @@
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
     import { defineComponent, nextTick } from 'vue';
-    import ViewSellers from './ViewSellers.vue';
     import type { Cart, CartResource, Resource, Review, User, Wishlist } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
-    import Stars from './Stars.vue';
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
-        components: { Stars, ViewSellers },
         data(): {
             in_wishlist: boolean,
             currentResource: Resource,

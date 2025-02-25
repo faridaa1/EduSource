@@ -10,6 +10,7 @@ import OrderConfirmation from '@/components/authenticated user/checkout/OrderCon
 import Orders from '@/components/authenticated user/orders/Orders.vue'
 import Order from '@/components/authenticated user/orders/Order.vue'
 import SellerProfile from '@/components/seller/SellerProfile.vue'
+import Message from '@/components/authenticated user/messaging/Message.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,6 +28,7 @@ const router = createRouter({
     { path: '/orders', name: 'orders', component: Orders },
     { path: '/order/:id', name: 'order', component: Order },
     { path: '/seller/:name', name: 'seller profile', component: SellerProfile },
+    { path: '/message/:user1/:user2s', name: 'message', component: Message },
   ],
 })
 
