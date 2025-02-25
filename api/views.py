@@ -498,10 +498,16 @@ def messages(request: HttpRequest, user1: int, user2: int) -> JsonResponse:
 def message(request: HttpRequest, id: int, sender: int) -> JsonResponse:
     if request.method == 'POST':
         messages: Messages = get_object_or_404(Messages, id=id)
+        user: User = get_object_or_404(User, id=sender)
         Message.objects.create(
             messages=messages,
-            user=get_object_or_404(User, id=sender),
+            user=user,
             message=json.loads(request.body)
         )
+        if messages.user1 == user:
+            messages.user1_seen = timezone.now()
+        else:
+            messages.user2_seen = timezone.now()
+        messages.save()
         return users(request)
     return JsonResponse({})

@@ -2,8 +2,11 @@
     <div id="message-container" v-if="user && other_user">
         <p id="header">Messages</p>
         <div id="messages" v-if="messages_set">
-            <div v-for="message in messages.messages.sort((a,b) => {return new Date(a.sent).getTime() - new Date(b.sent).getTime() })">
-                {{ message.message }}
+            <div id="message-area" :class="message.user === user.id ? 'right' : 'left'" v-for="message in messages.messages.sort((a,b) => {return new Date(a.sent).getTime() - new Date(b.sent).getTime() })">
+                <p id="unread" v-if="message.id === get_unread_message_index()"><hr>Unread Messages<hr></p>
+                <i v-if="message.user !== user.id" class="bi bi-person-circle"></i>
+                <p id="value" :class="message.user === user.id ? 'push' : ''" >{{ message.message }}</p>
+                <i v-if="message.user === user.id" class="bi bi-person-circle"></i>
             </div>
         </div>
         <div id="message-box">
@@ -15,7 +18,7 @@
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent } from 'vue';
+    import { defineComponent, nextTick } from 'vue';
     import type { Messages, Resource, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
@@ -50,6 +53,9 @@
                 if (messages) {
                     this.messages = messages
                 } 
+                message.value = ''
+                this.scroll()
+
             },
             async create_messages(): Promise<void> {
                 if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
@@ -79,6 +85,25 @@
                     this.create_messages()
                     return
                 }
+            },
+            get_unread_message_index(): number {
+                for (let message of this.messages.messages) {
+                    if (message.user === this.user.id) continue
+                    if ((this.messages.user2 === this.user.id && (new Date(message.sent).getTime() >= new Date(this.messages.user2_seen).getTime())) || (this.messages.user1 === this.user.id && (new Date(message.sent).getTime() >= new Date(this.messages.user1_seen).getTime()))) {
+                        return message.id
+                    }
+                }
+                return -1
+            },
+            scroll(): void {
+                nextTick(() => {
+                    const messagesDiv: HTMLDivElement = document.getElementById('messages') as HTMLDivElement
+                    console.log(messagesDiv, this.messages)
+                    if (messagesDiv) {
+                        messagesDiv.scrollTo({ top: messagesDiv.scrollHeight })
+                    }
+                })
+                
             }
         },
         computed: {
@@ -117,6 +142,7 @@
                     if (message) {
                         this.messages = message
                         this.messages_set = true
+                        this.scroll()
                         return
                     }
                 }
@@ -128,11 +154,15 @@
                     if (message) {
                         this.messages = message
                         this.messages_set = true
+                        this.scroll()
                         return
                     }
                 }
                 if (!this.messages_set) this.get_messages()
             },
+            messages(new_messages: Messages): void {
+                this.scroll()
+            }
         },
     })
 </script>
@@ -178,5 +208,62 @@
         border-right: 2rem;
         resize: none;
         padding: 1rem;
+   }
+
+   #message-area {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 2rem;
+   }
+
+   #message-area i {
+        font-size: 2rem;
+   }
+
+   #messages {
+        padding-right: 2rem;
+        overflow-y: scroll;
+        margin-top: 2rem;
+        height: 38rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 30rem;
+   }
+
+   .right {
+        margin-left: auto;
+   }
+
+   .left {
+        margin-right: auto;
+   }
+
+   #messages #value {
+        align-self: center;
+        max-width: 20rem;
+   }
+
+   #messages .push {
+        text-align: right;
+   }
+
+   #unread {
+        font-weight: bold;
+        text-align: center;
+        flex: 0 0 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 1rem;
+   }
+
+   hr {
+        background-color: black;
+        border: none;
+        height: 0.1rem;
+        width: 7rem;
    }
 </style>
