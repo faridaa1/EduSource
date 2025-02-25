@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate
 from django.db.models import Avg
 from django.contrib import auth
 from .forms import SignupForm, AddressForm, LoginForm
-from .models import Cart, CartResource, Messages, Order, OrderResource, Resource, Review, User, Address, WishlistResource
+from .models import Cart, CartResource, Messages, Order, OrderResource, Resource, Review, User, Address, WishlistResource, Message
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 from transformers import pipeline
@@ -490,6 +490,18 @@ def messages(request: HttpRequest, user1: int, user2: int) -> JsonResponse:
         messages: Messages = Messages.objects.create(
             user1=user1,
             user2=user2,
+        )
+        return users(request)
+    return JsonResponse({})
+
+
+def message(request: HttpRequest, id: int, sender: int) -> JsonResponse:
+    if request.method == 'POST':
+        messages: Messages = get_object_or_404(Messages, id=id)
+        Message.objects.create(
+            messages=messages,
+            user=get_object_or_404(User, id=sender),
+            message=json.loads(request.body)
         )
         return users(request)
     return JsonResponse({})

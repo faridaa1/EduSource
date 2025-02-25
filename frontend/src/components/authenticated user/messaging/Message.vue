@@ -2,12 +2,13 @@
     <div id="message-container" v-if="user && other_user">
         <p id="header">Messages</p>
         <div id="messages" v-if="messages_set">
-            {{ messages }}
-
+            <div v-for="message in messages.messages.sort((a,b) => {return new Date(a.sent).getTime() - new Date(b.sent).getTime() })">
+                {{ message.message }}
+            </div>
         </div>
         <div id="message-box">
-            <textarea id="" placeholder="Write a message here"></textarea>
-            <button><i class="bi bi-send"></i></button>
+            <textarea id="message-content" placeholder="Write a message here"></textarea>
+            <button @click="send_message"><i class="bi bi-send"></i></button>
         </div>
     </div>
 </template>
@@ -27,6 +28,29 @@
             messages: {} as Messages
         }},
         methods: {
+            async send_message(): Promise<void> {
+                const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
+                if (!message) return
+                let messageResponse: Response = await fetch(`http://localhost:8000/api/message/${this.messages.id}/${this.user.id}/`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf
+                    },
+                    body: JSON.stringify(message.value)
+                })
+                if (!messageResponse.ok) {
+                    console.error('Error sending message')
+                    return
+                } 
+                let data: User[] = await messageResponse.json()
+                useUsersStore().updateUsers(data)
+                useUserStore().saveUser(this.users.find(u => u.id === this.user.id) as User)
+                const messages: Messages | undefined = this.user.messages.find(message => message.id === this.messages.id)
+                if (messages) {
+                    this.messages = messages
+                } 
+            },
             async create_messages(): Promise<void> {
                 if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
                 let messagesResponse: Response = await fetch(`http://localhost:8000/api/messages/${this.user.id}/${this.other_user.id}/`, {
@@ -55,13 +79,6 @@
                     this.create_messages()
                     return
                 }
-                // let messages: Messages | undefined = this.user.messages.find(message => (message.user2 === this.user.id && message.user1 === this.other_user.id) 
-                //                                                            || (message.user1 === this.user.id && message.user2 === this.other_user.id))
-                // if (!this.user.messages || ) {
-                //     console.log('beofre here')
-                //     // this.create_messages()
-                // } else {
-                // }
             }
         },
         computed: {
@@ -95,9 +112,25 @@
         },
         watch: {
             user(new_user: User): void {
+                if (Object.keys(this.user.messages).length > 0) {
+                    const message = this.user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id) || (message.user2 === this.user.id && message.user1 === this.other_user.id))
+                    if (message) {
+                        this.messages = message
+                        this.messages_set = true
+                        return
+                    }
+                }
                 if (!this.messages_set) this.get_messages()
             },
             other_user(new_user: User): void {
+                if (Object.keys(this.other_user.messages).length > 0) {
+                    const message = this.other_user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id) || (message.user2 === this.user.id && message.user1 === this.other_user.id))
+                    if (message) {
+                        this.messages = message
+                        this.messages_set = true
+                        return
+                    }
+                }
                 if (!this.messages_set) this.get_messages()
             },
         },

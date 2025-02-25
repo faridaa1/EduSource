@@ -48,9 +48,8 @@
             </div>
           </div>
         </div>
-        <!-- <RouterLink to="http://localhost:8000/login" class="hide-on-mobile link">Sign out</RouterLink> -->
-        <p v-if="authenticated" class="hide-on-mobile link" @click="sign_out"> Sign out </p>
-        <p v-if="!authenticated" @click="sign_in" class="hide-on-mobile link"> Sign in</p>
+        <p v-if="authenticated" class="hide-on-mobile link sign" @click="sign_out"> Sign out </p>
+        <p v-if="!authenticated" @click="sign_in" class="hide-on-mobile link sign"> Sign in</p>
         <button id="show-on-mobile" @click="show_menu"><i class="bi bi-list"></i></button>
       </header>
       <div id="hamburger">
@@ -326,6 +325,11 @@
   body {
     overflow: hidden;
     position: relative;
+  }
+
+  .sign:hover {
+    cursor: pointer;
+    text-decoration: underline;
   }
 
   #logo {
