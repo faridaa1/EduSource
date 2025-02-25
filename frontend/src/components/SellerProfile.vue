@@ -14,7 +14,7 @@
                     <i id="five" class="bi bi-star-fill"></i>
                     <p>{{ viewing_profile ? seller?.rating : user.rating }}</p>
                 </div>
-                <button id="message_seller" @click="message((seller as User).id)" v-if="viewing_profile && Object.keys(user).length > 0">Message Seller</button>
+                <button id="message_seller" @click="message((seller as User).id)" v-if="viewing_profile && Object.keys(user).length > 0">Message</button>
             </div>
         </div>
         <div id="about-me">

@@ -213,7 +213,8 @@
     #notification {
         height: 0.8rem;
         width: 0.8rem;
-        background-color: darkcyan;
+        background-color: #0DCAF0;
+
         border-radius: 50%;
     }
 

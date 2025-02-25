@@ -8,11 +8,16 @@
             <p id="header">{{ other_user.username }}</p>
         </div>
         <div id="messages" v-if="messages_set">
-            <div id="message-area" :class="message.user === user.id ? 'right' : 'left'" v-for="message in messages.messages.sort((a,b) => {return new Date(a.sent).getTime() - new Date(b.sent).getTime() })">
+            <div id="message-area" :class="message.user === user.id ? 'right end' : 'left'" v-for="message in messages.messages.sort((a,b) => {return new Date(a.sent).getTime() - new Date(b.sent).getTime() })">
                 <p id="unread" v-if="message.id === unread_index"><hr>Unread Messages<hr></p>
+                <p id="unread1" v-if="new_date(message.id)">{{ convert_date(message.sent) }}</p>
                 <i @click="view_profile" v-if="message.user !== user.id" class="bi bi-person-circle icon"></i>
-                <p id="value" :class="message.user === user.id ? 'push' : ''" >{{ message.message }}</p>
-                <i v-if="message.user === user.id" class="bi bi-person-circle"></i>
+                <div>
+                    <p v-if="message.user === user.id" id="time">{{ String(new Date(message.sent).getHours()).padStart(2, '0') }}:{{ String(new Date(message.sent).getMinutes()).padStart(2, '0') }}</p>                    
+                    <p v-if="message.user !== user.id" id="time1">{{ String(new Date(message.sent).getHours()).padStart(2, '0') }}:{{ String(new Date(message.sent).getMinutes()).padStart(2, '0') }}</p>                    
+                    <p id="value" :class="message.user === user.id ? 'push' : ''" >{{ message.message }}</p>
+                </div>
+                <i v-if="message.user === user.id" class="bi bi-person-circle icon2"></i>
             </div>
         </div>
         <div id="message-box">
@@ -38,6 +43,41 @@
             messages: {} as Messages
         }},
         methods: {
+            to_month(month_number: number): string {
+                return month_number === 1 ? 'Jan' 
+                : month_number === 2 ? 'Feb'
+                : month_number === 3 ? 'Mar'
+                : month_number === 4 ? 'Apr'
+                : month_number === 5 ? 'May'
+                : month_number === 6 ? 'Jun'
+                : month_number === 7 ? 'Jul'
+                : month_number === 8 ? 'Aug'
+                : month_number === 9 ? 'Sep'
+                : month_number === 10 ? 'Oct'
+                : month_number === 11 ? 'Nov'
+                : 'Dec'
+            },
+            convert_date(message: string): string {
+                return `${new Date(message).getDay() } ${this.to_month(new Date(message).getMonth()+1)} ${String(new Date(message).getFullYear())}`
+            },
+            new_date(id: number): boolean {
+                let previous_id: number = -1
+                for (let message of this.messages.messages) {
+                    if (message.id === id) break
+                    previous_id += 1 
+                }
+                if (previous_id === -1) return true
+                const previous_message = this.messages.messages[previous_id]
+                const current_message = this.messages.messages[previous_id+1]
+                if (previous_message) {
+                    const current_time = new Date(current_message.sent)
+                    let date_format = new Date(previous_message.sent)
+                    if (current_time.getDate() === date_format.getDate() && current_time.getMonth() === date_format.getMonth() && current_time.getFullYear() === date_format.getFullYear()) {
+                        return false
+                    }
+                } 
+                return true
+            },
             back(): void {
                 window.location.href = '/messages'
             },
@@ -207,6 +247,16 @@
 </script>
 
 <style scoped>
+    #time {
+        text-align: right;
+        color: rgb(81, 80, 80);
+    }
+
+    #time1 {
+        text-align: left;
+        color: rgb(81, 80, 80);
+    }
+
     #heading {
         display: flex;
         align-items: center;
@@ -288,11 +338,22 @@
         display: flex;
         flex-wrap: wrap;
         align-items: flex-end;
-        gap: 2rem;
+   }
+
+   .end {
+        justify-content: end;
    }
 
    #message-area i {
         font-size: 2rem;
+   }
+
+   .icon {
+        margin-right: 2rem;
+   }
+
+   .icon2 {
+        margin-left: 2rem;
    }
 
    .icon:hover {
@@ -335,8 +396,17 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-bottom: 1rem;
         text-align: center;
         gap: 1rem;
+   }
+
+   #unread1 {
+        text-align: center;
+        flex: 0 0 100%;
+        color: rgb(86, 85, 85);
+        justify-content: center;
+        margin-bottom: 1rem;
    }
 
    hr {
