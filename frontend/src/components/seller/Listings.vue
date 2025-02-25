@@ -122,9 +122,7 @@
                     const star3: HTMLElement = document.getElementById('three') as HTMLElement
                     const star4: HTMLElement = document.getElementById('four') as HTMLElement
                     const star5: HTMLElement = document.getElementById('five') as HTMLElement
-                    console.log(this.seller, star1, star2, star3, star4, star5)
                     if (star1 && star2 && star3 && star4 && star5 && this.seller) {
-                        console.log('am i updating')
                         star1.style.color = this.seller.rating >= 1 ? 'orange' : ''
                         star2.style.color = this.seller.rating >= 2 ? 'orange' : ''
                         star3.style.color = this.seller.rating >= 3 ? 'orange' : ''

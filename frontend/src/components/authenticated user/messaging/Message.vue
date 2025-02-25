@@ -1,7 +1,8 @@
 <template>
     <div id="message-container" v-if="user && other_user">
         <p id="header">Messages</p>
-        <div id="messages">
+        <div id="messages" v-if="messages_set">
+            {{ messages }}
 
         </div>
         <div id="message-box">
@@ -14,14 +15,54 @@
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
     import { defineComponent } from 'vue';
-    import type { Resource, User } from '@/types';
+    import type { Messages, Resource, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
+            messages: Messages
+            messages_set: boolean,
         } { return {
+            messages_set: false,
+            messages: {} as Messages
         }},
         methods: {
+            async create_messages(): Promise<void> {
+                if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
+                let messagesResponse: Response = await fetch(`http://localhost:8000/api/messages/${this.user.id}/${this.other_user.id}/`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf
+                    },
+                })
+                if (!messagesResponse.ok) {
+                    console.error('Error creating message')
+                    return
+                } 
+                let data: User[] = await messagesResponse.json()
+                useUsersStore().updateUsers(data)
+                useUserStore().saveUser(this.users.find(u => u.id === this.user.id) as User)
+                const messages: Messages | undefined = this.user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id))
+                if (messages) {
+                    this.messages = messages
+                } 
+                this.messages_set = true
+            },
+            get_messages(): void {
+                if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
+                if (Object.keys(this.user.messages).length === 0) {
+                    this.create_messages()
+                    return
+                }
+                // let messages: Messages | undefined = this.user.messages.find(message => (message.user2 === this.user.id && message.user1 === this.other_user.id) 
+                //                                                            || (message.user1 === this.user.id && message.user2 === this.other_user.id))
+                // if (!this.user.messages || ) {
+                //     console.log('beofre here')
+                //     // this.create_messages()
+                // } else {
+                // }
+            }
         },
         computed: {
             users(): User[] {
@@ -44,16 +85,20 @@
                 returnedResources.push(...resources)
                 return returnedResources
             },
-            other_user(): User | undefined {
+            other_user(): User {
                 const window_location: string[] = window.location.href.split('/')
                 const other_seller: number = parseInt(window_location[window_location.length-1])
-                return this.users.find(user => user.id === other_seller)
+                const user: User | undefined = this.users.find(user => user.id === other_seller)
+                if (user === undefined) return {} as User
+                return user
             },
         },
         watch: {
-            async user(new_user: User): Promise<void> {
+            user(new_user: User): void {
+                if (!this.messages_set) this.get_messages()
             },
-            async resource(resource: Resource): Promise<void> {
+            other_user(new_user: User): void {
+                if (!this.messages_set) this.get_messages()
             },
         },
     })

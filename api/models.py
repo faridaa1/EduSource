@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from django.forms import ValidationError
+from django.db.models import Q
 
 
 class Cart(models.Model):
@@ -72,7 +73,7 @@ class User(AbstractUser):
         address: Address = Address.objects.get(user=self)
         placed_orders = Order.objects.filter(buyer=self)
         sold_orders = Order.objects.filter(seller=self)
-        messages = Messages.objects.filter(user1=self, user2=self)
+        messages = Messages.objects.filter(Q(user1=self) | Q(user2=self))
         return {
             'id': self.id,
             'email': self.email,
@@ -321,7 +322,7 @@ class Messages(models.Model):
     user2_seen = models.DateTimeField(default=timezone.now)
     def as_dict(self) -> str:
         """Dictionary representation of Messages"""
-        messages = Message.objects.get(messages=self.id)
+        messages = self.message.all()
         return {
             'id': self.id,
             'user1': self.user1.id,
