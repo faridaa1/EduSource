@@ -7,7 +7,7 @@
             </div>
             <p id="header" @click="view_profile(false)">{{ other_user.username }}</p>
         </div>
-        <div id="messages" v-if="messages_set">
+        <div id="messages" v-if="messages_set && messages && messages.messages && Object.keys(messages.messages).length > 0">
             <div id="message-area" :class="message.user === user.id ? 'right end' : 'left'" v-for="message in messages.messages.sort((a,b) => {return new Date(a.sent).getTime() - new Date(b.sent).getTime() })">
                 <p id="unread" v-if="message.id === unread_index"><hr>Unread Messages<hr></p>
                 <p id="unread1" v-if="new_date(message.id)">{{ convert_date(message.sent) }}</p>
@@ -58,7 +58,7 @@
                 : 'Dec'
             },
             convert_date(message: string): string {
-                return `${new Date(message).getDay() } ${this.to_month(new Date(message).getMonth()+1)} ${String(new Date(message).getFullYear())}`
+                return `${new Date(message).getDate() } ${this.to_month(new Date(message).getMonth()+1)} ${String(new Date(message).getFullYear())}`
             },
             new_date(id: number): boolean {
                 let previous_id: number = -1
@@ -123,6 +123,11 @@
                     return
                 }
                 this.clear()
+                if (!this.messages_set) {
+                    this.get_messages()
+                    this.messages_set = true
+                    return
+                }
                 let messageResponse: Response = await fetch(`http://localhost:8000/api/message/${this.messages.id}/${this.user.id}/`, {
                     method: 'POST',
                     credentials: 'include',
@@ -166,6 +171,7 @@
                     this.messages = messages
                 } 
                 this.messages_set = true
+                this.send_message()
             },
             get_messages(): void {
                 if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
@@ -221,9 +227,6 @@
                         return
                     }
                 }
-                if (!this.messages_set) {
-                    this.get_messages()
-                } 
             },
             other_user(new_user: User): void {
                 if (!this.messages_set && Object.keys(this.other_user.messages).length > 0) {
@@ -235,9 +238,6 @@
                         return
                     }
                 }
-                if (!this.messages_set) {
-                    this.get_messages()
-                } 
             },
             messages(new_messages: Messages): void {
                 this.scroll()
@@ -342,6 +342,7 @@
    #message-area {
         display: flex;
         flex-wrap: wrap;
+        width: 29rem;
         align-items: flex-end;
    }
 

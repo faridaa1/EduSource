@@ -9,7 +9,7 @@
                         <div id="two">Total: {{ currency }}{{ total.toFixed(2) }} </div>
                     </div>
                     <div id="body">
-                        <div class="resource" v-for="resource in user.cart.resources">
+                        <div class="resource" v-for="resource in user.cart.resources.filter(resource => valid(resource))">
                             <div id="image"><img :src="`http://localhost:8000/${getResource(resource.resource).image1}`" alt=""></div>
                             <div class="name">
                                 <div>{{ getResource(resource.resource).name }}</div>
@@ -89,7 +89,7 @@
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent, nextTick } from 'vue';
+    import { defineComponent } from 'vue';
     import type { Cart, CartResource, Resource, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
@@ -97,22 +97,49 @@
         data(): {
             total: number,
             changing_number: boolean,
-            changing_address: boolean
+            changing_address: boolean,
+            placed_order: boolean,
         } { return {
+            placed_order: false,
             changing_number: false,
             changing_address: false,
             total: 0
         }},
         methods: {
+            valid(resource: CartResource): boolean {
+                if (window.location.href.includes('fast')) {
+                    const window_location: string[] = window.location.href.split('/')
+                    const id: number = parseInt(window_location[window_location.length-1])
+                    return resource.resource === id
+                }
+                return true
+            },
             async place_order(): Promise<void> {
-                let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRFToken' : useUserStore().csrf
-                    },
-                })
+                let userResponse: Response
+                if (window.location.href.includes('fast')) {
+                    const window_location: string[] = window.location.href.split('/')
+                    const id: number = parseInt(window_location[window_location.length-1])
+                    const resource: number | undefined = this.user.cart.resources.find(resource => resource.resource === id)?.id
+                    if (!resource) return
+                    userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'X-CSRFToken' : useUserStore().csrf
+                        },
+                        body: JSON.stringify(resource)
+                    })
+                } else {
+                    userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
+                        method: 'GET',
+                        credentials: 'include',
+                        headers: {
+                            'X-CSRFToken' : useUserStore().csrf
+                        },
+                    })
+                }
                 if (userResponse.ok) {
+                    this.placed_order = true
                     const data: {user: User, resources: Resource[]} = await userResponse.json()
                     useUserStore().saveUser(data.user)
                     useResourcesStore().saveResources(data.resources)
@@ -322,7 +349,7 @@
             get_total(): void {
                 this.total = 0
                 if (!this.user.cart || !this.user.cart.resources) return
-                for (let item of this.user.cart.resources) {
+                for (let item of this.user.cart.resources.filter(resource => this.valid(resource))) {
                     let resource = this.all_resources.find(resource => resource.id === item.resource)
                     if (resource) {
                         const price = parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€',''))
@@ -349,6 +376,7 @@
             for (const resource of useResourcesStore().resources) {
                 resource.price = await this.listedprice(resource)
             }
+            this.placed_order = false
             this.get_total()
         },
         watch: {
@@ -365,6 +393,10 @@
                 this.get_total()
             },
             "user.cart"(): void {
+                const resources = this.user.cart.resources.filter(resource => this.valid(resource))
+                if (!this.placed_order && resources.length === 0) {
+                    window.location.href = '/cart'
+                }
                 this.get_total()
             }
         },

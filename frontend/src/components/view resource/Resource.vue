@@ -28,7 +28,7 @@
             <div id="desc">{{ (resource as Resource).description }}</div>
         </div>
         <div id="resource-cart">
-            <div id="cart-total-section">
+            <div id="cart-total-section" v-if="Object.keys(user).length > 0">
                 <div id="cart">
                     <p id="cart-total">{{ cart_resource.number }}</p>
                     <div id="cart-toggle">
@@ -43,6 +43,7 @@
         </div>
         <div id="view-sellers">
             <p @click="show_sellers">View Sellers</p>
+            <p id="buynow" @click=buy_now v-if="Object.keys(user).length > 0">Buy Now</p>
         </div>
         <ViewSellers :resources="allResources" :seller="seller" v-if="viewing_sellers" @close-view="viewing_sellers = false" @update_seller="update_seller" />
         <div id="resource-details">
@@ -300,6 +301,7 @@
     export default defineComponent({
         components: { Stars, ViewSellers },
         data(): {
+            buying_now: boolean,
             in_wishlist: boolean,
             currentResource: Resource,
             all_reviews: Review[],
@@ -337,6 +339,7 @@
                 number: 0
             },
             all_reviews: [],
+            buying_now: true,
             toggle_filter: false,
             filter_one: true,
             filter_five: true,
@@ -359,6 +362,20 @@
             image: new File([''], ''),
         }},
         methods: {
+            buy_now(): void {
+                this.buying_now = true
+                if (this.seller === -1) {
+                    this.viewing_sellers = true
+                    return
+                }
+                nextTick(() => {
+                    if (!this.buying_now || this.cart_resource.resource === -1) {
+                        return
+                    } else {
+                        window.location.href = `/fast-checkout/${this.cart_resource.resource}`
+                    }
+                })
+            },
             style_nav(): void {
                 nextTick(() => {
                     let line: HTMLHRElement = document.getElementById('separator') as HTMLHRElement
@@ -930,7 +947,10 @@
             },
         },
         watch: {
-            async seller(): Promise<void> {
+            async seller(new_seller: number): Promise<void> {
+                if (new_seller !== -1 && this.buying_now) {
+                    this.buy_now()
+                }
                 if (this.cart_resource.number === 0) {
                     this.cart_price = 0
                     return
@@ -985,6 +1005,7 @@
                     this.cart_price = parseFloat(price.toString().replace('€','').replace('£','').replace('$',''))
                     const resource: Resource | undefined = this.allResources.find(resource => resource.id === this.cart_resource.resource)
                     if (resource) this.currentResource = resource
+                    if (this.buying_now) this.buy_now()
                 })
             },
             viewing_sellers(new_viewing): void {
@@ -1064,6 +1085,7 @@
         mounted(): void {
             this.style_nav()
             this.fill_stars()
+            this.buying_now = false
         },
     })
 </script>
@@ -1210,6 +1232,9 @@
 
     #view-sellers {
         align-self: center;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
     }
 
     #view-sellers p {
@@ -1736,5 +1761,13 @@
         flex-direction: column;
         align-items: center;
         gap: 0.5rem;
+    }
+
+    #buynow {
+        background-color: gold !important;
+    }
+
+    #buynow:hover {
+        background-color: rgb(185, 160, 22) !important;
     }
 </style>

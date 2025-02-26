@@ -481,6 +481,38 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
         # clear cart 
         user.cart.cart_resource.all().delete()
         return JsonResponse({'user': user.as_dict(), 'resources': [resource.as_dict() for resource in Resource.objects.all()]})
+    elif request.method == 'POST':
+        user: User = get_object_or_404(User, id=user)
+        cart_resource: CartResource = get_object_or_404(CartResource, id=json.loads(request.body))
+        resource: Resource = cart_resource.resource
+        current_date = datetime.datetime.now()
+        if resource.estimated_delivery_units == 'day':
+            estimated_date = current_date + datetime.timedelta(days=int(resource.estimated_delivery_time))
+        elif resource.estimated_delivery_units == 'minute':
+            estimated_date = current_date + datetime.timedelta(minutes=int(resource.estimated_delivery_time))
+        elif resource.estimated_delivery_units == 'hour':
+            estimated_date = current_date + datetime.timedelta(hours=int(resource.estimated_delivery_time))
+        elif resource.estimated_delivery_units == 'week':
+            estimated_date = current_date + datetime.timedelta(weeks=int(resource.estimated_delivery_time))
+        else:
+            estimated_date = current_date + datetime.timedelta(weeks=4*int(resource.estimated_delivery_time))
+        order: Order = Order.objects.create(
+            buyer=user,
+            seller=resource.user,
+            estimated_delivery_date=estimated_date.date(),
+        )
+        orderResource: OrderResource = OrderResource.objects.create(
+            resource=resource,
+            order=order,
+            number=cart_resource.number
+        )
+        orderResource.save()
+        order.save()
+        # reduce stock
+        resource.stock = resource.stock - cart_resource.number
+        resource.save()
+        cart_resource.delete()
+        return JsonResponse({'user': user.as_dict(), 'resources': [resource.as_dict() for resource in Resource.objects.all()]})
     return JsonResponse({})
 
 
@@ -509,6 +541,7 @@ def message(request: HttpRequest, id: int, sender: int) -> JsonResponse:
             messages.user1_seen = timezone.now()
         else:
             messages.user2_seen = timezone.now()
+        messages.last_edited = timezone.now()
         messages.save()
         return users(request)
     elif request.method == 'GET':

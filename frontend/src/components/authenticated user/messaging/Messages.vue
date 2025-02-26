@@ -59,10 +59,10 @@
                 let date_format = new Date(date)
                 if (current_time.getDate() === date_format.getDate() && current_time.getMonth() === date_format.getMonth() && current_time.getFullYear() === date_format.getFullYear()) {
                     // show time if the day is the same
-                    return `${String(date_format.getHours()).padStart(2, '0')}:${String(date_format.getMinutes()).padEnd(2, '0')}`
+                    return `${String(date_format.getHours()).padStart(2, '0')}:${String(date_format.getMinutes()).padStart(2, '0')}`
                 }
                 // show date if it happened more than one day ago
-                return `${String(date_format.getDay()).padStart(2, '0')}/${String(date_format.getMonth()+1).padStart(2, '0')}/${String(date_format.getFullYear()).slice(-2)}`
+                return `${String(date_format.getDate()).padStart(2, '0')}/${String(date_format.getMonth()+1).padStart(2, '0')}/${String(date_format.getFullYear()).slice(-2)}`
             },
             view_profile(seller: User): void {
                 window.location.href = `/seller/${seller.username}`
@@ -118,6 +118,7 @@
         align-items: center;
         justify-content: start;
         align-self: flex-start;
+        width: 6rem;
     }
 
     #datee {
@@ -177,6 +178,7 @@
         font-size: 1.3rem;
         align-items: center;
         padding: 1rem;
+        width: 37rem;
     }
 
     .message i {
