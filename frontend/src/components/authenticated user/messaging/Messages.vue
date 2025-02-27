@@ -20,9 +20,9 @@
                 </div>
             </div>
             <div id="overflow">
-                <div class="message" v-for="message in filtered_messages()">
+                <div class="message" v-for="message in filtered_messages()" @click="get_message(message.user1 === user.id ? message.user2 : message.user1)">
                     <i @click="view_profile(message.user1 === user.id ? users.find(user => user.id === message.user2) as User : users.find(user => user.id === message.user1) as User)" class="bi bi-person-circle icon"></i>
-                    <div class="message-block" @click="get_message(message.user1 === user.id ? message.user2 : message.user1)">
+                    <div class="message-block">
                         <div class="date-head">
                             <p class="username">{{ message.user1 === user.id ? users.find(user => user.id === message.user2)?.username :users.find(user => user.id === message.user1)?.username }}</p>
                         </div>

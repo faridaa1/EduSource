@@ -17,7 +17,7 @@
           </div>
         </div>
         <div id="search-div">
-          <input type="text" placeholder="Search">
+          <input id="search" @input="semantic_search" type="text" placeholder="Search">
           <button><i class="bi bi-search"></i></button>
         </div>
         <RouterLink to="/" class="hide-on-mobile link">Help</RouterLink>
@@ -175,6 +175,19 @@
       }
     },
     methods: {
+      async semantic_search(): Promise<void> {
+        const search: HTMLInputElement = document.getElementById('search') as HTMLInputElement
+        if (!search) return
+        const searchResults: Response = await fetch(`http://localhost:8000/semantic-search/`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type' : 'application/json',
+            'X-CSRFToken' : useUserStore().csrf
+          },
+          body: JSON.stringify(search.value)
+        })
+      },
       go_home(): void {
         window.location.href = Object.keys(this.user).length === 0 || this.user.mode === 'buyer' ? '/' : '/listings'
       },

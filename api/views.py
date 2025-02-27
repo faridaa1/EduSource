@@ -554,3 +554,8 @@ def message(request: HttpRequest, id: int, sender: int) -> JsonResponse:
         messages.save()
         return users(request)
     return JsonResponse({})
+
+
+def semantic_search(request: HttpRequest) -> JsonResponse:
+    """Defining semantic search used to return relevant search results to user"""
+    return JsonResponse({})

@@ -1157,7 +1157,11 @@
     }
 
     #add-review {
-        color: #0DCAF0;
+        color: #789ECA;
+    }
+
+    #dark #add-review {
+        color: white;
     }
 
     #est-del, #add-review {

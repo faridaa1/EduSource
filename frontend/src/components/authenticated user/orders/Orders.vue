@@ -49,7 +49,7 @@
                 for (let resource of order.resources) {
                     total += resource.number
                 }
-                return 9
+                return total
             }
         },
         computed: {
@@ -131,7 +131,7 @@
     }
 
     #view-details {
-        color: rgb(121, 189, 218);
+        color: #789ECA;
     }
 
     #dark #view-details {
