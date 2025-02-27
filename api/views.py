@@ -1,17 +1,21 @@
 import datetime
-from decimal import Decimal
 from django.utils import timezone
 import json
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate
-from django.db.models import Avg
+from django.db.models import Avg, OuterRef
 from django.contrib import auth
+import torch
 from .forms import SignupForm, AddressForm, LoginForm
 from .models import Cart, CartResource, Messages, Order, OrderResource, Resource, Review, User, Address, WishlistResource, Message
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 from transformers import pipeline
+from sentence_transformers import SentenceTransformer
+
+sentiment_analysis_bert = pipeline("text-classification", model="nlptown/bert-base-multilingual-uncased-sentiment")
+semantic_search_model = SentenceTransformer("all-MiniLM-L6-v2") # loading model
 
 
 def signup(request: HttpRequest) -> HttpResponse:
@@ -334,8 +338,7 @@ def sentiment_analysis(request: HttpRequest, resource: str) -> JsonResponse:
     reviews = list(Review.objects.filter(resource__in=resources).values_list('review', flat=True))
     reviews_ids = list(Review.objects.filter(resource__in=resources).values_list('id', flat=True))
     # https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment
-    bert = pipeline("text-classification", model="nlptown/bert-base-multilingual-uncased-sentiment")
-    scores = list(review['score'] for review in bert(reviews))
+    scores = list(review['score'] for review in sentiment_analysis_bert(reviews))
     reviews_scores = dict(zip(reviews_ids, scores))
     return JsonResponse(reviews_scores, safe=False)
 
@@ -558,4 +561,50 @@ def message(request: HttpRequest, id: int, sender: int) -> JsonResponse:
 
 def semantic_search(request: HttpRequest) -> JsonResponse:
     """Defining semantic search used to return relevant search results to user"""
+    if request.method == 'POST':
+        # https://huggingface.co/sentence-transformers
+
+        dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
+
+        # data preprocessing
+        dataset: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('name', flat=True))
+
+        # ensuring values in lists are unique
+        values_included: list = []
+        new_dataset_resources: list = []
+        new_dataset: list = []
+        for i in range(len(dataset)):
+            if not dataset[i] in values_included:
+                new_dataset_resources.append(dataset_resources[i])
+                new_dataset.append(dataset[i])
+                values_included.append(dataset[i])
+
+        # determine embeddings
+        embeddings = semantic_search_model.encode(new_dataset)
+        search: str = json.loads(request.body)
+        search_embeddings = semantic_search_model.encode(search)
+
+
+        # generate similairty matrix
+        similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
+        
+        # convert tensor to dictionary sorted on values (similarity)
+        list_similarity_matrix = similarity_matrix.tolist()[0]
+        search_dict = dict(zip(new_dataset_resources, list_similarity_matrix))
+        sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
+
+        # use first 8 search results
+        reduced_search_dict = sorted_search_dict[0:min(8,len(sorted_search_dict))]
+        keys: list = [pair[0] for pair in reduced_search_dict]
+        resources: list = []
+
+        # using iteration to preserve order of resources
+        for key in keys:
+            resource = Resource.objects.get(id=key)
+            resources.append(resource.as_dict())
+        return JsonResponse(resources, safe=False)
     return JsonResponse({})
+
+
+def order_data(item: tuple):
+    return item[1] # sort based on values

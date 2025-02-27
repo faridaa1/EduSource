@@ -18,6 +18,11 @@
         </div>
         <div id="search-div">
           <input id="search" @input="semantic_search" type="text" placeholder="Search">
+          <div id="search-results">
+            <div v-for="resource in search_results">
+              {{ resource.name }}
+            </div>
+          </div>
           <button><i class="bi bi-search"></i></button>
         </div>
         <RouterLink to="/" class="hide-on-mobile link">Help</RouterLink>
@@ -110,10 +115,11 @@
   import { useUsersStore } from './stores/users';
   export default defineComponent({
     components: { RouterView },
-    data(): { currency_setting: string, mode_setting: string, authenticated: boolean } { return {
+    data(): { currency_setting: string, mode_setting: string, authenticated: boolean, search_results: Resource[]} { return {
         currency_setting : 'GBP',
         mode_setting: 'buyer',
-        authenticated: false
+        authenticated: false,
+        search_results: [] as Resource[]
       }
     },
     async mounted(): Promise<void> {
@@ -178,8 +184,12 @@
       async semantic_search(): Promise<void> {
         const search: HTMLInputElement = document.getElementById('search') as HTMLInputElement
         if (!search) return
-        const searchResults: Response = await fetch(`http://localhost:8000/semantic-search/`, {
-          method: 'GET',
+        if (search.value === '') {
+          this.search_results = []
+          return
+        }
+        const searchResults: Response = await fetch(`http://localhost:8000/api/semantic-search/`, {
+          method: 'POST',
           credentials: 'include',
           headers: {
             'Content-Type' : 'application/json',
@@ -187,6 +197,12 @@
           },
           body: JSON.stringify(search.value)
         })
+        if (!searchResults.ok) {
+          console.error('Error loading search results')
+          return
+        }
+        const search_results: Resource[] = await searchResults.json()
+        this.search_results = search_results
       },
       go_home(): void {
         window.location.href = Object.keys(this.user).length === 0 || this.user.mode === 'buyer' ? '/' : '/listings'
@@ -339,6 +355,12 @@
   body {
     overflow: hidden;
     position: relative;
+  }
+
+  #app-vue #search-results {
+    position: absolute;
+    width: 100%;
+    background-color: orange !important;
   }
 
   .sign:hover {
