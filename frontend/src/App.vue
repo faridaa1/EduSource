@@ -1,6 +1,6 @@
 <template>
   <div id="app-vue">
-    <div id="light">
+      <div id="light">
       <header id="main-header">
         <img id='logo' src="/logo-light.svg" alt="EduSource" width="125" height="125" v-pre/>
         <RouterLink :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="hide-on-mobile link">Home</RouterLink>
@@ -26,34 +26,7 @@
           <button @click="conduct_search()"><i class="bi bi-search"></i></button>
         </div>
         <RouterLink to="/" class="hide-on-mobile link">Help</RouterLink>
-        <div id="main-settings" class="hide-on-mobile">
-          <p id="settings-header" @click="show_settings('desktop')" v-if="authenticated">Settings</p>
-          <div id="settings">
-            <div id="theme" class="setting">
-              <label for="">Theme</label>
-              <div id="toggle" @click="(event) => toggle_theme('click', event)">
-                <div id="circle">
-                </div>
-              </div>
-            </div>
-            <div id="currency" class="setting">
-              <label for="">Currency</label>
-              <select id="currency-dropdown" v-model="currency_setting" @change="update_setting('currency', currency_setting)">
-                <option v-for="currency in ['USD', 'GBP', 'EUR']" :key="currency" :value="currency">
-                  {{ currency }}
-                </option>
-              </select>
-            </div>
-            <div id="mode" class="setting" v-if="authenticated">
-              <label for="">Mode</label>
-              <select id="currency-dropdown" v-model="mode_setting" @change="update_setting('mode', mode_setting)">
-                <option v-for="mode in ['buyer', 'seller']" :key="mode" :value="mode">
-                  {{ mode }}
-                </option>
-              </select>
-            </div>
-          </div>
-        </div>
+        <RouterLink to="/settings" class="hide-on-mobile link">Settings</RouterLink>
         <p v-if="authenticated" class="hide-on-mobile link sign" @click="sign_out"> Sign out </p>
         <p v-if="!authenticated" @click="sign_in" class="hide-on-mobile link sign"> Sign in</p>
         <button id="show-on-mobile" @click="show_menu"><i class="bi bi-list"></i></button>
@@ -71,34 +44,7 @@
           </div>
         </div>
         <RouterLink to="/" id="item3" class="show-mobile">Help</RouterLink>
-        <div id="item4" class="show-mobile">
-          <p id="settings-header" @click="show_settings('mobile')">Settings</p>
-          <div id="settings-mobile">
-            <div id="theme" class="setting">
-              <label for="">Theme</label>
-              <div id="toggle" @click="(event) => toggle_theme('click', event)">
-                <div id="circle">
-                </div>
-              </div>
-            </div>
-            <div id="currency" class="setting">
-              <label for="">Currency</label>
-              <select id="currency-dropdown" v-model="currency_setting" @change="update_setting('currency', currency_setting)">
-                <option v-for="currency in ['USD', 'GBP', 'EUR']" :key="currency" :value="currency">
-                  {{ currency }}
-                </option>
-              </select>
-            </div>
-            <div id="mode" class="setting">
-              <label for="">Mode</label>
-              <select id="currency-dropdown" v-model="mode_setting" @change="update_setting('mode', mode_setting)">
-                <option v-for="mode in ['buyer', 'seller']" :key="mode" :value="mode">
-                  {{ mode }}
-                </option>
-              </select>
-            </div>
-          </div>
-        </div>
+        <RouterLink to="/settings" id="item4" class="show-mobile">Settings</RouterLink>
         <RouterLink to="/" id="item5" class="show-mobile link">Sign out</RouterLink>
       </div>
       <RouterView />
@@ -107,7 +53,7 @@
 </template>
 
 <script lang="ts">
-  import { defineComponent } from 'vue';
+  import { defineComponent, nextTick } from 'vue';
   import { RouterLink, RouterView } from 'vue-router'
   import type { Resource, User } from './types';
   import { useUserStore } from './stores/user';
@@ -115,10 +61,8 @@
   import { useUsersStore } from './stores/users';
   export default defineComponent({
     components: { RouterView },
-    data(): { searching: boolean, currency_setting: string, mode_setting: string, authenticated: boolean, search_results: Resource[]} { return {
-        currency_setting : 'GBP',
+    data(): { searching: boolean, authenticated: boolean, search_results: Resource[]} { return {
         searching: false,
-        mode_setting: 'buyer',
         authenticated: false,
         search_results: [] as Resource[]
       }
@@ -162,9 +106,6 @@
       } else {
         this.authenticated = true
         useUserStore().saveUser(userData.user)
-        this.toggle_theme('mounted')
-        this.currency_setting = this.user.currency
-        this.mode_setting = this.user.mode
       }
       let getResourcesStore: Response = await fetch(`http://localhost:8000/api/resources/`, {
           method: 'GET',
@@ -185,7 +126,26 @@
         return useUserStore().user
       }
     },
+    watch: {
+      user(): void {
+        this.toggle_theme()
+      }
+    },
     methods: {
+      toggle_theme(): void {
+      const div = document.getElementById('app-vue')
+      if (div) {
+          const theme = div.firstElementChild
+          if (theme) {
+                theme.id = this.user.theme_preference
+                document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
+                const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
+                if (logo) {
+                    logo.src = theme.id === 'light' ? '/logo-light.svg' : '/logo-dark.svg'
+                }
+          }
+      }
+      },
       conduct_search(resource?: Resource): void {
         this.searching = false
         if (resource) {
@@ -256,53 +216,6 @@
         // location.reload()
         window.location.href = 'http://localhost:8000/login'
       },
-      async update_setting(called_by: string, data: string): Promise<void> {
-            let updateResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/${called_by}/`, {
-              method: 'PUT',
-              credentials: 'include',
-              headers: {
-                'Content-Type' : 'application/json',
-                'X-CSRFToken' : useUserStore().csrf
-              },
-              body: JSON.stringify(data)
-            })
-            if (!updateResponse.ok) {
-              console.error(called_by === 'theme' ? 'Error updating theme' : called_by === 'theme' ? 'Error updating currency' : 'Error updating mode')
-              alert(called_by === 'theme' ? 'Error updating theme' : called_by === 'theme' ? 'Error updating currency' : 'Error updating mode')
-              return
-            }
-            let userUpdateData: User = await updateResponse.json()
-            useUserStore().saveUser(userUpdateData)
-            useUsersStore().updateUser(userUpdateData)
-            if (called_by === 'mode') {
-              if (data === 'seller') {
-                window.location.href = '/listings'
-                return
-              } else {
-                window.location.href = '/'
-              }
-            } 
-      },
-      async toggle_theme(called_by: string, event?: Event): Promise<void> {
-        const div = document.getElementById('app-vue')
-        if (div) {
-          const theme = div.firstElementChild
-          if (theme) {
-            if (called_by === 'mounted') {
-              theme.id = useUserStore().user.theme_preference
-            } else {
-              theme.id = theme.id === 'light' ? 'dark' : 'light'
-            }
-            document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
-            const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
-            if (logo) {
-              logo.src = theme.id === 'light' ? '/logo-light.svg' : '/logo-dark.svg'
-            }
-            if (called_by === 'mounted') return
-            this.update_setting('theme', theme.id)
-          }
-        }
-      },
       toggle_hamburger(): void {
         const hamburgerElement = document.getElementById('show-on-mobile')
         if (!hamburgerElement) return
@@ -325,21 +238,6 @@
         if (profileElement && mainProfileElement && !mainProfileElement.contains(event.target as Node)) {
           profileElement.classList.remove('profile-nav-mobile')
           document.removeEventListener('click', (event) => this.hide_profile(event, called_by))
-        }
-      },
-      show_settings(called_by: string): void {
-        const settingElement = document.getElementById(called_by !== 'mobile' ? 'settings' :'settings-mobile')
-        if (settingElement) {
-          settingElement.classList.add('show-settings')
-          document.addEventListener('click', (event) => this.hide_settings(event, called_by))
-        }
-      },
-      hide_settings(event: Event, called_by: string): void {
-        const settingElement = document.getElementById(called_by !== 'mobile' ? 'settings' :'settings-mobile')
-        const mainSettingsElement = document.getElementById(called_by !== 'mobile' ? 'main-settings' : 'item4')
-        if (settingElement && mainSettingsElement && !mainSettingsElement.contains(event.target as Node)) {
-          settingElement.classList.remove('show-settings')
-          document.removeEventListener('click', (event) => this.hide_settings(event, called_by))
         }
       },
       hide_menu(event: Event): void {
@@ -431,7 +329,7 @@
     text-decoration: none;
   }
 
-  #app-vue a:hover, #settings-header:hover, #profile-header:hover {
+  #app-vue a:hover, #profile-header:hover {
     text-decoration: underline;
   }
 
@@ -456,11 +354,11 @@
     background-color: white;
   }
 
-  #settings-header:hover, #profile-header:hover {
+  #profile-header:hover {
     cursor: pointer;
   }
 
-  #dark #settings-header, #dark #profile-header {
+  #dark #profile-header {
     color: white;
   }
 
@@ -506,106 +404,6 @@
 
   #hamburger button i {
     font-size: 2rem;
-  }
-
-  #main-settings {
-    position: relative;
-  }
-
-  #settings {
-    position: absolute;
-    top: -11rem;
-    right: -4rem;
-    display: flex;
-    flex-direction: column;
-    background-color: #D9D9D9;
-    border-radius: 0.5rem;
-    transition: 0.5s ease;
-  }
-
-  #item4 #settings-mobile {
-    position: absolute;
-    top: -17rem;
-    right: 6.5rem;
-    display: flex;
-    flex-direction: column;
-    background-color: #D9D9D9;
-    border-radius: 0.5rem;
-    transition: top 0.5s ease;
-  }
-
-  .show-settings {
-    top: 0rem;
-    margin-top: 13.3rem;
-  }
-  
-  #item4 .show-settings {
-    top: 0rem;
-    margin-top: 15.3rem;
-  }
-
-  #dark #settings {
-    color: black;
-  }
-
-  #theme, #currency {
-    border-bottom: 0.1rem solid white;
-  }
-
-  #dark #theme, #dark #currency {
-    border-bottom: 0.1rem solid darkgray;
-  }
-
-  .setting {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    padding: 0.5rem;
-  }
-
-  .setting label {
-    width: 3rem;
-  }
-
-  .setting select {
-    border-radius: 1rem;
-    height: 1.9rem;
-    width: 4.5rem;
-    padding-top: 0.2rem;
-    padding-bottom: 0.2rem;
-    padding-left: 0.2rem;
-  }
-
-  #toggle {
-    position: relative;
-    height: 1.6rem;
-    width: 4.4rem;
-    background-color: white;
-    border-radius: 1rem;
-  }
-
-  #circle {
-    position: absolute;
-    height: 1.3rem;
-    width: 1.3rem;
-    border-radius: 1rem;
-    top: 0.14rem;
-    transform: translateX(1%);
-    left: 0.4rem;
-    background-color: yellow;
-    transition: transform 0.5s ease;
-  }
-
-  #dark #circle {
-    background-color: darkblue;
-  }
-
-  #dark #circle {
-    transform: translateX(180%);
-  }
-
-  #toggle:hover {
-    background-color: rgb(245, 245, 245);
   }
 
   #profile-nav {

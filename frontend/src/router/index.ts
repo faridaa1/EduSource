@@ -13,11 +13,13 @@ import SellerProfile from '@/components/SellerProfile.vue'
 import Message from '@/components/authenticated user/messaging/Message.vue'
 import Messages from '@/components/authenticated user/messaging/Messages.vue'
 import SearchResults from '@/components/SearchResults.vue'
+import Settings from '@/components/authenticated user/settings/Settings.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/', name: 'home', component: Home },
+    { path: '/settings', name: 'settings', component: Settings },
     { path: '/details', name: 'details', component: Details },
     { path: '/new-listing/:catchAll(.*)', name: 'new listing', component: Listing },
     { path: '/resource/:id', name: 'resource', component: Listing },
