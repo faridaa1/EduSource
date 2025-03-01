@@ -12,6 +12,7 @@ import Order from '@/components/authenticated user/orders/Order.vue'
 import SellerProfile from '@/components/SellerProfile.vue'
 import Message from '@/components/authenticated user/messaging/Message.vue'
 import Messages from '@/components/authenticated user/messaging/Messages.vue'
+import SearchResults from '@/components/search/SearchResults.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +33,7 @@ const router = createRouter({
     { path: '/seller/:name', name: 'seller profile', component: SellerProfile },
     { path: '/message/:user1/:user2', name: 'message', component: Message },
     { path: '/messages', name: 'messages', component: Messages },
+    { path: '/search/:name', name: 'search', component: SearchResults },
   ],
 })
 

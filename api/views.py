@@ -561,14 +561,12 @@ def message(request: HttpRequest, id: int, sender: int) -> JsonResponse:
 
 def semantic_search(request: HttpRequest) -> JsonResponse:
     """Defining semantic search used to return relevant search results to user"""
+    # https://huggingface.co/sentence-transformers
+    dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
+
+    # data preprocessing
+    dataset: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('name', flat=True))
     if request.method == 'POST':
-        # https://huggingface.co/sentence-transformers
-
-        dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
-
-        # data preprocessing
-        dataset: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('name', flat=True))
-
         # ensuring values in lists are unique
         values_included: list = []
         new_dataset_resources: list = []
@@ -598,6 +596,27 @@ def semantic_search(request: HttpRequest) -> JsonResponse:
         keys: list = [pair[0] for pair in reduced_search_dict]
         resources: list = []
 
+        # using iteration to preserve order of resources
+        for key in keys:
+            resource = Resource.objects.get(id=key)
+            resources.append(resource.as_dict())
+        return JsonResponse(resources, safe=False)
+    if request.method == 'PUT':
+        # determine embeddings
+        embeddings = semantic_search_model.encode(dataset)
+        search: str = json.loads(request.body)
+        search_embeddings = semantic_search_model.encode(search)
+
+        # generate similairty matrix
+        similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
+        
+        # convert tensor to dictionary sorted on values (similarity)
+        list_similarity_matrix = similarity_matrix.tolist()[0]
+        search_dict = dict(zip(dataset_resources, list_similarity_matrix))
+        sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
+
+        keys: list = [pair[0] for pair in sorted_search_dict]
+        resources: list = []
         # using iteration to preserve order of resources
         for key in keys:
             resource = Resource.objects.get(id=key)

@@ -18,12 +18,12 @@
         </div>
         <div id="search-div">
           <input id="search" @input="semantic_search" type="text" placeholder="Search">
-          <div id="search-results">
-            <div v-for="resource in search_results">
+          <div id="search-results" v-if="searching">
+            <div class="search-result" v-for="resource in search_results" @click="conduct_search(resource)">
               {{ resource.name }}
             </div>
           </div>
-          <button><i class="bi bi-search"></i></button>
+          <button @click="conduct_search()"><i class="bi bi-search"></i></button>
         </div>
         <RouterLink to="/" class="hide-on-mobile link">Help</RouterLink>
         <div id="main-settings" class="hide-on-mobile">
@@ -115,8 +115,9 @@
   import { useUsersStore } from './stores/users';
   export default defineComponent({
     components: { RouterView },
-    data(): { currency_setting: string, mode_setting: string, authenticated: boolean, search_results: Resource[]} { return {
+    data(): { searching: boolean, currency_setting: string, mode_setting: string, authenticated: boolean, search_results: Resource[]} { return {
         currency_setting : 'GBP',
+        searching: false,
         mode_setting: 'buyer',
         authenticated: false,
         search_results: [] as Resource[]
@@ -124,8 +125,12 @@
     },
     async mounted(): Promise<void> {
       document.addEventListener('click', (event) => {
+        this.searching = false
         let target: HTMLElement = event.target as HTMLElement
         if (target.id === 'logo' && !(window.location.pathname === '/') && !(window.location.pathname === '/listings')) this.go_home()
+        if (target.id !== 'search') {
+          this.search_results = []
+        }
       })
       let usersResponse: Response = await fetch('http://localhost:8000/api/users/', {
         method: 'GET',
@@ -145,18 +150,18 @@
         }
       })
       let userData: { user: User | 'unauthenticated' } = await userResponse.json()
+      for (let cookie of document.cookie.split(';')) {
+        const cookie_pair = cookie.split('=')
+          if (cookie_pair[0] === 'csrftoken') {
+            useUserStore().saveCsrf(cookie_pair[1])
+          }
+      }
       if (userData.user === 'unauthenticated') {
         let header: HTMLHeadingElement = document.getElementById('main-header') as HTMLHeadingElement
         header.style.gridTemplateColumns = '1fr 1fr 0fr 2fr 1fr 0fr 1fr'
       } else {
         this.authenticated = true
         useUserStore().saveUser(userData.user)
-        for (let cookie of document.cookie.split(';')) {
-          const cookie_pair = cookie.split('=')
-           if (cookie_pair[0] === 'csrftoken') {
-              useUserStore().saveCsrf(cookie_pair[1])
-           }
-        }
         this.toggle_theme('mounted')
         this.currency_setting = this.user.currency
         this.mode_setting = this.user.mode
@@ -181,7 +186,19 @@
       }
     },
     methods: {
+      conduct_search(resource?: Resource): void {
+        this.searching = false
+        if (resource) {
+          window.location.href = `/search/${resource.name}`
+        } else {
+          const search: HTMLInputElement = document.getElementById('search') as HTMLInputElement
+          if (search) {
+            window.location.href = `/search/${search.value}`
+          }
+        }
+      },
       async semantic_search(): Promise<void> {
+        this.searching = true
         const search: HTMLInputElement = document.getElementById('search') as HTMLInputElement
         if (!search) return
         if (search.value === '') {
@@ -359,8 +376,25 @@
 
   #app-vue #search-results {
     position: absolute;
-    width: 100%;
-    background-color: orange !important;
+    margin-top: 2rem;
+    background-color: white !important;
+    border-radius: 0.5rem;
+    padding: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    width: 11.6rem;
+  }
+
+  .search-result {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0.25rem;
+  }
+
+  .search-result:hover {
+    cursor: pointer;
+    background-color: #D9D9D9;
   }
 
   .sign:hover {
@@ -637,11 +671,18 @@
     #app-vue input {
       width: 30rem;
     }
+
+    #app-vue #search-results {
+      width: 31.2rem;
+    }
   }
 
   @media (min-width: 1667px) {
     #app-vue input {
       width: 40rem;
+    }
+    #app-vue #search-results {
+      width: 41.2rem;
     }
   }
 
