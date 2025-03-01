@@ -1,20 +1,22 @@
 <template>
-  <div id="app-vue" v-if="user !== undefined">
+  <div id="app-vue" v-if="complete">
       <div id="light">
       <header id="main-header">
         <img id='logo' src="/logo-light.svg" alt="EduSource" width="125" height="125" v-pre/>
         <RouterLink :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="hide-on-mobile link">Home</RouterLink>
-        <div id="profile-div" class="hide-on-mobile" @click="show_profile('desktop')">
-          <p id="profile-header" v-if="authenticated">Profile</p>
-          <div id="profile-nav">
-            <RouterLink class="profile-item border-bottom rounded-top" to="/details" >Details</RouterLink>
-            <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='buyer'">Orders</RouterLink>
-            <RouterLink class="profile-item border-bottom" to="/messages">Messages</RouterLink>
-            <RouterLink class="profile-item border-bottom" to="/cart">Cart</RouterLink>
-            <RouterLink class="profile-item rounded-bottom" to="/wishlist" v-if="user.mode==='buyer'">Wishlist</RouterLink>
-            <RouterLink class="profile-item border-bottom" to="/listings" v-if="user.mode==='seller'">Listings</RouterLink>
-            <RouterLink class="profile-item rounded-bottom" to="/" v-if="user.mode==='seller'">Orders</RouterLink>
-          </div>
+        <div id="profile-div" class="hide-on-mobile">
+          <p id="profile-header" v-if="authenticated" @click="toggle_profile_view">Profile</p>
+          <transition name="nav">
+              <div id="profile-nav" v-if="clicked_profile">
+                <RouterLink class="profile-item border-bottom rounded-top" to="/details" >Details</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='buyer'">Orders</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/messages">Messages</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/cart">Cart</RouterLink>
+                <RouterLink class="profile-item rounded-bottom" to="/wishlist" v-if="user.mode==='buyer'">Wishlist</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/listings" v-if="user.mode==='seller'">Listings</RouterLink>
+                <RouterLink class="profile-item rounded-bottom" to="/" v-if="user.mode==='seller'">Orders</RouterLink>
+            </div>
+          </transition>
         </div>
         <div id="search-div">
           <input id="search" @input="semantic_search" type="text" placeholder="Search">
@@ -29,24 +31,31 @@
         <RouterLink to="/settings" class="hide-on-mobile link" v-if="Object.keys(user).length > 0">Settings</RouterLink>
         <p v-if="authenticated" class="hide-on-mobile link sign" @click="sign_out"> Sign out </p>
         <p v-if="!authenticated" @click="sign_in" class="hide-on-mobile link sign"> Sign in</p>
-        <button id="show-on-mobile" @click="show_menu"><i class="bi bi-list"></i></button>
+        <button id="show-on-mobile" @click="mobile_menu=true"><i class="bi bi-list"></i></button>
       </header>
-      <div id="hamburger">
-        <button><i class="bi bi-x"></i></button>
-        <RouterLink to="/" id="item1" class="show-mobile">Home</RouterLink>
-        <div id="item2" class="show-mobile" @click="show_profile('mobile')">
-          <p id="profile-header" v-if="authenticated">Profile</p>
-          <div id="profile-nav">
-            <RouterLink class="profile-item border-bottom rounded-top" to="/details" >Details</RouterLink>
-            <RouterLink class="profile-item border-bottom" to="/">Orders</RouterLink>
-            <RouterLink class="profile-item border-bottom" to="/">Cart</RouterLink>
-            <RouterLink class="profile-item rounded-bottom" to="/">Wishlist</RouterLink>
+      <transition name="nav">
+        <div id="hamburger" v-if="mobile_menu">
+          <RouterLink id="item1" :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="show-mobile">Home</RouterLink>
+          <div id="item2" class="show-mobile">
+            <p id="profile-header" v-if="authenticated" @click="toggle_profile_view_mobile">Profile</p>
+            <transition name="nav">
+              <div id="profile-nav" v-if="clicked_profile_mobile">
+                <RouterLink class="profile-item border-bottom rounded-top" to="/details" >Details</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='buyer'">Orders</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/messages">Messages</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/cart">Cart</RouterLink>
+                <RouterLink class="profile-item rounded-bottom" to="/wishlist" v-if="user.mode==='buyer'">Wishlist</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/listings" v-if="user.mode==='seller'">Listings</RouterLink>
+                <RouterLink class="profile-item rounded-bottom" to="/" v-if="user.mode==='seller'">Orders</RouterLink>
+            </div>
+          </transition>
           </div>
+          <RouterLink to="/" id="item3" class="show-mobile">Help</RouterLink>
+          <RouterLink to="/settings" id="item4" class="show-mobile">Settings</RouterLink>
+          <p id="item5" v-if="authenticated" class="link sign" @click="sign_out"> Sign out </p>
+          <p id="item5" v-if="!authenticated" @click="sign_in" class="link sign"> Sign in</p>
         </div>
-        <RouterLink to="/" id="item3" class="show-mobile">Help</RouterLink>
-        <RouterLink to="/settings" id="item4" class="show-mobile">Settings</RouterLink>
-        <RouterLink to="/" id="item5" class="show-mobile link">Sign out</RouterLink>
-      </div>
+      </transition>
       <RouterView />
    </div>
   </div>
@@ -56,7 +65,7 @@
 </template>
 
 <script lang="ts">
-  import { defineComponent } from 'vue';
+  import { defineComponent, nextTick } from 'vue';
   import { RouterLink, RouterView } from 'vue-router'
   import type { Resource, User } from './types';
   import { useUserStore } from './stores/user';
@@ -65,14 +74,33 @@
   import Loading from './components/user experience/loading/Loading.vue';
   export default defineComponent({
     components: { RouterView, Loading },
-    data(): { searching: boolean, authenticated: boolean, search_results: Resource[] } { return {
+    data(): { searching: boolean, authenticated: boolean, search_results: Resource[], clicked_profile: boolean, mobile_menu: boolean, complete: boolean, clicked_profile_mobile: boolean } { return {
         searching: false,
         authenticated: false,
         search_results: [] as Resource[],
+        complete: false,
+        mobile_menu: false,
+        clicked_profile_mobile: false,
+        clicked_profile: false
       }
     },
     async mounted(): Promise<void> {
+      window.addEventListener('resize', () => {
+      })
       document.addEventListener('click', (event) => {
+        if (this.clicked_profile) {
+          const div: HTMLDivElement = event.target as HTMLDivElement
+          if (div.parentNode && (div.parentNode as HTMLDivElement).id !== 'profile-div') {
+            this.clicked_profile = false
+          } 
+        }
+        if (this.mobile_menu) {
+          const div: HTMLDivElement = event.target as HTMLDivElement
+          if (div.parentNode && (div.parentNode as HTMLDivElement).id !== 'show-on-mobile' && (div.parentNode as HTMLDivElement).id !== 'item2') {
+            this.mobile_menu = false
+            this.clicked_profile_mobile = false
+          } 
+        }
         this.searching = false
         let target: HTMLElement = event.target as HTMLElement
         if (target.id === 'logo' && !(window.location.pathname === '/') && !(window.location.pathname === '/listings')) this.go_home()
@@ -98,6 +126,7 @@
         }
       })
       let userData: { user: User | 'unauthenticated' } = await userResponse.json()
+      this.complete = true
       for (let cookie of document.cookie.split(';')) {
         const cookie_pair = cookie.split('=')
           if (cookie_pair[0] === 'csrftoken') {
@@ -105,8 +134,11 @@
           }
       }
       if (userData.user === 'unauthenticated') {
-        let header: HTMLHeadingElement = document.getElementById('main-header') as HTMLHeadingElement
-        header.style.gridTemplateColumns = '1fr 1fr 0fr 2fr 1fr 1fr'
+        nextTick(() => {
+          let header: HTMLHeadingElement = document.getElementById('main-header') as HTMLHeadingElement
+          header.style.gridTemplateColumns = '1fr 1fr 0fr 2fr 1fr 1fr'
+        })
+        
       } else {
         this.authenticated = true
         useUserStore().saveUser(userData.user)
@@ -123,6 +155,7 @@
         }
         let resources: Resource[] = await getResourcesStore.json()
         useResourcesStore().saveResources(resources)
+        this.complete = true
     },
     computed: {
       user(): User {
@@ -135,19 +168,25 @@
       }
     },
     methods: {
+      toggle_profile_view(): void {
+        this.clicked_profile = !this.clicked_profile
+      },
+      toggle_profile_view_mobile(): void {
+        this.clicked_profile_mobile = !this.clicked_profile_mobile
+      },
       toggle_theme(): void {
         if (Object.keys(this.user).length === 0) return
         const div = document.getElementById('app-vue')
         if (div) {
-            const theme = div.firstElementChild
-            if (theme) {
-                  theme.id = this.user.theme_preference
-                  document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
-                  const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
-                  if (logo) {
-                      logo.src = theme.id === 'light' ? '/logo-light.svg' : '/logo-dark.svg'
-                  }
-            }
+          const theme = div.firstElementChild
+          if (theme) {
+              theme.id = this.user.theme_preference
+              document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
+              const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
+              if (logo) {
+                  logo.src = theme.id === 'light' ? '/logo-light.svg' : '/logo-dark.svg'
+              }
+          }
         }
       },
       conduct_search(resource?: Resource): void {
@@ -201,49 +240,6 @@
       async sign_in(): Promise<void> {
         window.location.href = 'http://localhost:8000/login'
       },
-      toggle_hamburger(): void {
-        const hamburgerElement = document.getElementById('show-on-mobile')
-        if (!hamburgerElement) return
-        if (window.innerWidth >= 654) {
-            hamburgerElement.style.display = 'none'
-        } else {
-          hamburgerElement.style.display = 'block'
-        }
-      }, 
-      show_profile(called_by: string): void {
-        const profileElement = document.getElementById('profile-nav')
-        if (profileElement) {
-          profileElement.classList.add('profile-nav-mobile')
-          document.addEventListener('click', (event) => this.hide_profile(event, called_by))
-        }
-      },
-      hide_profile(event: Event, called_by: string): void {
-        const profileElement = document.getElementById('profile-nav')
-        const mainProfileElement = document.getElementById(called_by === 'mobile' ? 'item2' : 'profile-div')
-        if (profileElement && mainProfileElement && !mainProfileElement.contains(event.target as Node)) {
-          profileElement.classList.remove('profile-nav-mobile')
-          document.removeEventListener('click', (event) => this.hide_profile(event, called_by))
-        }
-      },
-      hide_menu(event: Event): void {
-        const hamburgerElement = document.getElementById('show-on-mobile')
-        const menuElement = document.getElementById('hamburger')
-        if (hamburgerElement && !hamburgerElement.contains(event.target as Node) && menuElement && !menuElement.contains(event.target as Node)) {
-          hamburgerElement.style.display = 'block'
-          menuElement.classList.remove('show-mobile')
-          document.removeEventListener('click', this.hide_menu)
-        }
-      },
-      show_menu(): void {
-        const hamburgerElement = document.getElementById('show-on-mobile')
-        const menuElement = document.getElementById('hamburger')
-        if (hamburgerElement && menuElement) {
-          hamburgerElement.style.display = 'none'
-          menuElement.classList.add('show-mobile')
-          document.addEventListener('click', this.hide_menu)
-          window.addEventListener('resize', this.toggle_hamburger)
-        }
-      }
     }
   })
 </script>
@@ -252,9 +248,21 @@
   @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
   @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css');
   
+  #show-on-mobile {
+    display: none;
+  }
+
   body {
     overflow: hidden;
     position: relative;
+  }
+
+  .nav-enter-active, .nav-leave-active {
+    transition: opacity 0.1s ease;
+  }
+
+  .nav-enter-from, .nav-leave-to {
+    opacity: 0;
   }
 
   #app-vue #search-results {
@@ -361,46 +369,16 @@
     background-color: darkgrey;
   }
 
-  #show-on-mobile, .show-mobile { 
-    display: none;
-  }
-
-  #hamburger {
-    position: absolute;
-    top: 0;
-    right: -8rem;
-    grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
-    place-items: center;
-    border-radius: 0.5rem;
-    transition: 0.5s ease;
-  }
-
-  #hamburger button {
-    position: absolute;
-    color: rgb(236, 99, 99);
-    border: none;
-    background: none;
-    right: 6rem;
-  }
-
-  #hamburger button:hover {
-    color: red;
-  }
-
-  #hamburger button i {
-    font-size: 2rem;
-  }
-
   #profile-nav {
     position: absolute;
     display: flex;
     flex-direction: column;
     background-color: #D9D9D9;
     border-radius: 0.5rem;
+    transition: opacity 0.4s ease;
     align-items: center;
-    top: -13rem;
+    top: 2.3rem;
     right: -2.5rem;
-    opacity: 0;
   }
 
   .profile-nav-mobile {
@@ -409,16 +387,9 @@
     opacity: 1 !important;
     transition: opacity 0.4s ease;
   }
-  
-  #item2 #profile-nav {
-    top: 0.3rem;
-    right: 2rem;
-    opacity: 100%;
-  }
 
-  #item2 .profile-nav-mobile {
-    /* right: 6.2rem !important; */
-    right: 10rem !important;
+  #profile-div {
+    position: relative;
   }
 
   #light .border-bottom {
@@ -449,43 +420,54 @@
     background-color: #0DCAF0;
   }
 
+
   /* Responsive Design */
-  @media (min-width: 1110px) {
-    #app-vue input {
-      width: 30rem;
-    }
-
-    #app-vue #search-results {
-      width: 31.2rem;
-    }
-  }
-
-  @media (min-width: 1667px) {
-    #app-vue input {
-      width: 40rem;
-    }
-    #app-vue #search-results {
-      width: 41.2rem;
-    }
-  }
-
-  @media (max-width: 654px) {
-    #app-vue header {
-      position: relative;
-      display: grid;
-      grid-template-columns: 1fr 2fr 1fr;
+  @media (max-width: 871px) {
+    #hamburger {
+      position: absolute;
+      top: 0;
+      right: 0rem;
+      grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
       place-items: center;
-      padding-top: 0.8rem;
-      padding-bottom: 0.8rem;
+      border-radius: 0.5rem;
     }
 
-    #app-vue .show-mobile {
+    #item2 #profile-nav {
+      top: 0rem;
+      right: 6.1rem;
+    }
+
+    #item2 .profile-nav-mobile {
+      /* right: 6.2rem !important; */
+      right: 10rem !important;
+    }
+
+    #app-vue header {
+      grid-template-columns: 1fr 2fr 1fr!important;
+    }
+
+    .hide-on-mobile {
+      display: none;
+    }
+
+    #show-on-mobile {
+      position: relative;
       display: block;
-      right: 0;
+      background-color: transparent;
+      border: none;
+      font-size: 1.5rem;
     }
 
-    #app-vue #dark .show-mobile {
-      color: black;
+    #show-on-mobile i {
+      font-size: 1.5rem;
+    }
+
+    #show-on-mobile:hover {
+      cursor: pointer;
+    }
+
+    #dark #show-on-mobile {
+      color: white;
     }
 
     #item1, #item2, #item3, #item4, #item5 {
@@ -502,7 +484,7 @@
       border-bottom: 0.1rem solid white;
     }
 
-    #dark #item1, #dark #item2, #dark #item3, #dark #item4 {
+    #dark #item1, #dark #item2, #dark #item3, #dark #item4, #dark #item5 {
       border-bottom: 0.1rem solid darkgray;
     }
 
@@ -543,23 +525,45 @@
       grid-column: 3;
       grid-row: 5;
     }
+  }
 
-    #show-on-mobile {
+  /* Responsive Design */
+  @media (min-width: 1110px) {
+    #app-vue input {
+      width: 30rem;
+    }
+
+    #app-vue #search-results {
+      width: 31.2rem;
+    }
+  }
+
+  @media (min-width: 1667px) {
+    #app-vue input {
+      width: 40rem;
+    }
+    #app-vue #search-results {
+      width: 41.2rem;
+    }
+  }
+
+  @media (max-width: 654px) {
+    #app-vue header {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      place-items: center;
+      padding-top: 0.8rem;
+      padding-bottom: 0.8rem;
+    }
+
+    #app-vue .show-mobile {
       display: block;
-      border: none;
-      background: none;
+      right: 0;
     }
 
-    #dark #show-on-mobile {
-      color: white;
-    }
-
-    #show-on-mobile i {
-      font-size: 1.5rem;
-    }
-
-    .hide-on-mobile {
-      display: none;
+    #app-vue #dark .show-mobile {
+      color: black;
     }
   }
 
