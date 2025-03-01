@@ -161,13 +161,20 @@
         height: 100vh;
         width: 100vw;
         margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
     }
 
     #home {
+        position: absolute;
         display: flex;
         gap: 0.5rem;
         align-items: center;
         margin-left: 1rem;
+        top: 0;
+        left: 0;
     } 
 
     #home:hover {
@@ -191,10 +198,6 @@
     }
 
     #signup {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
         border-radius: 5rem;
         height: 30rem;
         padding-top: 0.7rem;
@@ -202,12 +205,12 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        position: relative;
     }
 
     form {
         overflow-y: scroll;
-        height: 14rem;
-        padding-top: 10rem;
+        height: 23rem;
         padding-right: 1rem;
     }
 
@@ -225,7 +228,6 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
     }
 
     #fields {
