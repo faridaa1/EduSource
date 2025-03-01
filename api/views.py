@@ -70,7 +70,9 @@ def login(request: HttpRequest) -> HttpResponse:
                authenticated_user: User | None = authenticate(request, username=login_data['user'], password=login_data['password'])
             if authenticated_user:
                 auth.login(request, authenticated_user)
-                return redirect('http://localhost:5173/')
+                if authenticated_user.mode == 'buyer':
+                    return redirect('http://localhost:5173/')
+                return redirect('http://localhost:5173/listings')
             login_form.add_error(None, 'Invalid email or password' if '@' in login_data['user'] else 'Invalid username or password')
         return render(request, 'api/login.html', {'login_form' : login_form})
     return render(request, 'api/login.html', {'login_form' : LoginForm()})

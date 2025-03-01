@@ -8,6 +8,10 @@
         <title>Sign Up</title>
     </head>
     <body>
+        <div id="home">
+            <i class="bi bi-arrow-left-circle-fill"></i> 
+            <p>Home</p>
+        </div>
         <div id='signup' class='signup-light'>
             <img id='logo' src="{% static 'logo-light.svg' %}" alt="EduSource" width="125" height="125" />
             <form method='post' action='/signup/' id='signup-form'>
@@ -142,22 +146,51 @@
     }
     toggleSignupTheme()
     theme.addEventListener('change', toggleSignupTheme) 
+
+    function home() {
+        window.location.href = 'http://localhost:5173/'
+    }
+    document.getElementById('logo').addEventListener('click', home)
+    document.getElementById('home').addEventListener('click', home)
 </script>
 
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
     body {
+        font-family: 'Inter';
         height: 100vh;
         width: 100vw;
         margin: 0;
+    }
+
+    #home {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin-left: 1rem;
+    } 
+
+    #home:hover {
+        cursor: pointer;
+    }
+
+    #home i:hover {
+        color: darkgrey;
+    }
+
+    #home p:hover {
+        text-decoration: underline;
     }
 
     #logo { 
         height: 5rem;
     }
 
+    #logo:hover {
+        cursor: pointer;
+    }
+
     #signup {
-        font-family: 'Inter';
         position: absolute;
         top: 50%;
         left: 50%;

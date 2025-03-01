@@ -1,5 +1,5 @@
 <template>
-  <div id="app-vue">
+  <div id="app-vue" v-if="user !== undefined">
       <div id="light">
       <header id="main-header">
         <img id='logo' src="/logo-light.svg" alt="EduSource" width="125" height="125" v-pre/>
@@ -26,7 +26,7 @@
           <button @click="conduct_search()"><i class="bi bi-search"></i></button>
         </div>
         <RouterLink to="/" class="hide-on-mobile link">Help</RouterLink>
-        <RouterLink to="/settings" class="hide-on-mobile link">Settings</RouterLink>
+        <RouterLink to="/settings" class="hide-on-mobile link" v-if="Object.keys(user).length > 0">Settings</RouterLink>
         <p v-if="authenticated" class="hide-on-mobile link sign" @click="sign_out"> Sign out </p>
         <p v-if="!authenticated" @click="sign_in" class="hide-on-mobile link sign"> Sign in</p>
         <button id="show-on-mobile" @click="show_menu"><i class="bi bi-list"></i></button>
@@ -50,21 +50,25 @@
       <RouterView />
    </div>
   </div>
+  <div v-else>
+    <Loading />
+   </div>
 </template>
 
 <script lang="ts">
-  import { defineComponent, nextTick } from 'vue';
+  import { defineComponent } from 'vue';
   import { RouterLink, RouterView } from 'vue-router'
   import type { Resource, User } from './types';
   import { useUserStore } from './stores/user';
   import { useResourcesStore } from './stores/resources';
   import { useUsersStore } from './stores/users';
+  import Loading from './components/user experience/loading/Loading.vue';
   export default defineComponent({
-    components: { RouterView },
-    data(): { searching: boolean, authenticated: boolean, search_results: Resource[]} { return {
+    components: { RouterView, Loading },
+    data(): { searching: boolean, authenticated: boolean, search_results: Resource[] } { return {
         searching: false,
         authenticated: false,
-        search_results: [] as Resource[]
+        search_results: [] as Resource[],
       }
     },
     async mounted(): Promise<void> {
@@ -102,7 +106,7 @@
       }
       if (userData.user === 'unauthenticated') {
         let header: HTMLHeadingElement = document.getElementById('main-header') as HTMLHeadingElement
-        header.style.gridTemplateColumns = '1fr 1fr 0fr 2fr 1fr 0fr 1fr'
+        header.style.gridTemplateColumns = '1fr 1fr 0fr 2fr 1fr 1fr'
       } else {
         this.authenticated = true
         useUserStore().saveUser(userData.user)
@@ -195,24 +199,6 @@
         window.location.href = '/'
       },
       async sign_in(): Promise<void> {
-        // let csrf
-        // for (let cookie of document.cookie.split(';')) {
-        //   const cookie_pair = cookie.split('=')
-        //    if (cookie_pair[0] === 'csrftoken') {
-        //       csrf = cookie_pair[1]
-        //    }
-        // }
-        // if (csrf === undefined) return
-        // await fetch(`http://localhost:8000/login/`, {
-        //   method: 'POST',
-        //   credentials: 'include',
-        //   headers: {
-        //     'Content-Type' : 'application/json',
-        //     'X-CSRFToken' : csrf
-        //   },
-        //   body: JSON.stringify(window.location.href)
-        // })
-        // location.reload()
         window.location.href = 'http://localhost:8000/login'
       },
       toggle_hamburger(): void {

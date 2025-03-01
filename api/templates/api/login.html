@@ -8,6 +8,10 @@
         <title>Log In</title>
     </head>
     <body>
+        <div id="home">
+            <i class="bi bi-arrow-left-circle-fill"></i> 
+            <p>Home</p>
+        </div>
         <div id='login'>
             <form method='post' action='/login/' id='login-form'>
                 {% csrf_token %}
@@ -65,18 +69,48 @@
     }
     passwordShowButton.addEventListener('click', togglePasswordVisibility)
     passwordHideButton.addEventListener('click', togglePasswordVisibility)
+
+    function home() {
+        window.location.href = 'http://localhost:5173/'
+    }
+    document.getElementById('logo').addEventListener('click', home)
+    document.getElementById('home').addEventListener('click', home)
 </script>
 
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
     body {
         height: 100vh;
+        font-family: 'Inter';
         width: 100vw;
         margin: 0;
     }
 
+    #home {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin-left: 1rem;
+    } 
+
+    #home:hover {
+        cursor: pointer;
+    }
+
+    #home i:hover {
+        color: darkgrey;
+    }
+
+    #home p:hover {
+        text-decoration: underline;
+    }
+
     #logo { 
         height: 5rem;
+    }
+
+    #logo:hover {
+        cursor: pointer;
     }
 
     #login {

@@ -76,14 +76,6 @@
             let userUpdateData: User = await updateResponse.json()
             useUserStore().saveUser(userUpdateData)
             useUsersStore().updateUser(userUpdateData)
-            if (called_by === 'mode') {
-            if (data === 'seller') {
-                window.location.href = '/listings'
-                return
-            } else {
-                window.location.href = '/'
-            }
-            } 
         },
         async toggle_theme(called_by: string, event?: Event): Promise<void> {
             const div = document.getElementById('app-vue')
