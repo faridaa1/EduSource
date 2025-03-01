@@ -12,7 +12,7 @@ import Order from '@/components/authenticated user/orders/Order.vue'
 import SellerProfile from '@/components/SellerProfile.vue'
 import Message from '@/components/authenticated user/messaging/Message.vue'
 import Messages from '@/components/authenticated user/messaging/Messages.vue'
-import SearchResults from '@/components/search/SearchResults.vue'
+import SearchResults from '@/components/SearchResults.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
