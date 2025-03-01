@@ -1,5 +1,5 @@
 <template>
-    <div id="settings-container">
+    <div id="settings-container" v-if="Object.keys(user).length > 0">
         <p id="settings-header">Settings</p>
         <div id="settings">
             <div id="theme" class="setting">
@@ -27,14 +27,19 @@
             </div>
         </div>
     </div>
+    <div v-else>
+        <Loading />
+    </div>
   </template>
   
   <script lang="ts">
-    import { defineComponent, nextTick } from 'vue';
+    import { defineComponent } from 'vue';
     import { useUserStore } from '@/stores/user';
     import type { User } from '@/types';
     import { useUsersStore } from '@/stores/users';
+    import Loading from '@/components/user experience/loading/Loading.vue';
     export default defineComponent({
+      components: { Loading },
       data(): { currency_setting: string, mode_setting: string } { return {
           currency_setting : 'GBP',
           mode_setting: 'buyer',

@@ -115,7 +115,6 @@
           },
         })
         if (!getResourcesStore.ok) {
-          console.error('Error getting resources')
           return
         }
         let resources: Resource[] = await getResourcesStore.json()
@@ -133,18 +132,19 @@
     },
     methods: {
       toggle_theme(): void {
-      const div = document.getElementById('app-vue')
-      if (div) {
-          const theme = div.firstElementChild
-          if (theme) {
-                theme.id = this.user.theme_preference
-                document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
-                const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
-                if (logo) {
-                    logo.src = theme.id === 'light' ? '/logo-light.svg' : '/logo-dark.svg'
-                }
-          }
-      }
+        if (Object.keys(this.user).length === 0) return
+        const div = document.getElementById('app-vue')
+        if (div) {
+            const theme = div.firstElementChild
+            if (theme) {
+                  theme.id = this.user.theme_preference
+                  document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
+                  const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
+                  if (logo) {
+                      logo.src = theme.id === 'light' ? '/logo-light.svg' : '/logo-dark.svg'
+                  }
+            }
+        }
       },
       conduct_search(resource?: Resource): void {
         this.searching = false
@@ -175,7 +175,6 @@
           body: JSON.stringify(search.value)
         })
         if (!searchResults.ok) {
-          console.error('Error loading search results')
           return
         }
         const search_results: Resource[] = await searchResults.json()
