@@ -2,7 +2,7 @@
     <div id="buyer-home">
         <div id="recommendations" v-if="Object.keys(user).length > 0">
             <div class="header">
-                <p>Recommendations</p>
+                <p>Recommended for you</p>
             </div>
             <div class="displays">
                 <div v-for="listing in textbooks">
@@ -134,8 +134,7 @@
             },
         },
         watch: {
-            async user(new_user: User): Promise<void> {
-                // this.user = new_user
+            async user(): Promise<void> {
                 for (const resource of this.resources) {
                     resource.price = await this.listedprice(resource)
                 }
@@ -145,9 +144,6 @@
                     resource.price = await this.listedprice(resource)
                 }
             }
-        },
-        async mounted() {
-            
         }
     })
 </script>
@@ -155,29 +151,30 @@
 <style scoped>
     #buyer-home {
         display: grid;
-        grid-template-areas: "recommendations recommendations"
-                             "textbooks textbooks"
-                             "notes stationery";
-        padding-right: 30rem;
+        grid-template-areas: "recommendations" "textbooks" "notes" "stationery";
+        height: 89vh;
+        width: 98vw;
+        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
+        overflow-y: scroll;
+        gap: 1.5rem;
     }
 
     #recommendations {
         grid-area: recommendations;
-        align-items: center;
-        border: 0.1rem solid #D9D9D9;
-        border-radius: 0.5rem;
-        padding: 0.5rem;
-        margin-top: 2rem;
-        width: 98vw;
     }
 
     #textbooks {
         grid-area: textbooks;
+    }
+
+    #recommendations, #textbooks, #notes, #stationery {
         border: 0.1rem solid #D9D9D9;
         border-radius: 0.5rem;
+        height: 12.5rem;
+        margin-left: 1.5rem;
+        margin-right: 1.5rem;
         padding: 0.5rem;
-        margin-top: 2rem;
-        width: 98vw;
     }
 
     .header {
@@ -186,8 +183,7 @@
     }
 
     img {
-        height: 10rem;
-        width: fit-content;
+        height: 7rem;
     }
 
     .listed {
@@ -202,25 +198,15 @@
         overflow-x: scroll;
         margin-top: 1rem;
         padding-bottom: 1rem;
+        margin-left: 1rem;
     }
 
     #notes {
         grid-area: notes;
-        border: 0.1rem solid #D9D9D9;
-        border-radius: 0.5rem;
-        padding: 0.5rem;
-        margin-top: 2rem;
-        margin-right: 1rem;
-        width: 96.5%;
     }
 
     #stationery {
         grid-area: stationery;
-        border: 0.1rem solid #D9D9D9;
-        border-radius: 0.5rem;
-        padding: 0.5rem;
-        margin-top: 2rem;
-        width: 90.5%;
     }
 
     .header button {
@@ -241,5 +227,18 @@
         background-color: lightgray;
         border-radius: 0.5rem;
         cursor: pointer;
+    }
+
+    /* Responsive Design */
+  @media (max-width: 510px) {
+        #recommendations, #textbooks, #notes, #stationery {
+            width: 83vw;
+        }
+    }
+
+    @media (max-width: 431px) {
+        #recommendations, #textbooks, #notes, #stationery {
+            width: 80vw;
+        }
     }
 </style>

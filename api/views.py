@@ -49,7 +49,7 @@ def signup(request: HttpRequest) -> HttpResponse:
             authenticated_user: User | None = authenticate(request, username=signup_data['username'], password=signup_data['password'])
             if authenticated_user:
                 auth.login(request, authenticated_user)
-            return redirect('http://localhost:5173/')
+            return redirect('http://localhost:5173/profile')
         return render(request, 'api/signup.html', {'signup_form' : signup_form, 'address_form' : address_form})
     return render(request, 'api/signup.html', {'signup_form' : SignupForm(), 'address_form' : AddressForm()})
 

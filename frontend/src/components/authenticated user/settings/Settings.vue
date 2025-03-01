@@ -45,6 +45,10 @@
           mode_setting: 'buyer',
         }
       },
+      mounted(): void {
+            this.currency_setting = this.user.currency
+            this.mode_setting = this.user.mode
+      },
       computed: {
         user(): User {
           return useUserStore().user
@@ -52,7 +56,6 @@
       },
       watch: {
         user(): void {
-            this.toggle_theme('mounted')
             this.currency_setting = this.user.currency
             this.mode_setting = this.user.mode
         }
