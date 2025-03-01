@@ -123,7 +123,6 @@ class Resource(models.Model):
     stock = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
     estimated_delivery_time = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
     subject = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z]+( [a-zA-Z]+)*$', message='Invalid format')])
-    # author = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z]+( [a-zA-Z]+)*$', message='Invalid format')])
     author = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$', message='Invalid format')])
     self_made = models.BooleanField(null=False, blank=False)
     is_draft = models.BooleanField(null=False, blank=False)
