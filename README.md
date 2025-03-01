@@ -1,2 +1,2 @@
 # School-Resource-Marketplace
-Final Year Project. 
+EduSource - a school resource marketplace developed as part of my final year project.
