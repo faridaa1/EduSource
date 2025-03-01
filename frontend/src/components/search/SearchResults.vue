@@ -4,7 +4,7 @@
             <div id="heading1">
                 <p>Search Results</p>
             </div>
-            <div id="heading2">
+            <div id="heading2" v-if="filtered_resources.length > 0">
                 <div id="sort_by">
                     <label id="label">Sort by</label>
                     <select v-model="sort_by">
@@ -16,8 +16,8 @@
                         <option value="price-high" v-if="Object.keys(user).length > 0">Price: High to Low</option>
                     </select>
                 </div>
-                <div id="filter">
-                    <label id="label">Filter <i class="bi bi-sliders" @click="filtering=true"></i></label>
+                <div id="filter" v-if="filtered_resources.length > 0">
+                    <label id="label">Filter <i class="bi bi-sliders" @click="filtering=!filtering"></i></label>
                     <div id="filter-area" v-if="filtering">
                         <div id="condition">
                             <label>Condition</label>
@@ -80,7 +80,7 @@
         </div>
         <div id="search-content">
             <div id="noresources" v-if="filtered_resources.length === 0">No resources found</div>
-            <div class="search-item" v-for="resource in filtered_resources">
+            <div class="search-item" v-for="resource in filtered_resources" @click="showResourcePage(resource.id)">
                 <div id="search-picture">
                     <img :src="`http://localhost:8000${resource.image1}`" alt="">
                 </div>
@@ -253,7 +253,20 @@
                 return useUserStore().user
             },
             filtered_resources(): Resource[] {
-                return this.resources.filter(resource => {
+                let seen_resources: { [key: string]: string } = {}
+                let temp_resources = []
+                for (let resource of this.resources) {
+                    if (resource.unique) {
+                        temp_resources.push(resource) 
+                        continue
+                    }
+                    if (temp_resources.find(res => res.name === resource.name && resource.author === res.author && !resource.unique)) {
+                        continue
+                    } else {
+                        temp_resources.push(resource) 
+                    }
+                }
+                return temp_resources.filter(resource => {
                     console.log(resource.rating, resource.rating >=5)
                     if (this.condition_new && resource.condition === 'New'
                         || this.condition_used && resource.condition === 'Used'
@@ -417,6 +430,11 @@
         text-align: center;
     }
 
+    .search-item:hover {
+        border: 0.2rem solid black;
+        cursor: pointer;
+        border-radius: 0.5rem;
+    }
 
 
 

@@ -347,7 +347,6 @@ def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> Js
     user: User = get_object_or_404(User, id=user)
     if request.method == 'POST':
         resource: Resource = get_object_or_404(Resource, id=resource)
-        print('hii', resource)
         cartResource: CartResource = CartResource.objects.create(
             resource=resource,
             number=1,
@@ -615,7 +614,8 @@ def semantic_search(request: HttpRequest) -> JsonResponse:
         search_dict = dict(zip(dataset_resources, list_similarity_matrix))
         sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
 
-        keys: list = [pair[0] for pair in sorted_search_dict]
+        # only keeping results at least 50% similar
+        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.5]
         resources: list = []
         # using iteration to preserve order of resources
         for key in keys:
