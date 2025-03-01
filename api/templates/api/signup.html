@@ -9,9 +9,9 @@
     </head>
     <body>
         <div id='signup' class='signup-light'>
+            <img id='logo' src="{% static 'logo-light.svg' %}" alt="EduSource" width="125" height="125" />
             <form method='post' action='/signup/' id='signup-form'>
                 {% csrf_token %}
-                <img id='logo' src="{% static 'logo-light.svg' %}" alt="EduSource" width="125" height="125" />
                 <div id='fields'>
                     <p class='required-label'><span class='required'>*</span> - Required</p>
                     {% for field in signup_form %}
@@ -140,6 +140,7 @@
         document.querySelector('img').src = theme.value === 'dark' ? "{% static 'logo-dark.svg' %}" : "{% static 'logo-light.svg' %}"
         signup.classList.replace(theme.value === 'dark' ? 'signup-light' : 'signup-dark', theme.value === 'dark' ? 'signup-dark' : 'signup-light')
     }
+    toggleSignupTheme()
     theme.addEventListener('change', toggleSignupTheme) 
 </script>
 
@@ -163,8 +164,18 @@
         transform: translate(-50%, -50%);
         border-radius: 5rem;
         height: 30rem;
+        padding-top: 0.7rem;
         width: 30rem;
-        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    form {
+        overflow-y: scroll;
+        height: 14rem;
+        padding-top: 10rem;
+        padding-right: 1rem;
     }
 
     .signup-light {
@@ -242,11 +253,14 @@
 
     #signup .error, .required {
         color: red;
+        whitespace: normal;
+        width: 15rem;
     }
 
     #submit:hover, .password:hover {
         background:rgb(237, 229, 229);
         transition: background 0.2s ease;
+        cursor: pointer;
     }
 
     .password {
