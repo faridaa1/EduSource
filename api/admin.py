@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cart, CartResource, Messages, Order, OrderResource, Resource, Review, User, Address, Message
+from .models import Cart, CartResource, Messages, Order, OrderResource, Resource, Review, Subject, User, Address, Message
 from django.forms import BaseInlineFormSet, ValidationError
 
 
@@ -33,14 +33,20 @@ class UserInline(admin.StackedInline):
     model = User
     extra = 0
 
+class SubjectInline(admin.StackedInline):
+    """Defining Subject model appearance on django admin"""
+    model = Subject
+    extra = 0
 
 class OrderResourceInline(admin.StackedInline):
     model = OrderResource
     extra = 0
 
+
 class MessageInline(admin.StackedInline):
     model = Message
     extra = 0
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -79,6 +85,6 @@ class ResourceAdmin(admin.ModelAdmin):
 class UserAdmin(admin.ModelAdmin):
     """Defining User model appearance on django admin"""
     list_display: tuple[str] = ('first_name', 'last_name', 'email')
-    inlines = [AddressInline, ResourceInline]
+    inlines = [SubjectInline, AddressInline, ResourceInline]
 
 

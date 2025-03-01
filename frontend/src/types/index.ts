@@ -18,8 +18,14 @@ export interface User {
     placed_orders: Order[];
     sold_orders: Order[];
     cart: Cart;
+    subjects: Subject[];
     messages: Messages[];
     wishlist: Wishlist;
+}
+
+export interface Subject {
+    id: number,
+    name: string,
 }
 
 export interface Resource {

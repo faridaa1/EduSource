@@ -41,7 +41,7 @@ class Wishlist(models.Model):
 def create_wishlist(): 
     return Wishlist.objects.create()
 
-
+    
 class User(AbstractUser):
     """Defining attrbiutes and methods for User model"""
     email = models.EmailField(unique=True, null=False, blank=False)
@@ -74,6 +74,7 @@ class User(AbstractUser):
         placed_orders = Order.objects.filter(buyer=self)
         sold_orders = Order.objects.filter(seller=self)
         messages = Messages.objects.filter(Q(user1=self) | Q(user2=self))
+        subjects = Subject.objects.filter(user=self)
         return {
             'id': self.id,
             'email': self.email,
@@ -94,10 +95,22 @@ class User(AbstractUser):
             'placed_orders': [order.as_dict() for order in placed_orders],
             'sold_orders': [order.as_dict() for order in sold_orders],
             'messages': [message.as_dict() for message in messages],
+            'subjects': [subject.as_dict() for subject in subjects],
             'cart': self.cart.as_dict(),
             'wishlist': self.wishlist.as_dict()
         }
 
+class Subject(models.Model):
+    """Defining attributes and methods for Subject model"""
+    name = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z]+( [a-zA-Z]+)*$', message='Invalid format')])
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subject')
+    
+    def as_dict(self) -> str:
+        """Dictionary representation of Subject"""
+        return {
+            'id' : self.id,
+            'name' : self.name,
+        }
 
 class Address(models.Model):
     """Defining attributes and methods for Address model"""

@@ -8,7 +8,7 @@ from django.db.models import Avg, OuterRef
 from django.contrib import auth
 import torch
 from .forms import SignupForm, AddressForm, LoginForm
-from .models import Cart, CartResource, Messages, Order, OrderResource, Resource, Review, User, Address, WishlistResource, Message
+from .models import Cart, CartResource, Messages, Order, OrderResource, Resource, Review, Subject, User, Address, WishlistResource, Message
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 from transformers import pipeline
@@ -49,7 +49,7 @@ def signup(request: HttpRequest) -> HttpResponse:
             authenticated_user: User | None = authenticate(request, username=signup_data['username'], password=signup_data['password'])
             if authenticated_user:
                 auth.login(request, authenticated_user)
-            return redirect('http://localhost:5173/profile')
+            return redirect('http://localhost:5173/details')
         return render(request, 'api/signup.html', {'signup_form' : signup_form, 'address_form' : address_form})
     return render(request, 'api/signup.html', {'signup_form' : SignupForm(), 'address_form' : AddressForm()})
 
@@ -191,7 +191,7 @@ def resources(request: HttpRequest) -> JsonResponse:
 
 
 def user_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse | Http404:
-    """Defining PUT request handling"""
+    """Defining PUT and DELETE request handling"""
     if request.method == 'PUT':
         user: User | Http404 = get_object_or_404(User, id=id)
         address: Address | Http404 = get_object_or_404(Address, user=user)
@@ -223,12 +223,22 @@ def user_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse 
             address.city = json.loads(request.body)
         elif attribute == 'postcode':
             address.postcode = json.loads(request.body)
+        elif attribute == 'subjects':
+            Subject.objects.create(
+                name=json.loads(request.body),
+                user=user
+            )
+            address.postcode = json.loads(request.body)
         user.save()
         address.save()
         if attribute == 'password':
             user: User | None = authenticate(request, username=user.username, password=json.loads(request.body))
             if user:
                 auth.login(request, user)
+        return JsonResponse(user.as_dict())
+    elif request.method == 'DELETE':
+        if attribute == 'subjects':
+            Subject.objects.get(id=json.loads(request.body)).delete()
         return JsonResponse(user.as_dict())
     return JsonResponse('no user', safe=False)
 
@@ -626,6 +636,47 @@ def semantic_search(request: HttpRequest) -> JsonResponse:
         return JsonResponse(resources, safe=False)
     return JsonResponse({})
 
+def semantic_search_subjects(request: HttpRequest) -> JsonResponse:
+    """Defining semantic search used to return relevant subjects to user"""
+    # https://huggingface.co/sentence-transformers
+    dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
+
+    # data preprocessing
+    dataset: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('subject', flat=True))
+    if request.method == 'POST':
+        # ensuring values in lists are unique
+        values_included: list = []
+        new_dataset_resources: list = []
+        new_dataset: list = []
+        for i in range(len(dataset)):
+            if not dataset[i] in values_included:
+                new_dataset_resources.append(dataset_resources[i])
+                new_dataset.append(dataset[i])
+                values_included.append(dataset[i])
+
+        # determine embeddings
+        embeddings = semantic_search_model.encode(new_dataset)
+        search: str = json.loads(request.body)
+        search_embeddings = semantic_search_model.encode(search)
+
+        # generate similairty matrix
+        similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
+        
+        # convert tensor to dictionary sorted on values (similarity)
+        list_similarity_matrix = similarity_matrix.tolist()[0]
+        search_dict = dict(zip(new_dataset_resources, list_similarity_matrix))
+        sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
+
+        # use first 8 search results
+        keys: list = [pair[0] for pair in sorted_search_dict]
+        resources: list = []
+
+        # using iteration to preserve order of resources
+        for key in keys:
+            resource = Resource.objects.get(id=key)
+            resources.append(resource.as_dict()['subject'])
+        return JsonResponse(resources, safe=False)
+    return JsonResponse({})
 
 def order_data(item: tuple):
     return item[1] # sort based on values

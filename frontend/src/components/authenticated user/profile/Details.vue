@@ -18,11 +18,9 @@
                 <div id="passwords">
                     <div class="form-item">
                         <label for="">Password</label>
-                        <input id="pass" v-if="editingPassword" type="password" autocomplete="current-password" v-model="password" @input="validate_password(false)">
-                        <input v-if="!editingPassword" type="password" value="************" disabled>
+                        <input id="pass" type="password" placeholder="************" autocomplete="current-password" v-model="password" @input="validate_password(false)">
                         <button type="button" class="edit see" v-if="editingPassword && !show_pass" @click="toggle_password('password', true)"><i class="bi bi-eye"></i></button>
                         <button type="button" class="edit see" v-if="editingPassword && show_pass" @click="toggle_password('password', false)"><i class="bi bi-eye-slash-fill"></i></button>
-                        <button class="edit" v-if="!editingPassword" @click="editingPassword=true"><i class="bi bi-pencil-fill"></i></button>
                     </div>
                     <div class="form-item" v-if="editingPassword">
                         <label for="">New Password</label>
@@ -71,6 +69,26 @@
                 </div>
             </div>
         </form>
+        <div>
+            <h1>Subject Preferences</h1>
+            <div id="subject-preferences" class="form-item">
+                <div id="semantic-search">
+                    <input type="text" id="sub-pref" @input="semantic_subject" @click="semantic_subject">
+                    <i class="bi bi-search" @click="save_subject()"></i>
+                </div>
+                <div class="options" v-if="show_subjects">
+                    <div class="option" v-for="subject in search_preferences">
+                        <p @click="save_subject(subject)">{{ subject }}</p>
+                    </div>
+                </div>
+                <div id="user-subjects">
+                    <div v-for="subject in user.subjects" @click="delete_subject(subject.id)">
+                        <p>{{ subject.name }}</p>
+                        <i class="bi bi-x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
         <form id="addressForm" ref="addressForm" @submit.prevent="validate('address')">
             <h1>Address</h1>
             <div class="form-item">
@@ -105,15 +123,18 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent } from 'vue';
     import type { User } from '@/types';
-import { useUsersStore } from '@/stores/users';
+    import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
+            show_subjects: boolean,
+            subject: string,
             email: string,
             username: string,
             password: string,
             new_password: string,
             re_password: string,
             first_name: string,
+            search_preferences: string[],
             last_name: string,
             phone_number: string,
             description: string,
@@ -140,6 +161,7 @@ import { useUsersStore } from '@/stores/users';
             username: '',
             password: '',
             new_password: '',
+            show_subjects: false,
             re_password: '',
             first_name: '',
             last_name: '',
@@ -162,9 +184,70 @@ import { useUsersStore } from '@/stores/users';
             editingPostcode: false,
             show_pass: false,
             show_new_pass: false,
+            search_preferences: [],
+            subject: '',
             show_re_pass: false
         }},
         methods: {
+            async delete_subject(id: number): Promise<void> {
+                const response: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/subjects/`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type' : 'application/json',
+                        'X-CSRFToken' : useUserStore().csrf
+                    },
+                    body: JSON.stringify(id)
+                })
+                if (!response.ok) {
+                    return
+                }
+                const user: User = await response.json()
+                useUsersStore().updateUser(user)
+                useUserStore().saveUser(user)
+            },
+            async save_subject(subject? : string): Promise<void> {
+                const search: HTMLInputElement = document.getElementById('sub-pref') as HTMLInputElement
+                if (!search) return
+                this.show_subjects = false;
+                if ((!subject && search.value === '') || (subject && this.user.subjects.map(subject => subject.name).includes(subject)) || (!subject && this.user.subjects.map(subject => subject.name).includes(search.value))) {
+                    search.value = ''
+                    this.subject = ''
+                    console.log('yoo')
+                    return
+                } 
+                this.update_details('subjects', subject ? subject : search.value)
+                search.value = ''
+                this.subject = ''
+                
+            },
+            async semantic_subject(): Promise<void> {
+                const search: HTMLInputElement = document.getElementById('sub-pref') as HTMLInputElement
+                if (!search) return
+                this.show_subjects = true
+                this.subject = search.value
+                const searchResults: Response = await fetch(`http://localhost:8000/api/semantic-search-subjects/`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type' : 'application/json',
+                        'X-CSRFToken' : useUserStore().csrf
+                    },
+                    body: JSON.stringify(search.value)
+                })
+                if (!searchResults.ok) {
+                    return
+                }
+                const search_preferences: string[] = await searchResults.json()
+                this.search_preferences = search_preferences.filter(search_preferences => !this.user.subjects.map(subject => subject.name).includes(search_preferences))
+                let unique_subjects: string[] = []
+                let new_array: string[] = []
+                for (let subject of this.search_preferences) {
+                    if (unique_subjects.includes(subject)) continue
+                    new_array.push(subject)
+                    unique_subjects.push(subject)
+                }
+            },
             async validate_line2(submit: boolean): Promise<void> {
                 this.clear_details('address')
                 const address_line_two: HTMLInputElement = document.getElementById('line2') as HTMLInputElement
@@ -389,6 +472,7 @@ import { useUsersStore } from '@/stores/users';
                 detailsForm.checkValidity()
             },
             async validate_password(submit : boolean): Promise<void> {
+                this.editingPassword = true
                 this.clear_details('details')
                 const password: HTMLInputElement = document.getElementById('pass') as HTMLInputElement
                 const new_password: HTMLInputElement = document.getElementById('new_pass') as HTMLInputElement
@@ -588,6 +672,7 @@ import { useUsersStore } from '@/stores/users';
                 if (userResponse.ok) {
                     const user: User = await userResponse.json()
                     useUsersStore().updateUser(user)
+                    useUserStore().saveUser(user)
                     
                     if (saveButton) {
                         saveButton.disabled = false
@@ -596,10 +681,8 @@ import { useUsersStore } from '@/stores/users';
                         cancelButton.disabled = false
                     }
                     if (attribute === 'email') {
-                        useUserStore().user.email = data
                         this.editingEmail = false
                     } else if (attribute === 'username') {
-                        useUserStore().user.username = data
                         this.editingUsername = false
                     } else if (attribute === 'password') {
                         for (let cookie of document.cookie.split(';')) {
@@ -610,22 +693,16 @@ import { useUsersStore } from '@/stores/users';
                         }
                         this.clear_passwords()
                     } else if (attribute === 'name') {
-                        useUserStore().user.first_name = data
                         this.editingFirstName = false
                     } else if (attribute === 'surname') {
-                        useUserStore().user.last_name = data
                         this.editingLastName = false
                     } else if (attribute === 'address_line_one') {
-                        useUserStore().user.address_line_one = data
                         this.editingLine1 = false
                     } else if (attribute === 'address_line_two') {
-                        useUserStore().user.address_second_line = data
                         this.editingLine2 = false
                     } else if (attribute === 'city') {
-                        useUserStore().user.city = data
                         this.editingCity = false
                     } else if (attribute === 'postcode') {
-                        useUserStore().user.postcode = data
                         this.editingPostcode = false
                     }
                 } else {
@@ -665,6 +742,12 @@ import { useUsersStore } from '@/stores/users';
             }
         },
         mounted(): void {
+            document.addEventListener('click', (event) => {
+                if (this.show_subjects && !((event.target as HTMLDivElement).id === 'sub-pref')) {
+                    this.subject = ''
+                    this.show_subjects = false
+                }
+            })
             const form: HTMLFormElement = this.$refs.detailsForm as HTMLFormElement
             const addressForm: HTMLFormElement = this.$refs.addressForm as HTMLFormElement
             if (form) {
@@ -686,6 +769,60 @@ import { useUsersStore } from '@/stores/users';
 </script>
 
 <style scoped>
+    #user-subjects {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        width: 100%;
+        overflow: auto;
+        max-height: 10rem;
+        border-radius: 0.2rem;
+        background-color: #D9D9D9;
+    }
+
+    #user-subjects div {
+        display: flex;
+        padding: 0.2rem;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    #user-subjects i {
+        color: red;
+    }
+
+    #user-subjects:hover {
+        cursor: pointer;
+    }
+
+    #user-subjects div:hover {
+        background-color: red;
+        color: white;
+    }
+
+    #semantic-search {
+        display: flex;
+        align-items: center;
+        background-color: #D9D9D9;
+        border-radius: 0.5rem;
+    }
+
+    #semantic-search input {
+        border-top-right-radius: 0rem;
+        border-bottom-right-radius: 0rem;
+    }
+
+    #semantic-search i:hover {
+        background-color: #b7b5b5;
+        cursor: pointer;
+    }
+
+    #semantic-search i {
+        border-top-right-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+        padding: 0.25rem;
+    }
+
     #details {
         margin-left: 3rem;
         margin-top: 3rem;
@@ -839,7 +976,35 @@ import { useUsersStore } from '@/stores/users';
         align-self: flex-end;
     }
 
-    @media (max-width: 320px) {
+    #subject-preferences {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.1rem;
+    }
+
+    .options {
+        position: absolute;
+        top: 1.7rem;
+        display: flex;
+        flex-direction: column;
+        background-color: white;
+        width: 100%;
+        max-height: 10rem;
+        border: 0.01rem solid darkgray;
+        border-radius: 0.1rem;
+        overflow-y: scroll;
+    }
+
+    .option {
+        padding: 0.2rem;
+    }
+
+    .option:hover {
+        cursor: pointer;
+        text-decoration: underline;
+        border-radius: 0.5rem;
     }
 
     @media (min-width: 320px) and (max-width: 450px) {
