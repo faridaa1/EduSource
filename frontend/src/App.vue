@@ -85,6 +85,7 @@
       }
     },
     async mounted(): Promise<void> {
+      this.toggle_theme()
       window.addEventListener('resize', () => {
         this.clicked_profile = false;
         this.clicked_profile_mobile = false;
@@ -145,6 +146,7 @@
       } else {
         this.authenticated = true
         useUserStore().saveUser(userData.user)
+        this.toggle_theme()
       }
       let getResourcesStore: Response = await fetch(`http://localhost:8000/api/resources/`, {
           method: 'GET',
@@ -179,18 +181,20 @@
       },
       toggle_theme(): void {
         if (Object.keys(this.user).length === 0) return
-        const div = document.getElementById('app-vue')
-        if (div) {
-          const theme = div.firstElementChild
-          if (theme) {
-              theme.id = this.user.theme_preference
-              document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
-              const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
-              if (logo) {
-                  logo.src = theme.id === 'light' ? '/logo-light.svg' : '/logo-dark.svg'
-              }
+        nextTick(() => {
+          const div = document.getElementById('app-vue')
+          if (div) {
+            const theme = div.firstElementChild
+            if (theme) {
+                theme.id = this.user.theme_preference
+                document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
+                const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
+                if (logo) {
+                    logo.src = theme.id === 'light' ? '/logo-light.svg' : '/logo-dark.svg'
+                }
+            }
           }
-        }
+        })
       },
       conduct_search(resource?: Resource): void {
         this.searching = false

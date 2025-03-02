@@ -324,6 +324,14 @@
         background-color: #0DCAF0;
     }
 
+    #dark #checkout, #dark #move_to_cart {
+        background-color: white;
+    }
+
+    #dark #checkout:hover, #dark #move_to_cart:hover {
+        background-color: rgb(156, 154, 154);
+    }
+    
     #checkout:hover {
         cursor: pointer;
         background-color: #177183;
