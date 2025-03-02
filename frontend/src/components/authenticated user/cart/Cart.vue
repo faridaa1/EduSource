@@ -9,7 +9,7 @@
             <div class="cart-item" v-for="resource in user.cart.resources">
                 <div class="item-one">
                     <div class="item-image">
-                        <img :src="`http://localhost:8000${(allResources.find(res => res.id === resource.resource) as Resource)?.image1}`" alt="">
+                        <img :src="`http://localhost:8000${(allResources.find(res => res.id === resource.resource) as Resource)?.image1}`"  @click="view_item((allResources.find(res => res.id === resource.resource) as Resource)?.id)">
                     </div>
                     <div class="details">
                         <p>{{ (allResources.find(res => res.id === resource.resource) as Resource)?.name }}</p>
@@ -36,28 +36,58 @@
                     </div>
                 </div>
             </div>
+            <div v-if="error !== ''">
+                <Error :message="error" @close-error="error = ''" />
+            </div>
+            <div v-if="confirm !== ''">
+                <Confirm :message="confirm" @confirm-no="confirm_no" @confirm-yes="confirm_yes" />
+            </div>
         </div>
         <div id="buttons" v-if="user.cart.resources.length > 0">
             <button id="checkout" @click="checkout">Checkout</button>
             <button id="checkout" @click="move_all_wishlist">Move all to Wishlist</button>
-            <button id="clear" @click="clear_cart">Clear Cart</button>
+            <button id="clear" @click="clear_cart">Clear</button>
         </div>
     </div>
 </template>
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent, nextTick } from 'vue';
-    import type { Cart, CartResource, Resource, Review, User, Wishlist } from '@/types';
+    import { defineComponent } from 'vue';
+    import type { Cart, CartResource, Resource, User, Wishlist } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
+    import Error from '@/components/user experience/error/Error.vue';
+    import Confirm from '@/components/user experience/confirm/Confirm.vue';
     export default defineComponent({
+        components: { Error, Confirm },
         data(): {
+            remembered_resource: CartResource,
+            error: string,
+            confirm: string,
+            confirm_caller: 'delete_cart_item' | 'clear_cart' | '',
             total: number,
         } { return {
+            remembered_resource: {} as CartResource,
             total: 0,
+            error: '',
+            confirm: '',
+            confirm_caller: ''
         }},
         methods: {
+            confirm_yes(): void {
+                if (this.confirm_caller === 'clear_cart') {
+                    this.clear_cart()
+                } else {
+                    this.toggle_cart(this.remembered_resource, -1)
+                }
+                this.confirm = ''
+                this.confirm_caller = ''
+            },
+            confirm_no(): void {
+                this.confirm = ''
+                this.confirm_caller = ''
+            },
             checkout(): void {
                 window.location.href = '/checkout'
             },
@@ -77,7 +107,7 @@
                     body: JSON.stringify(resource.id)
                 })
                 if (!moveToWishlist.ok) {
-                    console.error('Error moving to wishlist')
+                    this.error = 'Error moving to wishlist. Please try again.'
                     return
                 }
                 const data: {wishlist: Wishlist, cart: Cart} = await moveToWishlist.json()
@@ -86,10 +116,13 @@
                 useUsersStore().updateUser(this.user)
             },
             async clear_cart(): Promise<void> {
-                if (confirm('Are you sure you want to clear your cart?')) {
-                    for (const cart_item of this.user.cart.resources) {
-                        this.delete_cart_item(cart_item)
-                    }
+                if (this.confirm === '') {
+                    this.confirm = 'Are you sure you want to clear your cart'
+                    this.confirm_caller = 'clear_cart'
+                    return
+                }
+                for (const cart_item of this.user.cart.resources) {
+                    this.delete_cart_item(cart_item)
                 }
             },
             async delete_cart_item(resource: CartResource): Promise<void> {
@@ -102,7 +135,7 @@
                     },
                 })
                 if (!deleteCartItem.ok) {
-                    console.error('Error deleting from cart')
+                    this.error = 'Error deleting from cart. Please try again.'
                     return
                 }
                 const data: {resource: CartResource, cart: Cart} = await deleteCartItem.json()
@@ -120,7 +153,7 @@
                     body: JSON.stringify(value)
                 })
                 if (!putCartItem.ok) {
-                    console.error('Error editing cart')
+                    this.error = 'Error editing cart. Please try again.'
                     return
                 }
                 const data: {resource: CartResource, cart: Cart} = await putCartItem.json()
@@ -129,9 +162,13 @@
             },
             toggle_cart(resource: CartResource, value: number): void {
                 if (resource.number === 1 && value === -1) {
-                    if (confirm('Are you sure you want to delete this item from your cart?')) {
-                        this.delete_cart_item(resource)
+                    if (this.confirm === '') {
+                        this.remembered_resource = resource
+                        this.confirm = 'Are you sure you want to delete this item from your cart?'
+                        this.confirm_caller = 'delete_cart_item'
+                        return
                     }
+                    this.delete_cart_item(resource)
                 } else {
                     this.edit_cart_item(resource, resource.number + value)
                 }
@@ -252,6 +289,10 @@
     img {
         max-height: 9rem;
         width: 9rem;
+    }
+
+    img:hover {
+        cursor: pointer;
     }
 
     .item-one {
@@ -389,5 +430,24 @@
     #empty-message {
         text-align: center;
         font-size: 1.1rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 637px) {
+        .item-two {
+            flex-direction: column;
+            gap: 1rem;
+        }
+    }
+
+    @media (max-width: 522px) {
+        .cart-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .item-two {
+            flex-direction: row;
+        }
     }
 </style>

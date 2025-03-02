@@ -230,7 +230,7 @@
     }
 
     /* Responsive Design */
-  @media (max-width: 510px) {
+    @media (max-width: 510px) {
         #recommendations, #textbooks, #notes, #stationery {
             width: 83vw;
         }
