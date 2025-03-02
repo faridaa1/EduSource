@@ -25,6 +25,9 @@
             <button @click="send_message"><i class="bi bi-send"></i></button>
         </div>
     </div>
+    <div v-else>
+        <Loading />
+    </div>
 </template>
 
 <script lang="ts">
@@ -32,7 +35,9 @@
     import { defineComponent, nextTick } from 'vue';
     import type { Messages, User } from '@/types';
     import { useUsersStore } from '@/stores/users';
+    import Loading from '@/components/user experience/loading/Loading.vue';
     export default defineComponent({
+        components: { Loading },
         data(): {
             messages: Messages,
             messages_set: boolean,
@@ -128,13 +133,15 @@
                     this.messages_set = true
                     return
                 }
+                const message_value = message.value
+                message.value = ''
                 let messageResponse: Response = await fetch(`http://localhost:8000/api/message/${this.messages.id}/${this.user.id}/`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
                         'X-CSRFToken' : useUserStore().csrf
                     },
-                    body: JSON.stringify(message.value)
+                    body: JSON.stringify(message_value)
                 })
                 if (!messageResponse.ok) {
                     console.error('Error sending message')
@@ -147,7 +154,6 @@
                 if (messages) {
                     this.messages = messages
                 } 
-                message.value = ''
                 this.update_last_seen()
             },
             async create_messages(): Promise<void> {
@@ -243,6 +249,17 @@
                 this.scroll()
             }
         },
+        mounted(): void {
+            if (!this.messages_set && Object.keys(this.user.messages).length > 0) {
+                const message = this.user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id) || (message.user2 === this.user.id && message.user1 === this.other_user.id))
+                if (message) {
+                    this.messages = message
+                    this.messages_set = true
+                    this.update_last_seen()
+                    return
+                }
+            }
+        }
     })
 </script>
 
@@ -421,4 +438,36 @@
         height: 0.1rem;
         width: 7rem;
    }
+
+    /* Responsive design */
+    @media (max-width: 734px) {
+        #messages {
+            width: 20rem;
+            margin-top: 1rem;
+        }
+
+        #messages #value {
+            max-width: 10rem;
+        }
+
+        #message-area {
+            width: 19rem;
+        }
+
+        #message-box textarea {
+            width: 15rem;
+        }
+
+        #message-box {
+            margin-top: 1rem;
+        }
+
+        #back i, #back-msg {
+            font-size: 1rem;
+        }
+
+        #header {
+            font-size: 1.6rem;
+        }
+    }
 </style>
