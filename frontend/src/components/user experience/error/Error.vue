@@ -77,4 +77,15 @@
         cursor: pointer;
     }
 
+    /* Responsive Design */
+    @media (max-width: 522px) {
+        #message, button, p {
+            font-size: 1.1rem !important;
+            text-align: center;
+        }
+
+        #inner {
+            width: 60%;
+        }
+    }
 </style>

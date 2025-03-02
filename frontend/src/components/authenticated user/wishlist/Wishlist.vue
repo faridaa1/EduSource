@@ -8,7 +8,7 @@
             <div class="cart-item" v-for="resource in user.wishlist.resources">
                 <div class="item-one">
                     <div class="item-image">
-                        <img :src="`http://localhost:8000${(allResources.find(res => res.id === resource.resource) as Resource)?.image1}`" alt="">
+                        <img @click="view_item((allResources.find(res => res.id === resource.resource) as Resource)?.id)" :src="`http://localhost:8000${(allResources.find(res => res.id === resource.resource) as Resource)?.image1}`" alt="">
                     </div>
                     <div class="details">
                         <p>{{ (allResources.find(res => res.id === resource.resource) as Resource)?.name }}</p>
@@ -24,7 +24,13 @@
         </div>
         <div id="buttons" v-if="user.wishlist.resources.length > 0">
             <button id="checkout" @click="add_wishlist">Move all to Cart</button>
-            <button id="clear" @click="clear_wishlist">Clear Wishlist</button>
+            <button id="clear" @click="clear_wishlist">Clear</button>
+        </div>
+        <div v-if="error !== ''">
+                <Error :message="error" @close-error="error = ''" />
+        </div>
+        <div v-if="confirm !== ''">
+            <Confirm :message="confirm" @confirm-no="confirm=''" @confirm-yes="clear_wishlist" />
         </div>
     </div>
 </template>
@@ -35,18 +41,28 @@
     import type { Cart, CartResource, Resource, User, Wishlist, WishlistResource } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
+    import Error from '@/components/user experience/error/Error.vue';
+    import Confirm from '@/components/user experience/confirm/Confirm.vue';
     export default defineComponent({
+        components: { Error, Confirm },
         data(): {
             total: number,
+            error: string,
+            confirm: string,
         } { return {
             total: 0,
+            error: '',
+            confirm: ''
         }},
         methods: {
             async clear_wishlist(): Promise<void> {
-                if (confirm('Are you sure you want to clear your wishlist?')) {
-                    for (const wishlist_item of this.user.wishlist.resources) {
-                        this.delete_wishlist_item(wishlist_item)
-                    }
+                if (this.confirm === '') {
+                    this.confirm = 'Are you sure you want to clear your wishlist?'
+                    return
+                }
+                this.confirm = ''
+                for (const wishlist_item of this.user.wishlist.resources) {
+                    this.delete_wishlist_item(wishlist_item)
                 }
             },
             async add_wishlist(): Promise<void> {
@@ -65,7 +81,7 @@
                     body: JSON.stringify(resource.id)
                 })
                 if (!moveToCartResponse.ok) {
-                    console.error('Error moving to cart')
+                    this.error = 'Error moving to cart. Please try again.'
                     return
                 }
                 const data: {wishlist: Wishlist, cart: Cart} = await moveToCartResponse.json()
@@ -84,17 +100,16 @@
                     body: JSON.stringify(resource.resource)
                 })
                 if (!deleteWishlistItemResponse.ok) {
-                    console.error('Error deleting from wishlist')
+                    this.error = 'Error deleting from wishlist. Please try again'
                     return
                 }
+                this.error = ''
                 const data: {wishlist: Wishlist} = await deleteWishlistItemResponse.json()
                 useUserStore().updateWishlist(data.wishlist)
                 useUsersStore().updateUser(this.user)
             },
             remove_item(resource: WishlistResource): void {
-                if (confirm('Are you sure you want to remove this item from your wishlist?')) {
-                    this.delete_wishlist_item(resource)
-                }
+                this.delete_wishlist_item(resource)
             },
             view_item(id: number): void {
                 window.location.href = `/view/${id}`
@@ -192,6 +207,10 @@
     img {
         max-height: 9rem;
         width: 9rem;
+    }
+
+    img:hover {
+        cursor: pointer;
     }
 
     .item-one {
@@ -323,5 +342,25 @@
     #empty-message {
         text-align: center;
         font-size: 1.1rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width:585px) {
+        .item-two {
+            flex-direction: column;
+            gap: 1rem;
+        }
+    }
+
+    @media (max-width:468px) {
+        .cart-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.4rem;
+        }
+
+        .item-two {
+            flex-direction: row;
+        }
     }
 </style>
