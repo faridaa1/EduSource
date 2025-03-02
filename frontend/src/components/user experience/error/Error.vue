@@ -55,6 +55,7 @@
     #message {
         font-size: 1.3rem;
         color: black;
+        text-align: center;
     }
     
     #dark #inner {

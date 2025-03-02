@@ -24,6 +24,9 @@
             <textarea @input="clear" id="message-content" placeholder="Write a message here"></textarea>
             <button @click="send_message"><i class="bi bi-send"></i></button>
         </div>
+        <div v-if="error !== ''">
+            <Error :message="error" @close-error="error = ''" />
+        </div>
     </div>
     <div v-else>
         <Loading />
@@ -36,13 +39,16 @@
     import type { Messages, User } from '@/types';
     import { useUsersStore } from '@/stores/users';
     import Loading from '@/components/user experience/loading/Loading.vue';
+    import Error from '@/components/user experience/error/Error.vue';
     export default defineComponent({
-        components: { Loading },
+        components: { Loading, Error },
         data(): {
+            error: string,
             messages: Messages,
             messages_set: boolean,
             unread_index: number,
         } { return {
+            error: '',
             unread_index: -1,
             messages_set: false,
             messages: {} as Messages
@@ -144,9 +150,10 @@
                     body: JSON.stringify(message_value)
                 })
                 if (!messageResponse.ok) {
-                    console.error('Error sending message')
+                    this.error = 'Error sending message. Please try again.'
                     return
                 } 
+                this.error = ''
                 let data: User[] = await messageResponse.json()
                 useUsersStore().updateUsers(data)
                 useUserStore().saveUser(this.users.find(u => u.id === this.user.id) as User)
@@ -166,9 +173,10 @@
                     },
                 })
                 if (!messagesResponse.ok) {
-                    console.error('Error creating message')
+                    this.error = 'Error creating message. Please refresh page.'
                     return
                 } 
+                this.error = ''
                 let data: User[] = await messagesResponse.json()
                 useUsersStore().updateUsers(data)
                 useUserStore().saveUser(this.users.find(u => u.id === this.user.id) as User)
@@ -190,7 +198,6 @@
                 for (let message of this.messages.messages) {
                     if (message.user === this.user.id) continue
                     if ((this.messages.user2 === this.user.id && (new Date(message.sent).getTime() >= new Date(this.messages.user2_seen).getTime())) || (this.messages.user1 === this.user.id && (new Date(message.sent).getTime() >= new Date(this.messages.user1_seen).getTime()))) {
-                        console.log('here')
                         this.unread_index = message.id
                         return
                     }
