@@ -5,34 +5,44 @@
             <div class="form-item">
                 <label for="">Email</label>
                 <input required type="email" autocomplete="username" v-model="email" @input="validate_email(false)">
-                <button id="email-save" type="submit" class="save" v-if="editingEmail" @click="validate_email(true)"><i class="bi bi-floppy-fill"></i></button>
-                <button id="email-cancel" type="button" class="cancel" v-if="editingEmail" @click="editingEmail = false; email = user.email"><i class="bi bi-x"></i></button>
+                <div class="button-container">
+                    <button id="email-save" type="submit" class="save" v-if="editingEmail" @click="validate_email(true)"><i class="bi bi-floppy-fill"></i></button>
+                    <button id="email-cancel" type="button" class="cancel" v-if="editingEmail" @click="editingEmail = false; email = user.email"><i class="bi bi-x"></i></button>
+                </div>
             </div>
             <div class="form-item">
                 <label for="">Username</label>
                 <input required id="username" type="text" autocomplete="username" v-model="username" @input="validate_username(false)">
-                <button id="username-save" class="save" type="submit" v-if="editingUsername" @click="validate_username(true)"><i class="bi bi-floppy-fill"></i></button>
-                <button id="username-cancel" type="button" class="cancel" v-if="editingUsername" @click="editingUsername = false; username = user.username"><i class="bi bi-x"></i></button>
+                <div class="button-container">
+                    <button id="username-save" class="save" type="submit" v-if="editingUsername" @click="validate_username(true)"><i class="bi bi-floppy-fill"></i></button>
+                    <button id="username-cancel" type="button" class="cancel" v-if="editingUsername" @click="editingUsername = false; username = user.username"><i class="bi bi-x"></i></button>
+                </div>
             </div>
             <div id="password-item">
                 <div id="passwords">
                     <div class="form-item">
                         <label for="">Password</label>
-                        <input id="pass" type="password" placeholder="************" autocomplete="current-password" v-model="password" @input="validate_password(false)">
-                        <button type="button" class="edit see" v-if="editingPassword && !show_pass" @click="toggle_password('password', true)"><i class="bi bi-eye"></i></button>
-                        <button type="button" class="edit see" v-if="editingPassword && show_pass" @click="toggle_password('password', false)"><i class="bi bi-eye-slash-fill"></i></button>
+                        <div class="button-container">
+                            <input id="pass" type="password" placeholder="************" autocomplete="current-password" v-model="password" @input="validate_password(false)">
+                            <button type="button" class="edit see" v-if="editingPassword && !show_pass" @click="toggle_password('password', true)"><i class="bi bi-eye"></i></button>
+                            <button type="button" class="edit see" v-if="editingPassword && show_pass" @click="toggle_password('password', false)"><i class="bi bi-eye-slash-fill"></i></button>
+                        </div>
                     </div>
                     <div class="form-item" v-if="editingPassword">
                         <label for="">New Password</label>
-                        <input required id="new_pass" type="password" autocomplete="new-password" v-model="new_password" @input="validate_password(false)">
-                        <button type="button" class="edit see" v-if="editingPassword && !show_new_pass" @click="toggle_password('new-password', true)"><i class="bi bi-eye"></i></button>
-                        <button type="button" class="edit see" v-if="editingPassword && show_new_pass" @click="toggle_password('new-password', false)"><i class="bi bi-eye-slash-fill"></i></button>
+                        <div class="button-container">
+                            <input required id="new_pass" type="password" autocomplete="new-password" v-model="new_password" @input="validate_password(false)">
+                            <button type="button" class="edit see" v-if="editingPassword && !show_new_pass" @click="toggle_password('new-password', true)"><i class="bi bi-eye"></i></button>
+                            <button type="button" class="edit see" v-if="editingPassword && show_new_pass" @click="toggle_password('new-password', false)"><i class="bi bi-eye-slash-fill"></i></button>
+                        </div>
                     </div>
                     <div class="form-item" v-if="editingPassword">
                         <label for="">Re-enter New Password</label>
-                        <input required id="re_pass" type="password" autocomplete="new-password" v-model="re_password" @input="validate_password(false)">
-                        <button type="button" class="edit see" v-if="editingPassword && !show_re_pass" @click="toggle_password('re-password', true)"><i class="bi bi-eye"></i></button>
-                        <button type="button" class="edit see" v-if="editingPassword && show_re_pass" @click="toggle_password('re-password', false)"><i class="bi bi-eye-slash-fill"></i></button>
+                        <div class="button-container">
+                            <input required id="re_pass" type="password" autocomplete="new-password" v-model="re_password" @input="validate_password(false)">
+                            <button type="button" class="edit see" v-if="editingPassword && !show_re_pass" @click="toggle_password('re-password', true)"><i class="bi bi-eye"></i></button>
+                            <button type="button" class="edit see" v-if="editingPassword && show_re_pass" @click="toggle_password('re-password', false)"><i class="bi bi-eye-slash-fill"></i></button>
+                        </div>
                     </div>
                 </div>
                 <div class="buttons">
@@ -43,29 +53,35 @@
             <div class="form-item">
                 <label for="">First Name</label>
                 <input required id="first_name" type="text" v-model="first_name" @input="validate_name(false)">
-                <button id="name-save" class="save" type="submit" v-if="editingFirstName" @click="validate_name(true)"><i class="bi bi-floppy-fill"></i></button>
-                <button id="name-cancel" type="button" class="cancel" v-if="editingFirstName" @click="editingFirstName = false; first_name = user.first_name"><i class="bi bi-x"></i></button>
+                <div class="button-container">
+                    <button id="name-save" class="save" type="submit" v-if="editingFirstName" @click="validate_name(true)"><i class="bi bi-floppy-fill"></i></button>
+                    <button id="name-cancel" type="button" class="cancel" v-if="editingFirstName" @click="editingFirstName = false; first_name = user.first_name"><i class="bi bi-x"></i></button>
+                </div>
             </div>
             <div class="form-item">
                 <label for="">Last Name</label>
                 <input required id="last_name" type="text" v-model="last_name" @input="validate_surname(false)">
-                <button id="surname-save" class="save" type="submit" v-if="editingLastName" @click="validate_surname(true)"><i class="bi bi-floppy-fill"></i></button>
-                <button id="surname-cancel" type="button" class="cancel" v-if="editingLastName" @click="editingLastName = false; last_name = user.last_name"><i class="bi bi-x"></i></button>
+                <div class="button-container">
+                        <button id="surname-save" class="save" type="submit" v-if="editingLastName" @click="validate_surname(true)"><i class="bi bi-floppy-fill"></i></button>
+                    <button id="surname-cancel" type="button" class="cancel" v-if="editingLastName" @click="editingLastName = false; last_name = user.last_name"><i class="bi bi-x"></i></button>
+                </div>
             </div>
             <div class="form-item">
                 <label for="">Phone Number</label>
                 <input required id="number" type="text" v-model="phone_number" @input="validate_number(false)">
-                <button id="number-save" class="save" type="submit" v-if="editingPhoneNumber" @click="validate_number(true)"><i class="bi bi-floppy-fill"></i></button>
-                <button id="number-cancel" type="button" class="cancel" v-if="editingPhoneNumber" @click="editingPhoneNumber = false; phone_number = user.phone_number"><i class="bi bi-x"></i></button>
+                <div class="button-container">
+                    <button id="number-save" class="save" type="submit" v-if="editingPhoneNumber" @click="validate_number(true)"><i class="bi bi-floppy-fill"></i></button>
+                    <button id="number-cancel" type="button" class="cancel" v-if="editingPhoneNumber" @click="editingPhoneNumber = false; phone_number = user.phone_number"><i class="bi bi-x"></i></button>
+                </div>
             </div>
-            <div v-if="user.mode === 'seller'" id="description-item" class="form-item" >
+            <div id="description-item" class="form-item" >
                 <label for="">Seller Description</label>
                 <div id="description-input">
                     <textarea name="" id="description" v-model="description" @input="validate_description(false)"></textarea>
-                    <div id="description-buttons">
-                        <button id="description-save" class="save" type="submit" v-if="editingDescription" @click="validate_description(true)"><i class="bi bi-floppy-fill"></i></button>
-                        <button id="description-cancel" type="button" class="cancel" v-if="editingDescription" @click="editingDescription = false; description = user.description"><i class="bi bi-x"></i></button>
-                    </div>
+                </div>
+                <div id="description-buttons">
+                    <button id="description-save" class="save" type="submit" v-if="editingDescription" @click="validate_description(true)"><i class="bi bi-floppy-fill"></i></button>
+                    <button id="description-cancel" type="button" class="cancel" v-if="editingDescription" @click="editingDescription = false; description = user.description"><i class="bi bi-x"></i></button>
                 </div>
             </div>
         </form>
@@ -81,10 +97,13 @@
                         <p @click="save_subject(subject)">{{ subject }}</p>
                     </div>
                 </div>
-                <div id="user-subjects">
-                    <div v-for="subject in user.subjects" @click="delete_subject(subject.id)">
-                        <p>{{ subject.name }}</p>
-                        <i class="bi bi-x"></i>
+                <div id="user-subjects" v-if="user.subjects.length > 0">
+                    <div id="subject-item" v-for="subject in user.subjects.sort((a,b) => b.id - a.id)" @click="delete_subject(subject.id)">
+                        <div>
+                            <p>{{ subject.name }}</p>
+                            <i class="bi bi-x"></i>
+                        </div>
+                        <hr v-if="subject !== user.subjects[user.subjects.length-1]">
                     </div>
                 </div>
             </div>
@@ -94,26 +113,34 @@
             <div class="form-item">
                 <label>Address Line One</label>
                 <input required id="line1" type="text" v-model="line1" @input="validate_line1(false)">
-                <button id="line1-save" class="save" type="submit" v-if="editingLine1" @click="validate_line1(true)"><i class="bi bi-floppy-fill"></i></button>
-                <button id="line1-cancel" type="button" class="cancel" v-if="editingLine1" @click="editingLine1 = false; line1 = user.address_line_one"><i class="bi bi-x"></i></button>
+                <div class="button-container">
+                    <button id="line1-save" class="save" type="submit" v-if="editingLine1" @click="validate_line1(true)"><i class="bi bi-floppy-fill"></i></button>
+                    <button id="line1-cancel" type="button" class="cancel" v-if="editingLine1" @click="editingLine1 = false; line1 = user.address_line_one"><i class="bi bi-x"></i></button>
+                </div>
             </div>
             <div class="form-item">
                 <label>Address Line Two</label>
                 <input required id="line2" type="text" v-model="line2" @input="validate_line2(false)">
-                <button id="line2-save" class="save" type="submit" v-if="editingLine2" @click="validate_line2(true)"><i class="bi bi-floppy-fill"></i></button>
-                <button id="line2-cancel" type="button" class="cancel" v-if="editingLine2" @click="editingLine2 = false; line2 = user.address_second_line"><i class="bi bi-x"></i></button>
+                <div class="button-container">
+                    <button id="line2-save" class="save" type="submit" v-if="editingLine2" @click="validate_line2(true)"><i class="bi bi-floppy-fill"></i></button>
+                    <button id="line2-cancel" type="button" class="cancel" v-if="editingLine2" @click="editingLine2 = false; line2 = user.address_second_line"><i class="bi bi-x"></i></button>
+                </div>
             </div>
             <div class="form-item">
                 <label>City</label>
                 <input required id="city" type="text" v-model="city" @input="validate_city(false)">
-                <button id="city-save" class="save" type="submit" v-if="editingCity" @click="validate_city(true)"><i class="bi bi-floppy-fill"></i></button>
-                <button id="city-cancel" type="button" class="cancel" v-if="editingCity" @click="editingCity = false; city = user.city"><i class="bi bi-x"></i></button>
+                <div class="button-container">
+                    <button id="city-save" class="save" type="submit" v-if="editingCity" @click="validate_city(true)"><i class="bi bi-floppy-fill"></i></button>
+                    <button id="city-cancel" type="button" class="cancel" v-if="editingCity" @click="editingCity = false; city = user.city"><i class="bi bi-x"></i></button>
+                </div>
             </div>
             <div class="form-item">
                 <label>Postcode</label>
                 <input required id="postcode" type="text" v-model="postcode" @input="validate_postcode(false)">
-                <button id="postcode-save" class="save" type="submit" v-if="editingPostcode" @click="validate_postcode(true)"><i class="bi bi-floppy-fill"></i></button>
-                <button id="postcode-cancel" type="button" class="cancel" v-if="editingPostcode" @click="editingPostcode = false; postcode = user.postcode"><i class="bi bi-x"></i></button>
+                <div class="button-container">
+                    <button id="postcode-save" class="save" type="submit" v-if="editingPostcode" @click="validate_postcode(true)"><i class="bi bi-floppy-fill"></i></button>
+                    <button id="postcode-cancel" type="button" class="cancel" v-if="editingPostcode" @click="editingPostcode = false; postcode = user.postcode"><i class="bi bi-x"></i></button>
+                </div>
             </div>
         </form>
     </div>
@@ -210,13 +237,12 @@
                 const search: HTMLInputElement = document.getElementById('sub-pref') as HTMLInputElement
                 if (!search) return
                 this.show_subjects = false;
-                if ((!subject && search.value === '') || (subject && this.user.subjects.map(subject => subject.name).includes(subject)) || (!subject && this.user.subjects.map(subject => subject.name).includes(search.value))) {
+                if ((!subject && search.value.trim() === '') || (subject && this.user.subjects.map(subject => subject.name).includes(subject)) || (!subject && this.user.subjects.map(subject => subject.name).includes(search.value))) {
                     search.value = ''
                     this.subject = ''
-                    console.log('yoo')
                     return
                 } 
-                this.update_details('subjects', subject ? subject : search.value)
+                this.update_details('subjects', subject ? subject : search.value.trim())
                 search.value = ''
                 this.subject = ''
                 
@@ -477,6 +503,9 @@
                 const password: HTMLInputElement = document.getElementById('pass') as HTMLInputElement
                 const new_password: HTMLInputElement = document.getElementById('new_pass') as HTMLInputElement
                 const re_password: HTMLInputElement = document.getElementById('re_pass') as HTMLInputElement
+                if (!password || !new_password || !re_password) {
+                    return
+                }
                 if (!submit) {
                     password.setCustomValidity('')
                     new_password.setCustomValidity('')
@@ -607,9 +636,11 @@
                 const saveButton: HTMLButtonElement = attribute === 'email' ? document.getElementById('email-save') as HTMLButtonElement : attribute === 'username' ? document.getElementById('username-save') as HTMLButtonElement : attribute === 'password' ? document.getElementById('password-save') as HTMLButtonElement : document.getElementById('number-save') as HTMLButtonElement 
                 const cancelButton: HTMLButtonElement = attribute === 'email' ? document.getElementById('email-cancel') as HTMLButtonElement : attribute === 'username' ? document.getElementById('username-cancel') as HTMLButtonElement : attribute === 'password' ? document.getElementById('password-cancel') as HTMLButtonElement : document.getElementById('number-cancel') as HTMLButtonElement
                 if (saveButton) {
+                    console.log('save disab')
                     saveButton.disabled = true
                 } 
                 if (cancelButton) {
+                    console.log('hicancelbye')
                     cancelButton.disabled = true
                 }
                 let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/check/${attribute}/`, {
@@ -748,6 +779,11 @@
                     this.show_subjects = false
                 }
             })
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' && this.show_subjects && ((event.target as HTMLDivElement).id === 'sub-pref')) {
+                    this.save_subject()
+                }
+            })
             const form: HTMLFormElement = this.$refs.detailsForm as HTMLFormElement
             const addressForm: HTMLFormElement = this.$refs.addressForm as HTMLFormElement
             if (form) {
@@ -777,14 +813,26 @@
         overflow: auto;
         max-height: 10rem;
         border-radius: 0.2rem;
-        background-color: #D9D9D9;
+        border: 0.01rem solid darkgray;
     }
 
-    #user-subjects div {
+    #user-subjects #subject-item {
+        display: flex;
+        flex-direction: column;
+        padding: 0.2rem;
+        gap: 0.5rem;
+    }
+
+    #subject-item div {
         display: flex;
         padding: 0.2rem;
         align-items: center;
         justify-content: space-between;
+    }
+
+    hr {
+        background-color: #f3f3f3;
+        width: 97%;
     }
 
     #user-subjects i {
@@ -795,7 +843,7 @@
         cursor: pointer;
     }
 
-    #user-subjects div:hover {
+    #user-subjects #subject-item div:hover {
         background-color: red;
         color: white;
     }
@@ -895,6 +943,12 @@
         color: white;
     }
 
+    .button-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
     .cancel i {
         font-size: 1.3rem;
     }
@@ -932,7 +986,8 @@
     .buttons {
         display: flex;
         gap: 0.5rem;
-        align-self: flex-end;
+        align-self: flex-start;
+        margin-inline-start: 9.5rem;
     }
 
     .see, .edit {
@@ -977,19 +1032,21 @@
     }
 
     #subject-preferences {
+        margin-top: 2rem;
         position: relative;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        gap: 0.1rem;
+        align-items: start;
+        margin-left: auto;
+        gap: 1rem;
     }
 
     .options {
         position: absolute;
-        top: 1.7rem;
+        top: 1.8rem;
         display: flex;
         flex-direction: column;
-        background-color: white;
+        background-color: #D9D9D9;
         width: 100%;
         max-height: 10rem;
         border: 0.01rem solid darkgray;
@@ -1007,13 +1064,57 @@
         border-radius: 0.5rem;
     }
 
-    @media (min-width: 320px) and (max-width: 450px) {
+    /* Responsive design */
+    @media (max-width: 1397px) {
         #details {
             flex-direction: column;
-            margin: 0.5rem;
+            width: 30.5rem;
+            margin-top: 2rem;
+            justify-self: center;
+            justify-content: unset !important;
+            overflow: auto;
+            height: 90vh;
+        }
+
+        #user-subjects, .options {
+            width: 50%;
+        }
+
+        #description-item textarea {
+            width: 27.5rem !important;
+        }
+
+        form {
             gap: 1rem;
-            justify-content: center;
-            width: 100%;
+        }
+    }
+
+
+    @media (max-width: 556px) {
+        h1, #subject-preferences {
+            margin-left: 2rem !important;
+        }
+
+        #user-subjects, .options {
+            width: 16rem;
+        }
+
+        #details {
+            width: 90% !important;
+            overflow: auto;
+            height: 88vh !important;
+            justify-content: unset;
+        }
+
+        .form-item {
+            flex-direction: column;
+            align-items: start;
+            margin-left: 2rem;
+        }
+
+        .buttons {
+            margin-top: 0.5rem;
+            margin-inline-start: 2rem;
         }
 
         #description-item textarea {
@@ -1023,23 +1124,9 @@
         #password-item {
             gap: 0;
         }
-    }
 
-    /* Responsive design */
-    @media (max-width: 973px) {
-    #details {
-        flex-direction: column;
-        width: 26.7rem;
-        margin: auto;
-        margin-top: 3rem;
+        #description-buttons {
+            align-self: flex-start !important;
+        }
     }
-
-    form {
-        gap: 1rem;
-    }
-
-    .form-item {
-        width: 30rem;
-    }
-  }
 </style>

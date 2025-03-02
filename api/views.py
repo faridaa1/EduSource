@@ -192,8 +192,8 @@ def resources(request: HttpRequest) -> JsonResponse:
 
 def user_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse | Http404:
     """Defining PUT and DELETE request handling"""
+    user: User | Http404 = get_object_or_404(User, id=id)
     if request.method == 'PUT':
-        user: User | Http404 = get_object_or_404(User, id=id)
         address: Address | Http404 = get_object_or_404(Address, user=user)
         if attribute == 'theme':
             user.theme_preference = json.loads(request.body)
@@ -228,7 +228,6 @@ def user_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse 
                 name=json.loads(request.body),
                 user=user
             )
-            address.postcode = json.loads(request.body)
         user.save()
         address.save()
         if attribute == 'password':
