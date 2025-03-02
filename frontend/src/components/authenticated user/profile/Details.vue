@@ -146,15 +146,20 @@
                 </div>
             </div>
         </form>
+        <div v-if="error !== ''">
+            <Error :message="error" @close-error="error=''" />
+        </div>
     </div>
 </template>
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent, nextTick } from 'vue';
+    import { defineComponent } from 'vue';
     import type { User } from '@/types';
     import { useUsersStore } from '@/stores/users';
+    import Error from '@/components/user experience/error/Error.vue';
     export default defineComponent({
+        components: { Error },
         data(): {
             show_subjects: boolean,
             subject: string,
@@ -171,6 +176,7 @@
             line1: string,
             line2: string,
             city: string,
+            error: string,
             postcode: string,
             editingEmail: boolean,
             editingUsername: boolean,
@@ -188,6 +194,7 @@
             show_re_pass: boolean
         } { return {
             email: '',
+            error: '',
             username: '',
             password: '',
             new_password: '',
@@ -219,6 +226,52 @@
             show_re_pass: false
         }},
         methods: {
+            reset(field: string): void {
+                if (field !== 'email') {
+                    this.email = this.user.email
+                    this.editingEmail = false
+                }
+                if (field !== 'username') {
+                    this.username = this.user.username
+                    this.editingUsername = false
+                }
+                if (field !== 'password') {
+                    this.password = ''
+                    this.editingPassword = false
+                }
+                if (field !== 'name') {
+                    this.first_name = this.user.first_name
+                    this.editingFirstName = false
+                } 
+                if (field !== 'surname') {
+                    this.last_name = this.user.last_name
+                    this.editingLastName = false
+                }
+                if (field !== 'description') {
+                    this.description = this.user.description
+                    this.editingDescription = false
+                }
+                if (field !== 'number') {
+                    this.phone_number = this.user.phone_number
+                    this.editingPhoneNumber = false
+                }
+                if (field !== 'line1') {
+                    this.line1 = this.user.address_line_one
+                    this.editingLine1 = false
+                }
+                if (field !== 'line2') {
+                    this.line2 = this.user.address_second_line
+                    this.editingLine2 = false
+                }
+                if (field !== 'city') {
+                    this.city = this.user.city
+                    this.editingCity = false
+                }
+                if (field !== 'postcode') {
+                    this.postcode = this.user.postcode
+                    this.editingPostcode = false
+                }
+            },
             async delete_subject(id: number): Promise<void> {
                 const response: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/subjects/`, {
                     method: 'DELETE',
@@ -282,6 +335,7 @@
                 }
             },
             async validate_line2(submit: boolean): Promise<void> {
+                this.reset('line2')
                 this.clear_details('address')
                 const address_line_two: HTMLInputElement = document.getElementById('line2') as HTMLInputElement
                 if (this.line2 !== this.user.address_second_line) {
@@ -302,6 +356,7 @@
                 this.editingLine2 = false
             },
             async validate_city(submit: boolean): Promise<void> {
+                this.reset('city')
                 this.clear_details('address')
                 const city: HTMLInputElement = document.getElementById('city') as HTMLInputElement
                 if (this.city !== this.user.city) {
@@ -327,6 +382,7 @@
                 this.editingCity = false
             },
             async validate_postcode(submit: boolean): Promise<void> {
+                this.reset('postcode')
                 this.clear_details('address')
                 const postcode: HTMLInputElement = document.getElementById('postcode') as HTMLInputElement
                 if (this.postcode !== this.user.postcode) {
@@ -352,6 +408,7 @@
                 this.editingPostcode = false
             },
             async validate_line1(submit: boolean): Promise<void> {
+                this.reset('line1')
                 this.clear_details('address')
                 const address_line_one: HTMLInputElement = document.getElementById('line1') as HTMLInputElement
                 if (this.line1 !== this.user.address_line_one) {
@@ -377,6 +434,7 @@
                 this.editingLine1 = false
             },
             async validate_description(submit: boolean): Promise<void> {
+                this.reset('description')
                 this.clear_details('details')
                 const description: HTMLInputElement = document.getElementById('description') as HTMLInputElement
                 if (this.description !== this.user.description) {
@@ -400,6 +458,7 @@
                 this.editingDescription = false
             },
             async validate_number(submit: boolean): Promise<void> {
+                this.reset('number')
                 this.clear_details('details')
                 const number: HTMLInputElement = document.getElementById('number') as HTMLInputElement
                 this.editingPhoneNumber = true
@@ -428,6 +487,7 @@
                 }
             },
             async validate_surname(submit: boolean): Promise<void> {
+                this.reset('surname')
                 this.clear_details('details')
                 const name: HTMLInputElement = document.getElementById('last_name') as HTMLInputElement
                 if (this.last_name !== this.user.last_name) {
@@ -453,6 +513,7 @@
                 this.editingLastName = false
             },
             async validate_name(submit: boolean): Promise<void> {
+                this.reset('name')
                 this.clear_details('details')
                 const name: HTMLInputElement = document.getElementById('first_name') as HTMLInputElement
                 if (this.first_name !== this.user.first_name) {
@@ -465,7 +526,6 @@
                     if (!(/^[a-zA-Z]+( [a-zA-Z]+)*$/.test(this.first_name))) {
                         name.setCustomValidity('Name cannot contain special characters')
                         name.reportValidity()
-                        console.log('bas')
                         return
                     }
                     name.setCustomValidity('')
@@ -511,6 +571,7 @@
                 detailsForm.checkValidity()
             },
             async validate_password(submit : boolean): Promise<void> {
+                this.reset('password')
                 this.editingPassword = true
                 if (!submit) {
                     this.clear_details('details')
@@ -559,17 +620,20 @@
                     new_password.reportValidity()
                     return
                 }
-                this.editingPassword = false
+                if (!submit) { 
+                    return 
+                } 
                 let correctPassword: Promise<string> = this.attribute_existence('password', this.password)
                 if (await correctPassword === 'false') {
                     password.setCustomValidity('Incorrect password')
                     password.reportValidity()
                     return
                 } else if (await correctPassword === 'error') {
-                    console.error('Error saving password')
+                    this.error = 'Error saving password. Please try again.'
                     return
                 } else {
                     if (submit) {
+                        this.editingPassword = false
                         password.value = ''
                         this.update_details('password', this.new_password)
                     }
@@ -579,6 +643,7 @@
                 }
             },
             async validate_username(submit : boolean): Promise<void> {
+                this.reset('username')
                 this.clear_details('details')
                 const username: HTMLInputElement = document.getElementById('username') as HTMLInputElement
                 if (this.username !== this.user.username) {
@@ -598,12 +663,13 @@
                         username.reportValidity()
                         return
                     }
+                    if (!submit) return
                     let usernameExists: Promise<string> = this.attribute_existence('username', this.username)
                     if (await usernameExists === 'true') {
                         username.setCustomValidity('Account with this username exists')
                         return
                     } else if (await usernameExists === 'error') {
-                        console.error('Error saving username')
+                        this.error = 'Error saving username. Please try again.'
                         return
                     }
                     username.setCustomValidity('')
@@ -626,9 +692,12 @@
                 })
             },
             async validate_email(submit : boolean): Promise<void> {
+                this.reset('email')
                 this.clear_details('details')
                 const detailsForm: HTMLFormElement = this.$refs.detailsForm as HTMLFormElement
+                if (!detailsForm) return
                 const email: HTMLInputElement = detailsForm.querySelector('input[type="email"]') as HTMLInputElement
+                if (!email) return
                 if (this.email !== this.user.email) {
                     this.editingEmail = true
                     if (this.email.length === 0) {
@@ -641,13 +710,14 @@
                         email.reportValidity()
                         return
                     } 
+                    if (!submit) return
                     let emailExists: Promise<string> = this.attribute_existence('email', this.email)
                     if (await emailExists === 'true') {
                         email.setCustomValidity('Account with this email exists')
                         email.reportValidity()
                         return
                     } else if (await emailExists === 'error') {
-                        console.error('Error saving email')
+                        this.error = 'Error saving email. Please try again.'
                         return
                     }
                     if (submit) {
@@ -690,6 +760,8 @@
                 return 'error'
             },
             async update_details(attribute: string, data: string): Promise<void> {
+                this.error = `Error updating value. Please try again`
+                return
                 const saveButton: HTMLButtonElement = 
                     attribute === 'email' ? document.getElementById('email-save') as HTMLButtonElement 
                     : attribute === 'username' ? document.getElementById('username-save') as HTMLButtonElement 
@@ -763,7 +835,7 @@
                         this.editingPostcode = false
                     }
                 } else {
-                    console.error(`Error updating ${attribute}`)
+                    this.error = `Error updating value. Please try again`
                 }
             }
         },
@@ -805,6 +877,10 @@
                 }
             })
             document.addEventListener('keydown', (event) => {
+                if (this.error !== '') { 
+                    event.preventDefault()
+                    return
+                }
                 if (event.key === 'Enter' && this.show_subjects && ((event.target as HTMLDivElement).id === 'sub-pref')) {
                     this.save_subject()
                 }

@@ -18,6 +18,13 @@
             }
         },
         emits: ['close-error'],
+        mounted(): void {
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    this.$emit('close-error')
+                }
+            })
+        }
     })
 </script>
 
