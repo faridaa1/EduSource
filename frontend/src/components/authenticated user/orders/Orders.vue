@@ -15,7 +15,7 @@
             <div class="orders-item" v-for="order in user.placed_orders.sort((a,b) => {return order === 'new' ? b.id-a.id : a.id-b.id})">
                 <div class="item-one">
                     <div class="item-image">
-                        <img :src="`http://localhost:8000${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`" alt="">
+                        <img @click="view_item(order.id)" :src="`http://localhost:8000${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`" alt="">
                         <p id="number_of_items">{{ order_total(order) }}</p>
                     </div>
                     <div class="details">
@@ -110,8 +110,11 @@
     }
 
     img {
-        max-height: 9rem;
         width: 9rem;
+    }
+
+    img:hover {
+        cursor: pointer;
     }
 
     .item-image {
@@ -120,7 +123,7 @@
 
     .item-one {
         display: flex;
-        gap: 1rem;
+        gap: 3rem;
         align-items: center;
     }
 
@@ -178,5 +181,21 @@
 
     select {
         border-radius: 0.5rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 500px) {
+        img {
+            width: 7rem;
+        }
+
+        #number_of_items {
+            left: 5rem;
+            top: 4rem;
+        }
+
+        #resources {
+            height: 50rem;
+        }
     }
 </style>
