@@ -808,7 +808,8 @@
                 if (event.key === 'Enter' && this.show_subjects && ((event.target as HTMLDivElement).id === 'sub-pref')) {
                     this.save_subject()
                 }
-                if (event.key === 'ArrowDown') {
+                if (event.key === 'ArrowDown' || event.key === 'Tab') {
+                    if (event.key === 'Tab') event.preventDefault()
                     const id: string = (event.target as HTMLInputElement | HTMLTextAreaElement).id
                     if (id === 'input-email') {
                         const username: HTMLInputElement = document.getElementById('username') as HTMLInputElement
