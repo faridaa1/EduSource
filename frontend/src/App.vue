@@ -36,8 +36,8 @@
       <transition name="nav">
         <div id="hamburger" v-if="mobile_menu">
           <RouterLink id="item1" :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="show-mobile">Home</RouterLink>
-          <div id="item2" class="show-mobile">
-            <p id="profile-header" v-if="authenticated" @click="toggle_profile_view_mobile">Profile</p>
+          <div id="item2" class="show-mobile" v-if="authenticated">
+            <p id="profile-header" @click="toggle_profile_view_mobile">Profile</p>
             <transition name="nav">
               <div id="profile-nav" v-if="clicked_profile_mobile">
                 <RouterLink class="profile-item border-bottom rounded-top" to="/details" >Details</RouterLink>
@@ -51,7 +51,7 @@
           </transition>
           </div>
           <RouterLink to="/" id="item3" class="show-mobile">Help</RouterLink>
-          <RouterLink to="/settings" id="item4" class="show-mobile">Settings</RouterLink>
+          <RouterLink v-if="authenticated" to="/settings" id="item4" class="show-mobile">Settings</RouterLink>
           <p id="item5" v-if="authenticated" class="link sign" @click="sign_out"> Sign out </p>
           <p id="item5" v-if="!authenticated" @click="sign_in" class="link sign"> Sign in</p>
         </div>
@@ -291,6 +291,10 @@
   .sign:hover {
     cursor: pointer;
     text-decoration: underline;
+  }
+
+  #dark #profile-header, #dark .sign {
+    color: black !important;
   }
 
   #logo {

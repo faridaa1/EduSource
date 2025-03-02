@@ -161,7 +161,6 @@
         flex-direction: column;
         height: 47rem;
         width: 40rem;
-        align-items: center;
         gap: 1rem;
     }
 
@@ -240,5 +239,29 @@
     .nav select {
         border-radius: 0.5rem;
         padding: 0.5rem;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        #handle {
+            flex-direction: column;
+            gap: 0.5rem;
+            align-self: flex-start;
+        }
+
+        #overflow {
+            display: flex;
+            width: 24rem !important;
+            height: 65vh !important;
+        }
+
+        .message .content {
+            width: 10rem;
+        }
+
+        .message {
+            width: 20rem;
+        }
+        
     }
 </style>
