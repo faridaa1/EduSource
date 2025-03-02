@@ -267,7 +267,6 @@
                     }
                 }
                 return temp_resources.filter(resource => {
-                    console.log(resource.rating, resource.rating >=5)
                     if (this.condition_new && resource.condition === 'New'
                         || this.condition_used && resource.condition === 'Used'
                         || this.rating_all

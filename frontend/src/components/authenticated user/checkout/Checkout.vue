@@ -8,20 +8,22 @@
                         <div id="one">Items</div>
                         <div id="two">Total: {{ currency }}{{ total.toFixed(2) }} </div>
                     </div>
-                    <div id="body">
-                        <div class="resource" v-for="resource in user.cart.resources.filter(resource => valid(resource))">
-                            <div id="image"><img :src="`http://localhost:8000/${getResource(resource.resource).image1}`" alt=""></div>
-                            <div class="name">
-                                <div>{{ getResource(resource.resource).name }}</div>
-                                <div id="toggle">
-                                    <div id="resnum">{{ resource.number }}</div>
-                                    <div id=controls>
-                                        <div id="plus" v-if="resource.number < getResource(resource.resource).stock" @click="add_to_cart(resource)">+</div>
-                                        <hr>
-                                        <div id="minus" @click="remove_from_cart(resource)">-</div>
+                    <div id="border">
+                        <div id="body">
+                            <div class="resource" v-for="resource in user.cart.resources.filter(resource => valid(resource))">
+                                <div id="image"><img :src="`http://localhost:8000/${getResource(resource.resource).image1}`" alt=""></div>
+                                <div class="name">
+                                    <div>{{ getResource(resource.resource).name }}</div>
+                                    <div id="toggle">
+                                        <div id="resnum">{{ resource.number }}</div>
+                                        <div id=controls>
+                                            <div id="plus" v-if="resource.number < getResource(resource.resource).stock" @click="add_to_cart(resource)">+</div>
+                                            <hr>
+                                            <div id="minus" @click="remove_from_cart(resource)"><i :class="resource.number === 1 ? 'bi bi-trash3-fill' : ''"></i>{{ resource.number === 1 ? '' : '-' }}</div>
+                                        </div>
                                     </div>
+                                    <div>{{ currency }}{{ (resource.number*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
                                 </div>
-                                <div>{{ currency }}{{ (resource.number*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
                             </div>
                         </div>
                     </div>
@@ -436,12 +438,16 @@
     #body {
         height: 25rem;
         overflow-y: scroll;
-        border: 0.1rem solid #0DCAF0;
-        padding: 1rem;
-        border-radius: 0.8rem;
+        padding-right: 1rem;
         display: flex;
         flex-direction: column;
         gap: 2rem;
+    }
+
+    #border {
+        border-radius: 0.8rem;
+        border: 0.1rem solid #0DCAF0;
+        padding: 1rem;
     }
 
     img {
@@ -499,6 +505,11 @@
         border-bottom-right-radius: 0.2rem;
     }
 
+    #minus i {
+        color: red !important;
+        font-size: 0.8rem;
+    }
+
     #resnum {
         margin: auto;
     }
@@ -520,8 +531,10 @@
         gap: 3rem;
     }
 
-    #payment {
-        display: fl;
+    #payment, #number, #address {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
     }
 
     #card_ending, #address_lines, #user_number {
@@ -545,7 +558,7 @@
     }
 
     .change_text { 
-        color: rgb(144, 171, 253);
+        color: rgb(121, 189, 218);
     }
 
     #dark .change_text {

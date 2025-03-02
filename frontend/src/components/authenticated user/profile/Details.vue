@@ -3,15 +3,15 @@
         <form ref="detailsForm" id="detailsForm" @submit.prevent="validate('details')">
             <h1>Account Details</h1>
             <div class="form-item">
-                <label for="">Email</label>
-                <input required type="email" autocomplete="username" v-model="email" @input="validate_email(false)">
+                <label>Email</label>
+                <input id="input-email" required type="email" autocomplete="username" v-model="email" @input="validate_email(false)">
                 <div class="button-container">
                     <button id="email-save" type="submit" class="save" v-if="editingEmail" @click="validate_email(true)"><i class="bi bi-floppy-fill"></i></button>
                     <button id="email-cancel" type="button" class="cancel" v-if="editingEmail" @click="editingEmail = false; email = user.email"><i class="bi bi-x"></i></button>
                 </div>
             </div>
             <div class="form-item">
-                <label for="">Username</label>
+                <label>Username</label>
                 <input required id="username" type="text" autocomplete="username" v-model="username" @input="validate_username(false)">
                 <div class="button-container">
                     <button id="username-save" class="save" type="submit" v-if="editingUsername" @click="validate_username(true)"><i class="bi bi-floppy-fill"></i></button>
@@ -21,15 +21,15 @@
             <div id="password-item">
                 <div id="passwords">
                     <div class="form-item">
-                        <label for="">Password</label>
+                        <label>Password</label>
                         <div class="button-container">
-                            <input id="pass" type="password" placeholder="************" autocomplete="current-password" v-model="password" @input="validate_password(false)">
+                            <input id="pass" type="password" placeholder="••••••••••" autocomplete="current-password" v-model="password" @input="validate_password(false)">
                             <button type="button" class="edit see" v-if="editingPassword && !show_pass" @click="toggle_password('password', true)"><i class="bi bi-eye"></i></button>
                             <button type="button" class="edit see" v-if="editingPassword && show_pass" @click="toggle_password('password', false)"><i class="bi bi-eye-slash-fill"></i></button>
                         </div>
                     </div>
                     <div class="form-item" v-if="editingPassword">
-                        <label for="">New Password</label>
+                        <label>New Password</label>
                         <div class="button-container">
                             <input required id="new_pass" type="password" autocomplete="new-password" v-model="new_password" @input="validate_password(false)">
                             <button type="button" class="edit see" v-if="editingPassword && !show_new_pass" @click="toggle_password('new-password', true)"><i class="bi bi-eye"></i></button>
@@ -37,7 +37,7 @@
                         </div>
                     </div>
                     <div class="form-item" v-if="editingPassword">
-                        <label for="">Re-enter New Password</label>
+                        <label>Re-enter New Password</label>
                         <div class="button-container">
                             <input required id="re_pass" type="password" autocomplete="new-password" v-model="re_password" @input="validate_password(false)">
                             <button type="button" class="edit see" v-if="editingPassword && !show_re_pass" @click="toggle_password('re-password', true)"><i class="bi bi-eye"></i></button>
@@ -75,9 +75,9 @@
                 </div>
             </div>
             <div id="description-item" class="form-item" >
-                <label for="">Seller Description</label>
+                <label>Seller Description</label>
                 <div id="description-input">
-                    <textarea name="" id="description" v-model="description" @input="validate_description(false)"></textarea>
+                    <textarea id="description" v-model="description" @input="validate_description(false)"></textarea>
                 </div>
                 <div id="description-buttons">
                     <button id="description-save" class="save" type="submit" v-if="editingDescription" @click="validate_description(true)"><i class="bi bi-floppy-fill"></i></button>
@@ -106,6 +106,9 @@
                         <hr v-if="subject !== user.subjects[user.subjects.length-1]">
                     </div>
                 </div>
+                <div v-else>
+                    <p>No preferences to display</p>
+                </div>
             </div>
         </div>
         <form id="addressForm" ref="addressForm" @submit.prevent="validate('address')">
@@ -120,7 +123,7 @@
             </div>
             <div class="form-item">
                 <label>Address Line Two</label>
-                <input required id="line2" type="text" v-model="line2" @input="validate_line2(false)">
+                <input id="line2" type="text" v-model="line2" @input="validate_line2(false)">
                 <div class="button-container">
                     <button id="line2-save" class="save" type="submit" v-if="editingLine2" @click="validate_line2(true)"><i class="bi bi-floppy-fill"></i></button>
                     <button id="line2-cancel" type="button" class="cancel" v-if="editingLine2" @click="editingLine2 = false; line2 = user.address_second_line"><i class="bi bi-x"></i></button>
@@ -148,7 +151,7 @@
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent } from 'vue';
+    import { defineComponent, nextTick } from 'vue';
     import type { User } from '@/types';
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
@@ -250,6 +253,10 @@
             async semantic_subject(): Promise<void> {
                 const search: HTMLInputElement = document.getElementById('sub-pref') as HTMLInputElement
                 if (!search) return
+                if (search.value.trim() === '') {
+                    this.show_subjects = false
+                    return
+                }
                 this.show_subjects = true
                 this.subject = search.value
                 const searchResults: Response = await fetch(`http://localhost:8000/api/semantic-search-subjects/`, {
@@ -279,17 +286,14 @@
                 const address_line_two: HTMLInputElement = document.getElementById('line2') as HTMLInputElement
                 if (this.line2 !== this.user.address_second_line) {
                     this.editingLine2 = true
-                    if (this.line2.length === 0) {
-                        address_line_two.setCustomValidity('Cannot be empty')
-                        return
-                    }
-                    if (!(/^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/.test(this.line2))) {
+                    if (this.line2.trim().length !== 0 && !(/^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/.test(this.line2))) {
                         address_line_two.setCustomValidity('No special characters allowed')
+                        address_line_two.reportValidity()
                         return
                     }
                     address_line_two.setCustomValidity('')
                     if (submit) {
-                        this.update_details('address_line_two', this.line2)
+                        this.update_details('address_line_two', this.line2.trim())
                         this.editingLine2 = false
                     }
                     return
@@ -304,10 +308,12 @@
                     this.editingCity = true
                     if (this.city.length === 0) {
                         city.setCustomValidity('Cannot be empty')
+                        city.reportValidity()
                         return
                     }
                     if (!(/^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/.test(this.city))) {                     
                         city.setCustomValidity('No special characters allowed')
+                        city.reportValidity()
                         return
                     }
                     city.setCustomValidity('')
@@ -327,10 +333,12 @@
                     this.editingPostcode = true
                     if (this.postcode.length === 0) {
                         postcode.setCustomValidity('Cannot be empty')
+                        postcode.reportValidity()
                         return
                     }
                     if (!(/^[A-Za-z0-9]{5,7}$/.test(this.postcode))) {
                         postcode.setCustomValidity('Enter 5-7 character postcode without spaces')
+                        postcode.reportValidity()
                         return
                     }
                     postcode.setCustomValidity('')
@@ -350,10 +358,12 @@
                     this.editingLine1 = true
                     if (this.line1.length === 0) {
                         address_line_one.setCustomValidity('Cannot be empty')
+                        address_line_one.reportValidity()
                         return
                     }
                     if (!(/^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/.test(this.line1))) {
                         address_line_one.setCustomValidity('No special characters allowed')
+                        address_line_one.reportValidity()
                         return
                     }
                     address_line_one.setCustomValidity('')
@@ -399,26 +409,23 @@
                 }
                 if (this.phone_number.length === 0) {
                     number.setCustomValidity('Phone number cannot be empty')
+                    number.reportValidity()
                     return
                 } else if (!(/^07(\d{8,9})$/.test(this.phone_number))) {
                     number.setCustomValidity('Must be 10 or 11 digit number starting with 07')
+                    number.reportValidity()
                     return
-                }
-                let correctNumber: Promise<string> = this.attribute_existence('number', this.phone_number)
-                if (await correctNumber === 'true') {
+                } else if (useUsersStore().users.filter(user => user.id !== this.user.id).map(user => user.phone_number).includes(this.phone_number)) {
                     number.setCustomValidity('Account already exists with this phone number')
                     number.reportValidity()
                     return
-                } else if (await correctNumber === 'error') {
-                    console.error('Error saving phone number')
-                    confirm('Error saving phone number')
-                    return
-                }
+                } 
                 number.setCustomValidity('')
+                number.reportValidity()
+                this.editingPhoneNumber = false
                 if (submit) {
                     this.update_details('number', this.phone_number)
                 }
-                this.editingPhoneNumber = false
             },
             async validate_surname(submit: boolean): Promise<void> {
                 this.clear_details('details')
@@ -427,10 +434,12 @@
                     this.editingLastName = true
                     if (this.last_name.length === 0) {
                         name.setCustomValidity('Name cannot be empty')
+                        name.reportValidity()
                         return
                     }
-                    if (!(/^[a-zA-Z ]+$/.test(this.last_name))) {
+                    if (!(/^[a-zA-Z]+( [a-zA-Z]+)*$/.test(this.last_name))) {
                         name.setCustomValidity('Name cannot contain special characters')
+                        name.reportValidity()
                         return
                     }
                     name.setCustomValidity('')
@@ -450,15 +459,19 @@
                     this.editingFirstName = true
                     if (this.first_name.length === 0) {
                         name.setCustomValidity('Name cannot be empty')
+                        name.reportValidity()
                         return
                     }
-                    if (!(/^[a-zA-Z ]+$/.test(this.first_name))) {
+                    if (!(/^[a-zA-Z]+( [a-zA-Z]+)*$/.test(this.first_name))) {
                         name.setCustomValidity('Name cannot contain special characters')
+                        name.reportValidity()
+                        console.log('bas')
                         return
                     }
                     name.setCustomValidity('')
+                    name.reportValidity()
                     if (submit) {
-                        this.update_details('name', this.first_name)
+                        this.update_details('name', this.first_name.trim())
                         this.editingFirstName = false
                     }
                     return
@@ -499,7 +512,9 @@
             },
             async validate_password(submit : boolean): Promise<void> {
                 this.editingPassword = true
-                this.clear_details('details')
+                if (!submit) {
+                    this.clear_details('details')
+                }
                 const password: HTMLInputElement = document.getElementById('pass') as HTMLInputElement
                 const new_password: HTMLInputElement = document.getElementById('new_pass') as HTMLInputElement
                 const re_password: HTMLInputElement = document.getElementById('re_pass') as HTMLInputElement
@@ -515,27 +530,36 @@
                 if (this.password.length === 0) {
                     password.setCustomValidity('Password cannot be empty')
                     new_password.setCustomValidity('')
+                    new_password.reportValidity()
                     return
                 }
                 if (this.new_password.length === 0) {
                     new_password.setCustomValidity('Password cannot be empty')
+                    new_password.reportValidity()
                     return
                 } else if (/\s/.test(this.new_password)) {
                     new_password.setCustomValidity('Password cannot contain spaces')
+                    new_password.reportValidity()
                     return
                 } else if (this.new_password.length < 8 || this.new_password.length > 15) {
                     new_password.setCustomValidity('Password must be between 8 to 15 characters long')
+                    new_password.reportValidity()
+                    new_password.reportValidity()
                     return
                 } else if (this.new_password !== this.re_password) {
                     re_password.setCustomValidity('Both new passwords must match')
+                    re_password.reportValidity()
                     return
                 } else if (this.new_password === this.username) {
                     new_password.setCustomValidity('Password cannot be the same as username')
+                    new_password.reportValidity()
                     return
                 } else if (this.new_password === this.email) {
                     new_password.setCustomValidity('Password cannot be the same as email')
+                    new_password.reportValidity()
                     return
                 }
+                this.editingPassword = false
                 let correctPassword: Promise<string> = this.attribute_existence('password', this.password)
                 if (await correctPassword === 'false') {
                     password.setCustomValidity('Incorrect password')
@@ -543,16 +567,16 @@
                     return
                 } else if (await correctPassword === 'error') {
                     console.error('Error saving password')
-                    confirm('Error saving password')
                     return
+                } else {
+                    if (submit) {
+                        password.value = ''
+                        this.update_details('password', this.new_password)
+                    }
+                    password.setCustomValidity('')
+                    new_password.setCustomValidity('')
+                    re_password.setCustomValidity('')
                 }
-                if (submit) {
-                    this.update_details('password', this.new_password)
-                }
-                password.setCustomValidity('')
-                new_password.setCustomValidity('')
-                re_password.setCustomValidity('')
-                this.editingPassword = false
             },
             async validate_username(submit : boolean): Promise<void> {
                 this.clear_details('details')
@@ -561,11 +585,13 @@
                     this.editingUsername = true
                     if (this.username.length === 0) {
                         username.setCustomValidity('Username cannot be empty')
+                        username.reportValidity()
                         return
                     }
                     if (!(/^[a-zA-Z0-9]+$/.test(this.username))) {
                         if (! /\s/.test(this.username)) {
                             username.setCustomValidity('Username cannot contain special characters')
+                            username.reportValidity()
                             return
                         }
                         username.setCustomValidity('Username cannot contain spaces')
@@ -578,7 +604,6 @@
                         return
                     } else if (await usernameExists === 'error') {
                         console.error('Error saving username')
-                        confirm('Error saving username')
                         return
                     }
                     username.setCustomValidity('')
@@ -592,11 +617,12 @@
             }, 
             clear_details(form: string) {
                 const detailsForm: HTMLFormElement = form === 'details' ? this.$refs.detailsForm as HTMLFormElement : this.$refs.addressForm as HTMLFormElement
+                if (!detailsForm) return
                 const inputs = detailsForm.querySelectorAll('input, textarea')
+                if (!inputs) return
                 inputs.forEach(input => {
                     const element = input as HTMLInputElement | HTMLTextAreaElement
                     element.setCustomValidity('')
-                    // element.reportValidity()
                 })
             },
             async validate_email(submit : boolean): Promise<void> {
@@ -607,10 +633,12 @@
                     this.editingEmail = true
                     if (this.email.length === 0) {
                         email.setCustomValidity('Email cannot be empty')
+                        email.reportValidity()
                         return
                     }
                     if (!(/\.[a-zA-Z-0-9][a-zA-Z-0-9]+$/).test(this.email)) {
                         email.setCustomValidity('Email ending is invalid')
+                        email.reportValidity()
                         return
                     } 
                     let emailExists: Promise<string> = this.attribute_existence('email', this.email)
@@ -620,13 +648,13 @@
                         return
                     } else if (await emailExists === 'error') {
                         console.error('Error saving email')
-                        confirm('Error saving email')
                         return
                     }
                     if (submit) {
                         this.update_details('email', this.email)
                     }
                     email.setCustomValidity('')
+                    email.reportValidity()
                     return
                 } 
                 email.setCustomValidity('')
@@ -636,11 +664,9 @@
                 const saveButton: HTMLButtonElement = attribute === 'email' ? document.getElementById('email-save') as HTMLButtonElement : attribute === 'username' ? document.getElementById('username-save') as HTMLButtonElement : attribute === 'password' ? document.getElementById('password-save') as HTMLButtonElement : document.getElementById('number-save') as HTMLButtonElement 
                 const cancelButton: HTMLButtonElement = attribute === 'email' ? document.getElementById('email-cancel') as HTMLButtonElement : attribute === 'username' ? document.getElementById('username-cancel') as HTMLButtonElement : attribute === 'password' ? document.getElementById('password-cancel') as HTMLButtonElement : document.getElementById('number-cancel') as HTMLButtonElement
                 if (saveButton) {
-                    console.log('save disab')
                     saveButton.disabled = true
                 } 
                 if (cancelButton) {
-                    console.log('hicancelbye')
                     cancelButton.disabled = true
                 }
                 let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/check/${attribute}/`, {
@@ -738,7 +764,6 @@
                     }
                 } else {
                     console.error(`Error updating ${attribute}`)
-                    confirm(`Error updating ${attribute}`)
                 }
             }
         },
@@ -783,12 +808,146 @@
                 if (event.key === 'Enter' && this.show_subjects && ((event.target as HTMLDivElement).id === 'sub-pref')) {
                     this.save_subject()
                 }
+                if (event.key === 'ArrowDown') {
+                    const id: string = (event.target as HTMLInputElement | HTMLTextAreaElement).id
+                    if (id === 'input-email') {
+                        const username: HTMLInputElement = document.getElementById('username') as HTMLInputElement
+                        if (username) username.focus()
+                    } else if (id === 'username') {
+                        const pass: HTMLInputElement = document.getElementById('pass') as HTMLInputElement
+                        if (pass) pass.focus()
+                    } else if (id === 'pass') {
+                        if (this.editingPassword) {
+                            const new_pass: HTMLInputElement = document.getElementById('new_pass') as HTMLInputElement
+                            if (new_pass) new_pass.focus()
+                        } else {
+                            const first_name: HTMLInputElement = document.getElementById('first_name') as HTMLInputElement
+                            if (first_name) first_name.focus()
+                        }
+                    } else if (id === 'new_pass') {
+                        const re_pass: HTMLInputElement = document.getElementById('re_pass') as HTMLInputElement
+                        if (re_pass) re_pass.focus()
+                    } else if (id === 're_pass') {
+                        const first_name: HTMLInputElement = document.getElementById('first_name') as HTMLInputElement
+                        if (first_name) first_name.focus()
+                    } else if (id === 'first_name') {
+                        const last_name: HTMLInputElement = document.getElementById('last_name') as HTMLInputElement
+                        if (last_name) last_name.focus()
+                    } else if (id === 'last_name') {
+                        const number: HTMLInputElement = document.getElementById('number') as HTMLInputElement
+                        if (number) number.focus()
+                    } else if (id === 'number') {
+                        const description: HTMLTextAreaElement = document.getElementById('description') as HTMLTextAreaElement
+                        if (description) description.focus()
+                    } else if (id === 'description') {
+                        const subject_preference: HTMLInputElement = document.getElementById('sub-pref') as HTMLInputElement
+                        if (subject_preference) subject_preference.focus()
+                    } else if (id === 'sub-pref') {
+                        const line1: HTMLInputElement = document.getElementById('line1') as HTMLInputElement
+                        if (line1) line1.focus()
+                    } else if (id === 'line1') {
+                        const line2: HTMLInputElement = document.getElementById('line2') as HTMLInputElement
+                        if (line2) line2.focus()
+                    } else if (id === 'line2') {
+                        const city: HTMLInputElement = document.getElementById('city') as HTMLInputElement
+                        if (city) city.focus()
+                    } else if (id === 'city') {
+                        const postcode: HTMLInputElement = document.getElementById('postcode') as HTMLInputElement
+                        if (postcode) postcode.focus()
+                    } 
+                } if (event.key === 'ArrowUp') {
+                    const id: string = (event.target as HTMLInputElement | HTMLTextAreaElement).id
+                    if (id === 'username') {
+                        const email: HTMLInputElement = document.getElementById('input-email') as HTMLInputElement
+                        if (email) email.focus()
+                    } else if (id === 'pass') {
+                        const username: HTMLInputElement = document.getElementById('username') as HTMLInputElement
+                        if (username) username.focus()
+                    } else if (id === 'new_pass') {
+                        const pass: HTMLInputElement = document.getElementById('pass') as HTMLInputElement
+                        if (pass) pass.focus()
+                    } else if (id === 're_pass') {
+                        const new_pass: HTMLInputElement = document.getElementById('new_pass') as HTMLInputElement
+                        if (new_pass) new_pass.focus()
+                    } else if (id === 'first_name') {
+                        if (this.editingPassword) {
+                            const re_pass: HTMLInputElement = document.getElementById('re_pass') as HTMLInputElement
+                            if (re_pass) re_pass.focus()
+                        } else {
+                            const pass: HTMLInputElement = document.getElementById('pass') as HTMLInputElement
+                            if (pass) pass.focus()
+                        }
+                    } else if (id === 'last_name') {
+                        const first_name: HTMLInputElement = document.getElementById('first_name') as HTMLInputElement
+                        if (first_name) first_name.focus()
+                    } else if (id === 'number') {
+                        const last_name: HTMLInputElement = document.getElementById('last_name') as HTMLInputElement
+                        if (last_name) last_name.focus()
+                    } else if (id === 'description') {
+                        const number: HTMLInputElement = document.getElementById('number') as HTMLInputElement
+                        if (number) number.focus()
+                    } else if (id === 'sub-pref') {
+                        const description: HTMLTextAreaElement = document.getElementById('description') as HTMLTextAreaElement
+                        if (description) description.focus()
+                    } else if (id === 'line1') {
+                        const subject_preference: HTMLInputElement = document.getElementById('sub-pref') as HTMLInputElement
+                        if (subject_preference) subject_preference.focus()
+                    } else if (id === 'line2') {
+                        const line1: HTMLInputElement = document.getElementById('line1') as HTMLInputElement
+                        if (line1) line1.focus()
+                    } else if (id === 'city') {
+                        const line2: HTMLInputElement = document.getElementById('line2') as HTMLInputElement
+                        if (line2) line2.focus()
+                    } else if (id === 'postcode') {
+                        const city: HTMLInputElement = document.getElementById('city') as HTMLInputElement
+                        if (city) city.focus()
+                    } 
+                } else if (event.key === 'Enter') {
+                    const id: string = (event.target as HTMLInputElement | HTMLTextAreaElement).id
+                    if (id === 'input-email') {
+                        this.validate_email(true)
+                    } else if (id === 'username') {
+                        this.validate_username(true)
+                    } else if (id === 'pass') {
+                        const new_pass: HTMLInputElement = document.getElementById('new_pass') as HTMLInputElement
+                        const re_pass: HTMLInputElement = document.getElementById('re_pass') as HTMLInputElement
+                        if ((new_pass && new_pass.value.trim() !== '') && (re_pass && re_pass.value.trim() !== '')) {
+                            this.validate_password(true)
+                        }
+                    } else if (id === 'new_pass') {
+                        const pass: HTMLInputElement = document.getElementById('pass') as HTMLInputElement
+                        const re_pass: HTMLInputElement = document.getElementById('re_pass') as HTMLInputElement
+                        if ((pass && pass.value.trim() !== '') && (re_pass && re_pass.value.trim() !== '')) {
+                            this.validate_password(true)
+                        }
+                    } else if (id === 're_pass') {
+                        const new_pass: HTMLInputElement = document.getElementById('new_pass') as HTMLInputElement
+                        const pass: HTMLInputElement = document.getElementById('pass') as HTMLInputElement
+                        if ((pass && pass.value.trim() !== '') && (new_pass && new_pass.value.trim() !== '')) {
+                            this.validate_password(true)
+                        }
+                    } else if (id === 'first_name') {
+                        this.validate_name(true)
+                    } else if (id === 'last_name') {
+                        this.validate_surname(true)
+                    } else if (id === 'number') {
+                        this.validate_number(true)
+                    } else if (id === 'line1') {
+                        this.validate_line1(true)
+                    } else if (id === 'line2') {
+                        this.validate_line2(true)
+                    } else if (id === 'city') {
+                        this.validate_city(true)
+                    } else if (id === 'postcode') {
+                        this.validate_postcode(true)
+                    }
+                }
             })
             const form: HTMLFormElement = this.$refs.detailsForm as HTMLFormElement
             const addressForm: HTMLFormElement = this.$refs.addressForm as HTMLFormElement
             if (form) {
                 form.addEventListener('keydown', (event) => {
-                    if (event.key === 'Enter') {
+                    if (event.key === 'Enter' && (event.target as HTMLTextAreaElement).id !== 'description') {
                         event.preventDefault()
                     }
                 })
@@ -808,6 +967,7 @@
     #user-subjects {
         display: flex;
         flex-direction: column;
+        background-color: #D9D9D9;
         gap: 0.3rem;
         width: 100%;
         overflow: auto;
@@ -831,8 +991,11 @@
     }
 
     hr {
-        background-color: #f3f3f3;
+        border: none;
+        background-color: darkgray;
         width: 97%;
+        height: 0.1rem;
+        border-radius: 1rem;
     }
 
     #user-subjects i {
@@ -1046,11 +1209,11 @@
         top: 1.8rem;
         display: flex;
         flex-direction: column;
-        background-color: #D9D9D9;
+        background-color: white;
         width: 100%;
         max-height: 10rem;
         border: 0.01rem solid darkgray;
-        border-radius: 0.1rem;
+        border-radius: 0.5rem;
         overflow-y: scroll;
     }
 

@@ -86,7 +86,6 @@
             const div = document.getElementById('app-vue')
             if (div) {
                 const theme = div.firstElementChild
-                console.log(div, theme)
                 if (theme) {
                     if (called_by === 'mounted') {
                         theme.id = useUserStore().user.theme_preference

@@ -66,7 +66,7 @@
 
 <script lang="ts">
   import { defineComponent, nextTick } from 'vue';
-  import { RouterLink, RouterView } from 'vue-router'
+  import { RouterView } from 'vue-router'
   import type { Resource, User } from './types';
   import { useUserStore } from './stores/user';
   import { useResourcesStore } from './stores/resources';
@@ -86,6 +86,9 @@
     },
     async mounted(): Promise<void> {
       window.addEventListener('resize', () => {
+        this.clicked_profile = false;
+        this.clicked_profile_mobile = false;
+        this.mobile_menu = false
       })
       document.addEventListener('click', (event) => {
         if (this.clicked_profile) {
@@ -293,7 +296,7 @@
     text-decoration: underline;
   }
 
-  #dark #profile-header, #dark .sign {
+  #dark #hamburger #profile-header, #dark #hamburger .sign {
     color: black !important;
   }
 
