@@ -236,7 +236,6 @@
                 })
                 if (!updateDecriptionResponse.ok) {
                     console.error('Error updating description')
-                    alert('Error updating description')
                     return
                 }
                 const updatedUser: User = await updateDecriptionResponse.json()

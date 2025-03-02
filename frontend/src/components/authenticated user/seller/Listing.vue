@@ -334,7 +334,6 @@
                     })
                     if (!deleteListingResponse.ok) {
                         console.error('Failed to delete listing')
-                        alert('Failed to delete listing')
                         return
                     }
                     useResourcesStore().removeResource(this.resource.id)

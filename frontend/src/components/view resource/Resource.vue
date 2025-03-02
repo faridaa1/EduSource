@@ -700,7 +700,6 @@
                 })
                 if(!savedReview.ok) {
                     console.error('Error editing review')
-                    alert('Error saving review')
                     return
                 }
                 let reviewData: {old_resource: Resource, new_resource : Resource, users: User[]} = await savedReview.json()
