@@ -26,6 +26,7 @@
                 </select>   
             </div>
         </div>
+        <Error v-if="error" message="Please try updating the setting again." @close-error="error=false" />
     </div>
     <div v-else>
         <Loading />
@@ -38,11 +39,13 @@
     import type { User } from '@/types';
     import { useUsersStore } from '@/stores/users';
     import Loading from '@/components/user experience/loading/Loading.vue';
+    import Error from '@/components/user experience/error/Error.vue';
     export default defineComponent({
-      components: { Loading },
-      data(): { currency_setting: string, mode_setting: string } { return {
+      components: { Loading, Error },
+      data(): { currency_setting: string, mode_setting: string, error: boolean } { return {
           currency_setting : 'GBP',
           mode_setting: 'buyer',
+          error: false,
         }
       },
       mounted(): void {
@@ -63,18 +66,17 @@
       methods: {
         async update_setting(called_by: string, data: string): Promise<void> {
             let updateResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/${called_by}/`, {
-            method: 'PUT',
-            credentials: 'include',
-            headers: {
-                'Content-Type' : 'application/json',
-                'X-CSRFToken' : useUserStore().csrf
-            },
-            body: JSON.stringify(data)
+                method: 'PUT',
+                credentials: 'include',
+                headers: {
+                    'Content-Type' : 'application/json',
+                    'X-CSRFToken' : useUserStore().csrf
+                },
+                body: JSON.stringify(data)
             })
             if (!updateResponse.ok) {
-            console.error(called_by === 'theme' ? 'Error updating theme' : called_by === 'theme' ? 'Error updating currency' : 'Error updating mode')
-            alert(called_by === 'theme' ? 'Error updating theme' : called_by === 'theme' ? 'Error updating currency' : 'Error updating mode')
-            return
+                this.error = true
+                return
             }
             let userUpdateData: User = await updateResponse.json()
             useUserStore().saveUser(userUpdateData)
