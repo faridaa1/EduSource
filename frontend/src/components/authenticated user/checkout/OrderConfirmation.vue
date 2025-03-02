@@ -4,8 +4,8 @@
             <p id="confirmed">Order Confirmed!</p>
             <p>Thank you for shopping with EduSource</p>
             <div id="viewing">
-                <p>View your orders <span @click="view('orders')">here</span></p>
-                <p>Return Home <span @click="view('home')">here</span></p>
+                <p class="button" @click="view('orders')">View Orders</p>
+                <p class="button" @click="view('home')">Return Home</p>
             </div>
         </div>
     </div>
@@ -25,26 +25,29 @@
 <style scoped>
     #container {
         height: 100vh;
+        width: 100vw;
         display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     #content-block {
         display: flex;
         flex-direction: column;
-        margin: auto;
         padding: 1rem;
         border: 0.15rem solid #0DCAF0;
         border-radius: 0.5rem;
         align-items: center;
         font-size: 2rem;
         width: 30rem;
+        text-align: center;
     }
 
     #dark #content-block {
         border: 0.15rem solid white;
     }
     
-    p, span {
+    p {
         font-size: 1.5rem;
     }
 
@@ -59,27 +62,42 @@
         gap: 2rem;
     }
 
-    #viewing p, span {
+    #viewing p {
         font-size: 1.2rem !important;
     }
 
-    span {
+    .button {
         background-color: #0DCAF0;
         border-radius: 0.5rem;
-        padding: 0.4rem;
+        padding: 0.5rem;
     }
 
-    #dark span {
+    #dark .button {
         background-color: white;
     }
 
-    span:hover {
+    .button:hover {
         text-decoration: underline;
         background-color: #248da2 !important;
         cursor: pointer;
     }
 
-    #dark span:hover {
+    #dark .button:hover {
         background-color: darkgray !important;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 500px) {
+        #content-block {
+            width: 20rem;
+        }
+
+        #content-block p {
+            font-size: 1.2rem !important;
+        }
+
+        #content-block #confirmed {
+            font-size: 1.4rem !important;
+        }
     }
 </style>
