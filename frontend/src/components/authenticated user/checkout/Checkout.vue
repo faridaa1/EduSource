@@ -69,10 +69,9 @@
                 <div id="number">
                     <div>Phone Number</div>
                     <div id="user_number">
-                        <div v-if="!changing_number">{{ user.phone_number }}</div>
-                        <div v-if="changing_number" id="number_container">
-                            <div><input id="number_input" type="text" :value="user.phone_number" @input="clear_number_error"></div>
-                            <div class="edit-buttons">
+                        <div id="number_container">
+                            <div><input id="number_input" type="text" :value="user.phone_number" @click="changing_number=true" @input="clear_number_error"></div>
+                            <div class="edit-buttons" v-if="changing_number">
                                 <button class="save" @click="change_phone_number"><i class="bi bi-floppy-fill"></i></button>
                                 <button class="clockwise" @click="cancel_edit(0)"><i class="bi bi-arrow-counterclockwise"></i></button>
                             </div>
@@ -86,6 +85,12 @@
             <button id="place_order" @click="place_order">Place Order</button>
             <button id="cancel" @click="home">Cancel</button>
         </div>
+        <div v-if="confirm !== ''">
+            <Confirm :message="confirm" @confirm-no="confirm=''" @confirm-yes="remove_from_cart(stored_resource)" />
+        </div>
+        <div v-if="error !== ''">
+            <Error :message="error" @close-error="error=''" />
+        </div>
     </div>
 </template>
 
@@ -95,17 +100,26 @@
     import type { Cart, CartResource, Resource, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
+    import Error from '@/components/user experience/error/Error.vue';
+    import Confirm from '@/components/user experience/confirm/Confirm.vue';
     export default defineComponent({
+        components: { Error, Confirm },
         data(): {
             total: number,
             changing_number: boolean,
             changing_address: boolean,
             placed_order: boolean,
+            error: string,
+            confirm: string,
+            stored_resource: CartResource,
         } { return {
+            error: '',
+            confirm: '',
             placed_order: false,
             changing_number: false,
             changing_address: false,
-            total: 0
+            total: 0,
+            stored_resource: {} as CartResource,
         }},
         methods: {
             valid(resource: CartResource): boolean {
@@ -146,7 +160,8 @@
                     useUserStore().saveUser(data.user)
                     useResourcesStore().saveResources(data.resources)
                 } else {
-                    console.error('Error placing order')
+                    this.error = 'Error placing order. Please try again.'
+                    return
                 }
                 window.location.href = '/order-confirmation'
             },
@@ -223,7 +238,6 @@
                     postcodeElement.reportValidity()
                     return
                 }
-
                 this.changing_address = false
                 await this.update_address('address_line_one', address1Input)
                 await this.update_address('address_line_two', address2Input)
@@ -244,7 +258,7 @@
                     useUsersStore().updateUser(user)
                     useUserStore().saveUser(user)
                 } else {
-                    console.error(`Error updating ${attribute}`)
+                    this.error = 'Error updating address. Please try again'
                 }
             },
             async change_phone_number(): Promise<void> {
@@ -279,8 +293,9 @@
                     useUsersStore().updateUser(user)
                     useUserStore().saveUser(user)
                     this.changing_number = false
+                    numberElement.blur()
                 } else {
-                    console.error('Error updating number')
+                    this.error = 'Error updating number. Please try again.'
                 }
             },
             attribute_existence(data: string): boolean {
@@ -292,9 +307,13 @@
             },
             async remove_from_cart(resource: CartResource): Promise<void> {
                 if (resource.number === 1) {
-                    if (!confirm('Are you sure you want to delete this item')) {
+                    if (this.confirm === '') {
+                        this.stored_resource = resource
+                        this.confirm = 'Are you sure you want to delete this item?'
                         return
                     }
+                    resource = this.stored_resource
+                    this.confirm = ''
                 }
                 const putCartItem: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
                     method: resource.number === 1 ? 'DELETE' : 'PUT',
@@ -306,7 +325,7 @@
                     body: JSON.stringify(resource.number-1)
                 })
                 if (!putCartItem.ok) {
-                    console.error('Error editing cart')
+                    this.error = 'Error editing cart. Please try again.'
                     return
                 }
                 const data: {resource: CartResource, cart: Cart} = await putCartItem.json()
@@ -324,7 +343,7 @@
                     body: JSON.stringify(resource.number+1)
                 })
                 if (!putCartItem.ok) {
-                    console.error('Error editing cart')
+                    this.error = 'Error editing cart. Please try again'
                     return
                 }
                 const data: {resource: CartResource, cart: Cart} = await putCartItem.json()
@@ -380,8 +399,55 @@
             }
             this.placed_order = false
             this.get_total()
+            document.addEventListener('keydown', (event) => {
+                if (this.confirm !== '' || this.error != '') {
+                    event.preventDefault()
+                    return
+                }
+                if ((event.key === 'ArrowDown' || event.key === 'Enter') && this.changing_address) {
+                    const input: HTMLInputElement = event.target as HTMLInputElement
+                    if (!input) return
+                    if (input.id === 'address1') {
+                        const input2: HTMLInputElement = document.getElementById('address2') as HTMLInputElement
+                        if (input2) input2.focus()
+                    } else if (input.id === 'address2') {
+                        const input2: HTMLInputElement = document.getElementById('city') as HTMLInputElement
+                        if (input2) input2.focus()
+                    } else if (input.id === 'city') {
+                        const input2: HTMLInputElement = document.getElementById('postcode') as HTMLInputElement
+                        if (input2) input2.focus()
+                    } else if (input.id === 'postcode') {
+                        this.change_address()
+                    }
+                } else if (event.key === 'ArrowUp' && this.changing_address) {
+                    const input: HTMLInputElement = event.target as HTMLInputElement
+                    if (!input) return
+                    if (input.id === 'address2') {
+                        const input2: HTMLInputElement = document.getElementById('address1') as HTMLInputElement
+                        if (input2) input2.focus()
+                    } else if (input.id === 'city') {
+                        const input2: HTMLInputElement = document.getElementById('address2') as HTMLInputElement
+                        if (input2) input2.focus()
+                    } else if (input.id === 'postcode') {
+                        const input2: HTMLInputElement = document.getElementById('city') as HTMLInputElement
+                        if (input2) input2.focus()
+                    }
+                } else if (event.key === 'Enter' && this.changing_number) {
+                    this.change_phone_number()
+                }
+            })
         },
         watch: {
+            changing_address(new_boolean: boolean): void {
+                if (new_boolean) {
+                    this.changing_number = false
+                }
+            },
+            changing_number(new_boolean: boolean): void {
+                if (new_boolean) {
+                    this.changing_address = false
+                }
+            },
             async all_resources(): Promise<void> {
                 for (const resource of useResourcesStore().resources) {
                     resource.price = await this.listedprice(resource)
@@ -407,22 +473,25 @@
 
 <style scoped>
     #checkout {
-        margin-left: 2rem;
-        margin-right: 2rem;
-        margin-left: 2rem;
-        margin-top: 1rem;
+        margin: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
     }
 
     #number_container {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 1rem;
+        gap: 2rem;
     }
 
     #number_container input {
-        width: 7rem;
+        width: 12rem;
+        background-color: white;
         border-radius: 0.5rem;
+        font-size: 1.3rem;
     }
 
     .edit-buttons {
@@ -433,6 +502,7 @@
     #checkout-title {
         font-size: 1.5rem;
         margin-bottom: 1rem;
+        font-weight: bold;
     }
 
     #body {
@@ -448,6 +518,10 @@
         border-radius: 0.8rem;
         border: 0.1rem solid #0DCAF0;
         padding: 1rem;
+    }
+
+    #dark #border {
+        border-color: white;
     }
 
     img {
@@ -537,6 +611,11 @@
         gap: 1rem;
     }
 
+    #payment div, #number div, #address div {
+        gap: 0.8rem;
+        font-size: 1.3rem;
+    }
+
     #card_ending, #address_lines, #user_number {
         border: 0.1rem solid #0DCAF0;
         padding: 1rem;
@@ -551,10 +630,6 @@
 
     #header div {
         font-size: 1.3rem;
-    }
-
-    #two {
-        font-weight: bold;
     }
 
     .change_text { 
@@ -576,22 +651,22 @@
         gap: 0.2rem;
     }
 
-    #dark #body, #dark #user_number, #dark #address_lines, #dark #card_ending {
+    #dark #user_number, #dark #address_lines, #dark #card_ending {
         border: 0.1rem solid white;
     }
 
     #buttons {
         display: flex;
-        gap: 1rem;
+        gap: 1.5rem;
         justify-content: center;
         margin-top: 2rem;
     }
 
     #buttons button {
-        width: 7rem;
         border-radius: 0.4rem;
+        font-size: 1.3rem;
         border: none;
-        padding: 0.4rem;
+        padding: 0.8rem;
     }
 
     #place_order {
@@ -622,26 +697,26 @@
         background-color: darkred;
     }
 
-    #number_container button {
+    #number_container button, #address_lines button {
         border: none;
         color: white;
-        border-radius: 0.2rem;
-        width: 1.5rem;
-        height: 1.5rem;
+        border-radius: 0.5rem;
+        width: 2rem;
+        height: 2rem;
     }
 
-    #address_lines button {
-        border: none;
-        color: white;
-        border-radius: 0.2rem;
-        width: 1.5rem;
-        height: 1.5rem;
+    #number_container button i, #address_lines button i {
+        font-size: 1.2rem;
     }
 
     .input {
         display: flex;
         flex-direction: column;
         gap: 0.4rem;
+    }
+
+    .input input {
+        padding: 0.6rem !important;
     }
 
     .header {
@@ -668,5 +743,27 @@
 
     #address_lines input {
         border-radius: 0.5rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1077px) {
+        .input input {
+            width: 92% !important;
+        }
+    }
+
+    @media (max-width: 782px) {
+        #content { 
+            flex-direction: column;
+            gap: 4rem;
+            overflow-y: scroll;
+            padding-right: 2rem;
+            max-height: 42rem;
+            margin-top: 0rem;
+        }
+
+        #checkout {
+            gap: 1rem;
+        }
     }
 </style>
