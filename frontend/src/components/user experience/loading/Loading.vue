@@ -80,6 +80,11 @@
         align-items: center;
         justify-content: center;
     }
+
+    #dark div {
+        background-color: #807E7E;
+    }
+    
     img {
         height: 3rem;
     }

@@ -28,21 +28,36 @@
         </div>
         <div id="resources">
             <div id="empty-message" v-if="user.placed_orders.length === 0">No orders yet</div>
-            <div class="orders-item" v-for="order in user.placed_orders.sort((a,b) => {return order === 'new' ? b.id-a.id : a.id-b.id}).filter(order => status === 'all' || order.status === status)">
+            <div class="orders-item"  @click="view_item(order.id)" v-for="order in user.placed_orders.filter((order, index) => (((index) < (current_page*10)) && ((index+1) > ((current_page-1)*10))) && (status === 'all' || order.status === status)).sort((a,b) => {return order === 'new' ? b.id-a.id : a.id-b.id})">
                 <div class="item-one">
                     <div class="item-image">
-                        <img @click="view_item(order.id)" :src="`http://localhost:8000${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`" alt="">
+                        <img :src="`http://localhost:8000${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`" alt="">
                         <p id="number_of_items">{{ order_total(order) }}</p>
                     </div>
                     <div class="details">
                         <p>Order Number {{ order.id }}</p>
                         <p id="status"> Status: {{ order.status }}</p>
-                        <p id="view-details" @click="view_item(order.id)">View Details</p>
+                        <p id="view-details">View Details</p>
                     </div>
                 </div>
             </div>
             <div v-if="user.placed_orders.sort((a,b) => {return order === 'new' ? b.id-a.id : a.id-b.id}).filter(order => status === 'all' || order.status === status).length === 0">
                 <p id="no-orders">No orders to show</p>
+            </div>
+        </div>
+        <div id="pagination">
+            <div>
+                <p>Page</p>
+            </div>
+            <div id="of">
+                <select v-model="current_page">
+                    <option :value="page" v-for="page in total_pages">{{ page }}</option>
+                </select>
+                <p>of {{ total_pages }}</p>
+            </div>
+            <div id="pagination-buttons">
+                <button :disabled="current_page===1" @click="current_page=current_page-1"><i class="bi bi-arrow-left"></i></button>
+                <button :disabled="current_page===total_pages" @click="current_page=current_page+1"><i class="bi bi-arrow-right"></i></button>
             </div>
         </div>
     </div>
@@ -63,9 +78,13 @@
             order: 'new' | 'old'
             status: 'all' | 'Placed' | 'Processing' | 'Refund Rejected' | 'Dispatched' 
                     | 'Cancelled' | 'Complete' | 'Being Returned' | 'Refunded'
+            current_page: number,
+            total_pages: number,
         } { return {
             order: 'new',
-            status: 'all'
+            status: 'all',
+            total_pages: 1,
+            current_page: 1,
         }},
         methods: {
             view_item(id: number): void {
@@ -98,6 +117,9 @@
                 if (!div) return
                 div.scrollTo({top: 0})
             }
+        },
+        mounted(): void {
+            this.total_pages = Math.ceil(this.user.placed_orders.length/10)
         }
     })
 </script>
@@ -128,13 +150,25 @@
         flex-direction: column;
         gap: 3rem;
         overflow-y: scroll;
-        height: 51.7rem;
+        height: 50rem;
     }
 
     .orders-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        padding: 0.4rem;
+        position: relative;
+    }
+
+    .orders-item:hover {
+        cursor: pointer;
+        background-color: lightgray;
+        border-radius: 0.5rem;
+    }
+
+    #dark .orders-item:hover {
+        background-color: #696969;
     }
 
     img {
@@ -143,10 +177,6 @@
 
     img:hover {
         cursor: pointer;
-    }
-
-    .item-image {
-        position: relative;
     }
 
     .item-one {
@@ -165,9 +195,13 @@
         color: #789ECA;
     }
 
-    select {
-        width: 9rem;
+    #order_orders select {
+        width: 10rem;
         text-align: center;
+        padding: 0.2rem;
+    }
+
+    select {
         padding: 0.2rem;
     }
 
@@ -197,7 +231,7 @@
         border: 0.1rem solid black;
         background-color: white;
         left: 6.5rem;
-        top: 6rem;
+        top: 4rem;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -237,6 +271,63 @@
 
     #no-orders {
         text-align: center;
+    }
+
+    #pagination {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    #pagination p {
+        font-size: 1.3rem;
+    }
+
+    #pagination select, #pagination i {
+        font-size: 1rem;
+    }
+
+    #pagination #pagination-buttons {
+        display: flex;
+        gap: 1.5rem;
+        margin-left: 1rem;
+    }
+
+    #pagination #pagination-buttons button {
+        border-radius: 0.5rem;
+        border: none;
+        padding: 0.5rem;
+        background-color: #0DCAF0;
+        color: white;
+    }
+
+    #dark #pagination #pagination-buttons button {
+        background-color: white;
+        color: black;
+    }
+
+    #dark #pagination #pagination-buttons button:hover {
+        background-color: darkgray;
+    }
+
+    #pagination #pagination-buttons button:hover {
+        cursor: pointer;
+        background-color: #15acca;
+    }
+
+    #pagination #pagination-buttons button:disabled, #dark #pagination #pagination-buttons button:disabled {
+        background-color: lightgrey;
+    }
+
+    #pagination #pagination-buttons button:disabled:hover {
+        cursor: not-allowed;
+    }
+
+    #of {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 
     /* Responsive Design */

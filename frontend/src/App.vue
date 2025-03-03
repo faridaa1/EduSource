@@ -1,6 +1,6 @@
 <template>
   <div id="app-vue" v-if="complete">
-      <div id="light">
+    <div id="light">
       <header id="main-header">
         <img id='logo' src="/logo-light.svg" alt="EduSource" width="125" height="125" v-pre/>
         <RouterLink :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="hide-on-mobile link">Home</RouterLink>
