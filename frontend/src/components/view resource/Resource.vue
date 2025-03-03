@@ -1043,19 +1043,11 @@
                     }
                 }
             },
-            all_reviews(updated_all_reviews): void {
+            all_reviews(): void {
                 this.scrollReviewsIntoView()
                 if (!this.seen_review && window.location.href.includes('add-review')) {
-                    nextTick(() => {
-                        const window_location: string[] = window.location.href.split('/')
-                        const id: string = window_location[window_location.length-1]
-                        const review: HTMLDivElement = document.querySelector(`[name='${id}']`) as HTMLDivElement
-                        if (review) {
-                            review.scrollIntoView()
-                            this.seen_review = true
-                        } 
-                    })
-                    
+                    this.add_review()
+                    this.seen_review = true
                 } else if (!this.seen_review && window.location.href.includes('review')) {
                     nextTick(() => {
                         const window_location: string[] = window.location.href.split('/')
