@@ -16,7 +16,7 @@
                             <div id="two">Total: {{ currency }}{{ total.toFixed(2) }} </div>
                         </div>
                         <div id="body">
-                            <div class="resource" v-for="resource in order.resources" @click="view_resource(getResource(resource.resource).id)">
+                            <div class="resource" v-for="resource in order.resources" @click="(event) => view_resource(event, getResource(resource.resource).id)">
                                 <div id="image">
                                     <img :src="`http://localhost:8000/${getResource(resource.resource).image1}`" alt="">
                                     <div id="resnum">{{ resource.number }}</div>
@@ -24,8 +24,8 @@
                                 <div class="name">
                                     <div>{{ getResource(resource.resource).name }}</div>
                                     <div>{{ currency }}{{ (resource.number*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
-                                    <p id="add-review" v-if="can_review(getResource(resource.resource))" @click="add_review">Add Review</p>
-                                    <p id="add-review" v-if="!can_review(getResource(resource.resource))" @click="view_review">View Review</p>
+                                    <p id="add-review" v-if="!(getResource(resource.resource).user === user.id) && can_review(getResource(resource.resource))">Add Review</p>
+                                    <p id="add-review" v-if="!(getResource(resource.resource).user === user.id) && !can_review(getResource(resource.resource))">View Review</p>
                                 </div>
                             </div>
                         </div>
@@ -78,7 +78,7 @@
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
     import { defineComponent } from 'vue';
-    import type { Order, Resource, User } from '@/types';
+    import type { Order, Resource, Review, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
@@ -95,18 +95,27 @@ import Loading from '@/components/user experience/loading/Loading.vue';
             error: ''
         }},
         methods: {
-            view_resource(id: number): void {
+            view_resource(event: Event, id: number): void {
+                if (event.target && (event.target as HTMLDivElement).id === 'add-review') {
+                    const resource: Resource = this.all_resources.find(resource => resource.id === id) as Resource
+                    this.add_review(resource)
+                    return
+                }
                 window.location.href = `/view/${id}`
             },
             view_review(): void {
                 
             },
-            add_review(): void {
-                
+            add_review(resource: Resource): void {
+                if (this.can_review(resource)) {
+                    window.location.href = `/view/${resource.id}/add-review`
+                } else {
+                    window.location.href = `/view/${resource.id}/review/${(resource.reviews.find(review => review.user === this.user.id && review.resource === resource.id) as Review).id}`
+                }
             },
             can_review(resource: Resource): boolean {
                 if (!resource.reviews || resource.reviews.length === 0) return true
-                return resource.reviews.find(review => review.user === this.user.id && review.resource === resource.id) ? true : false
+                return resource.reviews.find(review => review.user === this.user.id && review.resource === resource.id) ? false : true
             },
             async cancel_order(): Promise<void> {
                 let userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {

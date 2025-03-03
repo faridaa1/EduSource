@@ -205,7 +205,7 @@
         </div>
         <div id="reviews">
             <p id="no-reviews-to-display" v-if="all_reviews.length === 0">No reviews to display</p>
-            <div v-if="get_all_reviews" id="showing-reviews" class="reviews-review" v-for="review in all_reviews">
+            <div :name="review.id.toString()" v-if="get_all_reviews" id="showing-reviews" class="reviews-review" v-for="review in all_reviews">
                 <div class="review-heading">
                     <div id="review-heading-one" class="review-heading-one-height">
                         <div v-if="!editing || editing && editing_review !== review.id">
@@ -301,6 +301,7 @@
     export default defineComponent({
         components: { Stars, ViewSellers },
         data(): {
+            seen_review: boolean,
             buying_now: boolean,
             in_wishlist: boolean,
             currentResource: Resource,
@@ -329,6 +330,7 @@
             filter_video: boolean,
             cart_price: number,
         } { return {
+            seen_review: false,
             in_wishlist: false,
             currentResource: {} as Resource,
             cart_price: 0,
@@ -928,7 +930,7 @@
             },
             allResources(): Resource[] {
                 const window_location: string[] = window.location.href.split('/')
-                const id: string = window_location[window_location.length-1]
+                const id: string = window_location[4]
                 let returnedResources = [] as Resource[]
                 const initial_resource: Resource | undefined = useResourcesStore().resources.find(resource => resource.id === parseInt(id))
                 if (initial_resource === undefined) return []
@@ -942,7 +944,6 @@
             },
             resource(): Resource | {} {
                 const window_location: string[] = window.location.href.split('/')
-                const name: string = window_location[window_location.length-1]
                 return this.allResources[0]
             },
         },
@@ -1044,6 +1045,29 @@
             },
             all_reviews(updated_all_reviews): void {
                 this.scrollReviewsIntoView()
+                if (!this.seen_review && window.location.href.includes('add-review')) {
+                    nextTick(() => {
+                        const window_location: string[] = window.location.href.split('/')
+                        const id: string = window_location[window_location.length-1]
+                        const review: HTMLDivElement = document.querySelector(`[name='${id}']`) as HTMLDivElement
+                        if (review) {
+                            review.scrollIntoView()
+                            this.seen_review = true
+                        } 
+                    })
+                    
+                } else if (!this.seen_review && window.location.href.includes('review')) {
+                    nextTick(() => {
+                        const window_location: string[] = window.location.href.split('/')
+                        const id: string = window_location[window_location.length-1]
+                        const review: HTMLDivElement = document.querySelector(`[name='${id}']`) as HTMLDivElement
+                        if (review) {
+                            review.scrollIntoView()
+                            this.seen_review = true
+                        } 
+                    })
+                    
+                }
             },
             filter_one(): void {
                 this.get_all_reviews()

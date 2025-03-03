@@ -24,6 +24,8 @@ const router = createRouter({
     { path: '/new-listing/:catchAll(.*)', name: 'new listing', component: Listing },
     { path: '/resource/:id', name: 'resource', component: Listing },
     { path: '/listings', name: 'listings', component: SellerProfile },
+    { path: '/view/:resourceid/add-review', name: 'add review', component: Resource },
+    { path: '/view/:resourceid/review/:reviewid', name: 'view review', component: Resource },
     { path: '/view/:id', name: 'buyer resource', component: Resource },
     { path: '/cart', name: 'cart', component: Cart },
     { path: '/wishlist', name: 'wishlist', component: Wishlist },

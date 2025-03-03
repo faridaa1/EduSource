@@ -170,8 +170,8 @@
             filtered_orders(): Order[] {
                 let temp_orders = this.searched_items.length > 0 ? this.searched_items.filter(order => this.status === 'all' || order.status === this.status) : this.user.placed_orders.filter(order => this.status === 'all' || order.status === this.status)
                 this.total_pages = Math.ceil(temp_orders.length/10)
-                return temp_orders.filter((_, index) => ((index) < (this.current_page*10)) && ((index+1) > ((this.current_page-1)*10)))
-                .sort((a,b) => {return this.order === 'new' ? b.id-a.id : a.id-b.id})
+                return temp_orders.sort((a,b) => {return this.order === 'new' ? b.id-a.id : a.id-b.id})
+                .filter((_, index) => ((index) < (this.current_page*10)) && ((index+1) > ((this.current_page-1)*10)))
             },
             user(): User {
                 return useUserStore().user
