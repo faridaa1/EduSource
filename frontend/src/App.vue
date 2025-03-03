@@ -370,7 +370,7 @@
     border: none;
     border-top-right-radius: 0.4rem;
     border-bottom-right-radius: 0.4rem;
-    background-color: rgb(224, 222, 222);
+    background-color: #d9d9d9;
     padding-right: 0.3rem;
     padding-left: 0.3rem;
   }

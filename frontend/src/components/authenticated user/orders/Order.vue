@@ -1,5 +1,5 @@
 <template>
-    <div id="order" v-if="Object.keys(order).length > 0">
+    <div id="order" v-if="Object.keys(order).length > 0 && Object.keys(all_resources).length > 0">
         <div id="order-title">
             <div id="main">Order {{ order.id }}</div>
             <div id="back" @click="back">
@@ -16,7 +16,7 @@
                             <div id="two">Total: {{ currency }}{{ total.toFixed(2) }} </div>
                         </div>
                         <div id="body">
-                            <div class="resource" v-for="resource in order.resources">
+                            <div class="resource" v-for="resource in order.resources" @click="view_resource(getResource(resource.resource).id)">
                                 <div id="image">
                                     <img :src="`http://localhost:8000/${getResource(resource.resource).image1}`" alt="">
                                     <div id="resnum">{{ resource.number }}</div>
@@ -24,7 +24,8 @@
                                 <div class="name">
                                     <div>{{ getResource(resource.resource).name }}</div>
                                     <div>{{ currency }}{{ (resource.number*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
-                                    <p id="add-review" @click="add_review">Add Review</p>
+                                    <p id="add-review" v-if="can_review(getResource(resource.resource))" @click="add_review">Add Review</p>
+                                    <p id="add-review" v-if="!can_review(getResource(resource.resource))" @click="view_review">View Review</p>
                                 </div>
                             </div>
                         </div>
@@ -68,6 +69,9 @@
         <div v-if="error !== ''">
             <Error :message="error" @close-error="error=''" />
         </div>
+        <div v-else>
+            <Loading />
+        </div>
     </div>
 </template>
 
@@ -78,8 +82,9 @@
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
+import Loading from '@/components/user experience/loading/Loading.vue';
     export default defineComponent({
-        components: { Error },
+        components: { Error, Loading },
         data(): {
             total: number,
             placed_order: boolean,
@@ -90,9 +95,18 @@
             error: ''
         }},
         methods: {
-            
+            view_resource(id: number): void {
+                window.location.href = `/view/${id}`
+            },
+            view_review(): void {
+                
+            },
             add_review(): void {
                 
+            },
+            can_review(resource: Resource): boolean {
+                if (!resource.reviews || resource.reviews.length === 0) return true
+                return resource.reviews.find(review => review.user === this.user.id && review.resource === resource.id) ? true : false
             },
             async cancel_order(): Promise<void> {
                 let userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
@@ -118,7 +132,7 @@
                 window.location.href = '/cart'
             },
             getResource(resource_id: number): Resource {
-                const resource: Resource | undefined = useResourcesStore().resources.find(resource => resource.id === resource_id)
+                const resource: Resource | undefined = this.all_resources.find(resource => resource.id === resource_id)
                 if (resource) return resource
                 return {} as Resource
             },
@@ -251,7 +265,7 @@
         display: flex;
         padding-right: 2rem;
         flex-direction: column;
-        gap: 2rem;
+        gap: 1rem;
     }
 
     img {
@@ -260,8 +274,21 @@
 
     .resource {
         display: flex;
+        padding: 0.4rem;
         align-items: center;
         gap: 2rem;
+    }
+
+    .resource:hover {
+        background-color: lightgray;
+        cursor: pointer;
+        border-radius: 0.5rem;
+    }
+
+    #dark .resource:hover {
+        background-color: #595959;
+        cursor: pointer;
+        border-radius: 0.5rem;
     }
 
     #toggle {
@@ -321,7 +348,7 @@
         border: 0.1rem solid black;
         background-color: white;
         left: 5.8rem;
-        top: 5rem;
+        top: 0rem;
         display: flex;
         justify-content: center;
         align-items: center;

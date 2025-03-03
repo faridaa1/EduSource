@@ -683,5 +683,39 @@ def semantic_search_subjects(request: HttpRequest) -> JsonResponse:
         return JsonResponse(resources, safe=False)
     return JsonResponse({})
 
+
+def semantic_search_orders(request: HttpRequest, id: int, search: str, mode: str) -> JsonResponse:
+    """Defining semantic search used to return relevant orders to user"""
+    if request.method == 'POST':
+        """ logic: map each order to a corresponding id i.e. a dict
+            check if any resources sold match search with > 70%
+            store orderid:boolean pair to determine whether to keep showing order """
+        user: User = get_object_or_404(User, id=id)
+        matching_orders = []
+        if mode == 'buyer':
+            orders = Order.objects.filter(buyer=user).order_by('id')
+        else:
+            orders = Order.objects.filter(seller=user).order_by('id')
+        
+        for order in orders:
+            resources: list = list(OrderResource.objects.filter(order=order).order_by('id').values_list('resource', flat=True))
+            dataset = list(Resource.objects.filter(id__in=resources).order_by('id').values_list('name', flat=True))
+
+            # determine embeddings
+            embeddings = semantic_search_model.encode(dataset)
+            search: str = search
+            search_embeddings = semantic_search_model.encode(search)
+
+            # generate similairty matrix
+            similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
+
+            # check if any matches are greater than 70%
+            if (similarity_matrix > 0.7).any().item():
+                matching_orders.append(order.id)
+                continue
+        return JsonResponse(matching_orders, safe=False)
+    return JsonResponse({})
+
+
 def order_data(item: tuple):
     return item[1] # sort based on values

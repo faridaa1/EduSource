@@ -1,7 +1,14 @@
 <template>
     <div id="orders-view" v-if="user && user.placed_orders">
         <div id="header">
-            <p>My Orders</p>
+            <div id="header1">
+                <p>My Orders</p>
+            <div id="search">
+                <input @input="clear_error" v-model="search" id="order-search" type="text" @click="remove_focus" placeholder="Enter resource name">
+                <i id="x" @click="handle_x_click" :class="search.trim() !== '' ? 'bi bi-x' : ''"></i>
+                <i id="look" @click="search_orders" class="bi bi-search"></i>
+            </div>
+            </div>
             <div id="order_orders">
                 <div  v-if="filtered_orders.length > 0">
                     <label>Order By</label>
@@ -27,8 +34,7 @@
             </div>
         </div>
         <div id="resources">
-            <div id="empty-message" v-if="user.placed_orders.length === 0">No orders yet</div>
-            <div class="orders-item"  @click="view_item(order.id)" v-for="order in filtered_orders">
+            <div v-if="!searching" class="orders-item"  @click="view_item(order.id)" v-for="order in filtered_orders">
                 <div class="item-one">
                     <div class="item-image">
                         <img :src="`http://localhost:8000${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`" alt="">
@@ -41,8 +47,11 @@
                     </div>
                 </div>
             </div>
-            <div v-if="filtered_orders.length === 0">
-                <p id="no-orders">No orders to show</p>
+            <div v-if="searching">
+                <Loading />
+            </div>
+            <div id="no-orders" v-if="filtered_orders.length === 0">
+                No orders found
             </div>
         </div>
         <div id="pagination" v-if="filtered_orders.length > 0">
@@ -56,8 +65,8 @@
                 <p>of {{ total_pages }}</p>
             </div>
             <div id="pagination-buttons">
-                <button :disabled="current_page===1" @click="current_page=current_page-1"><i class="bi bi-arrow-left"></i></button>
-                <button :disabled="current_page===total_pages" @click="current_page=current_page+1"><i class="bi bi-arrow-right"></i></button>
+                <button :disabled="current_page===1" @click="update_page(-1)"><i class="bi bi-arrow-left"></i></button>
+                <button :disabled="current_page===total_pages" @click="update_page(1)"><i class="bi bi-arrow-right"></i></button>
             </div>
         </div>
     </div>
@@ -80,13 +89,72 @@
                     | 'Cancelled' | 'Complete' | 'Being Returned' | 'Refunded'
             current_page: number,
             total_pages: number,
+            search: string,
+            searching: boolean,
+            searched_items: Order[]
         } { return {
             order: 'new',
+            search: '',
             status: 'all',
             total_pages: 1,
             current_page: 1,
+            searching: false,
+            searched_items: []
         }},
         methods: {
+            update_page(new_page: number): void {
+                this.current_page = this.current_page + 1
+            },
+            handle_x_click(): void {
+                const input: HTMLInputElement = document.getElementById('order-search') as HTMLInputElement
+                if (!input) return
+                this.search = ''
+                input.focus()
+                this.searching = false
+            },
+            clear_error(): void {
+                const input: HTMLInputElement = document.getElementById('order-search') as HTMLInputElement
+                if (!input || this.searching) return
+                input.setCustomValidity('')
+                input.reportValidity()
+            },
+            async search_orders(): Promise<void> {
+                const input: HTMLInputElement = document.getElementById('order-search') as HTMLInputElement
+                if (!input || this.searching) return
+                if (this.search.trim() === '') {
+                    input.setCustomValidity('Enter a value')
+                    input.reportValidity()
+                    return
+                } else {
+                    this.clear_error()
+                }
+                this.searching = true
+                const searchResults: Response = await fetch(`http://localhost:8000/api/semantic-search-orders/${this.user.id}/${this.search}/buyer/`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type' : 'application/json',
+                        'X-CSRFToken' : useUserStore().csrf
+                    },
+                    body: JSON.stringify(this.filtered_orders)
+                })
+                if (!searchResults.ok) {
+                    return
+                } else {
+                    const matches: number[] = await searchResults.json()
+                    this.searched_items = this.user.placed_orders.filter(order => matches.includes(order.id))
+                    this.searching = false
+                    if (matches.length === 0) {
+                        input.setCustomValidity('Resource not found')
+                        input.reportValidity()
+                    }
+                }
+            },
+            remove_focus(): void {
+                const div: HTMLInputElement = document.getElementById('search') as HTMLInputElement
+                if (!div) return
+                div.blur()
+            },
             view_item(id: number): void {
                 window.location.href = `/order/${id}`
             },
@@ -100,10 +168,9 @@
         },
         computed: {
             filtered_orders(): Order[] {
-                let temp_orders = this.user.placed_orders.filter(order => this.status === 'all' || order.status === this.status)
+                let temp_orders = this.searched_items.length > 0 ? this.searched_items.filter(order => this.status === 'all' || order.status === this.status) : this.user.placed_orders.filter(order => this.status === 'all' || order.status === this.status)
                 this.total_pages = Math.ceil(temp_orders.length/10)
-                this.current_page = 1
-                return temp_orders.filter((order, index) => ((index) < (this.current_page*10)) && ((index+1) > ((this.current_page-1)*10)))
+                return temp_orders.filter((_, index) => ((index) < (this.current_page*10)) && ((index+1) > ((this.current_page-1)*10)))
                 .sort((a,b) => {return this.order === 'new' ? b.id-a.id : a.id-b.id})
             },
             user(): User {
@@ -114,19 +181,30 @@
             },
         },
         watch: {
+            search(): void {
+                if (this.search.trim() === '') return
+                this.searching = false
+            },
             order(): void {
                 const div: HTMLDivElement = document.getElementById('resources') as HTMLDivElement
                 if (!div) return
                 div.scrollTo({top: 0})
+                this.current_page = 1
             },
             status(): void {
                 const div: HTMLDivElement = document.getElementById('resources') as HTMLDivElement
                 if (!div) return
                 div.scrollTo({top: 0})
+                this.current_page = 1
             }
         },
         mounted(): void {
             this.total_pages = Math.ceil(this.user.placed_orders.length/10)
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' && (event.target as HTMLInputElement).id === 'order-search') {
+                    this.search_orders()
+                }
+            })
         }
     })
 </script>
@@ -142,14 +220,65 @@
         gap: 1rem;
     }
 
+
     #header {
         display: flex;
         justify-content: space-between;
     }
 
+    #header1 {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    #look {
+        background-color: #d9d9d9;
+        border-top-right-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    #look:hover {
+        background-color: darkgray;
+        cursor: pointer;
+    }
+
+    #search {
+        display: flex;
+        align-items: center;
+    }
+
+    input {
+        width: 30rem !important;
+        padding: 0.5rem !important;
+    }
+
+    input:focus {
+        background-color: #d9d9d9 !important;
+        border: none !important;
+        outline: none;
+    }
+
+    #x {
+        color: red;
+        background-color: #d9d9d9;
+        font-size: 1.48rem;
+        width: 1.3rem;
+        height: 2.2rem;
+        display: flex;
+        padding-right: 0.2rem;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #x:hover {
+        cursor: pointer;
+        color: lightcoral;
+    }
+
     #header p {
         font-size: 1.5rem;
-        margin-bottom: 1rem;
     }
 
     #resources {
@@ -157,7 +286,7 @@
         flex-direction: column;
         gap: 3rem;
         overflow-y: scroll;
-        height: 50rem;
+        height: 76vh;
     }
 
     .orders-item {
@@ -217,11 +346,6 @@
         text-decoration: underline;
     }
 
-    #empty-message {
-        text-align: center;
-        font-size: 1.1rem;
-    }
-
     #status {
         color: darkgray;
     }
@@ -237,8 +361,8 @@
         min-width: 1rem;
         border: 0.1rem solid black;
         background-color: white;
-        left: 6.5rem;
-        top: 4rem;
+        left: 9rem;
+        top: 0.3rem;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -344,12 +468,42 @@
         }
 
         #number_of_items {
-            left: 5rem;
-            top: 4rem;
+            left: 7rem;
         }
 
         #resources {
             height: 76vh;
+        }
+    }
+
+    @media (max-width: 859px) {
+        input {
+            width: 20rem !important;
+        }
+    }
+
+    @media (max-width: 686px) {
+        input {
+            width: 15rem !important;
+        }
+    }
+
+    @media (max-width: 611px) {
+        #search {
+            margin-top: 5rem;
+            position: absolute;
+        }
+
+        input {
+            width: 20rem !important;
+        }
+
+        #header1 {
+            margin-bottom: 6rem;
+        }
+
+        #resources {
+            height: 71vh;
         }
     }
 </style>
