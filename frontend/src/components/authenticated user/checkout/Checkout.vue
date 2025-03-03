@@ -547,6 +547,10 @@
         align-items: center;
     }
 
+    #toggle:hover {
+        background-color: #D9D9D9;
+    }
+
     #controls {
         display: flex;
         background-color: white;
@@ -637,7 +641,7 @@
     }
 
     #dark .change_text {
-        color: rgb(255, 255, 255);
+        color: rgb(206, 206, 206);
     }
 
     .change_text:hover { 
@@ -743,6 +747,18 @@
 
     #address_lines input {
         border-radius: 0.5rem;
+    }
+
+    #dark #checkout, #number_input {
+        color: white;
+    }
+
+    #dark #resnum, #dark #plus, #dark #minus {
+        color: black;
+    }
+
+    #dark #number_input {
+        background-color: transparent;
     }
 
     /* Responsive Design */
