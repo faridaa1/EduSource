@@ -3,16 +3,32 @@
         <div id="header">
             <p>My Orders</p>
             <div id="order_orders">
-                <label>Order By</label>
-                <select v-model="order">
-                    <option value="new">Newest</option>
-                    <option value="old">Oldest</option>
-                </select>
+                <div>
+                    <label>Order By</label>
+                    <select v-model="order">
+                        <option value="new">Newest</option>
+                        <option value="old">Oldest</option>
+                    </select>
+                    </div>
+                <div>
+                    <label>Status</label>
+                    <select v-model="status">
+                        <option value="all">All</option>
+                        <option value="Placed">Placed</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Refund Rejected">Refund Rejected</option>
+                        <option value="Dispatched">Dispatched</option>
+                        <option value="Complete">Complete</option>
+                        <option value="Being Returned">Being Returned</option>
+                        <option value="Refunded">Refunded</option>
+                    </select>
+                </div>
             </div>
         </div>
         <div id="resources">
             <div id="empty-message" v-if="user.placed_orders.length === 0">No orders yet</div>
-            <div class="orders-item" v-for="order in user.placed_orders.sort((a,b) => {return order === 'new' ? b.id-a.id : a.id-b.id})">
+            <div class="orders-item" v-for="order in user.placed_orders.sort((a,b) => {return order === 'new' ? b.id-a.id : a.id-b.id}).filter(order => status === 'all' || order.status === status)">
                 <div class="item-one">
                     <div class="item-image">
                         <img @click="view_item(order.id)" :src="`http://localhost:8000${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`" alt="">
@@ -25,7 +41,13 @@
                     </div>
                 </div>
             </div>
+            <div v-if="user.placed_orders.sort((a,b) => {return order === 'new' ? b.id-a.id : a.id-b.id}).filter(order => status === 'all' || order.status === status).length === 0">
+                <p id="no-orders">No orders to show</p>
+            </div>
         </div>
+    </div>
+    <div v-else>
+        <Loading />
     </div>
 </template>
 
@@ -34,11 +56,16 @@
     import { defineComponent } from 'vue';
     import type { Order, Resource, User, } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
+    import Loading from '@/components/user experience/loading/Loading.vue';
     export default defineComponent({
+        components: { Loading },
         data(): {
             order: 'new' | 'old'
+            status: 'all' | 'Placed' | 'Processing' | 'Refund Rejected' | 'Dispatched' 
+                    | 'Cancelled' | 'Complete' | 'Being Returned' | 'Refunded'
         } { return {
-            order: 'new'
+            order: 'new',
+            status: 'all'
         }},
         methods: {
             view_item(id: number): void {
@@ -59,15 +86,16 @@
             allResources(): Resource[] {
                 return useResourcesStore().resources
             },
-            resource(): Resource | {} {
-                const window_location: string[] = window.location.href.split('/')
-                const name: string = window_location[window_location.length-1]
-                return this.allResources[0]
-            },
         },
         watch: {
             order(): void {
                 const div: HTMLDivElement = document.getElementById('resources') as HTMLDivElement
+                if (!div) return
+                div.scrollTo({top: 0})
+            },
+            status(): void {
+                const div: HTMLDivElement = document.getElementById('resources') as HTMLDivElement
+                if (!div) return
                 div.scrollTo({top: 0})
             }
         }
@@ -137,6 +165,12 @@
         color: #789ECA;
     }
 
+    select {
+        width: 9rem;
+        text-align: center;
+        padding: 0.2rem;
+    }
+
     #view-details:hover {
         cursor: pointer;
         text-decoration: underline;
@@ -171,8 +205,18 @@
 
     #order_orders {
         display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    #order_orders div {
+        display: flex;
         align-items: center;
         gap: 0.5rem;
+    }
+
+    #order_orders label {
+        width: 4.2rem;
     }
 
     select {
@@ -189,6 +233,10 @@
 
     #dark #status {
         color: rgb(206, 206, 206);
+    }
+
+    #no-orders {
+        text-align: center;
     }
 
     /* Responsive Design */
