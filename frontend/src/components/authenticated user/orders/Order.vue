@@ -9,33 +9,29 @@
         </div>
         <div id="content">
             <div id="col1">
-                <div id="items">
-                    <div id="header">
-                        <div id="one">Items</div>
-                        <div id="two">Total: {{ currency }}{{ total.toFixed(2) }} </div>
-                    </div>
-                    <div id="body">
-                        <div class="resource" v-for="resource in order.resources">
-                            <div id="image">
-                                <img :src="`http://localhost:8000/${getResource(resource.resource).image1}`" alt="">
-                                <div id="resnum">{{ resource.number }}</div>
-                            </div>
-                            <div class="name">
-                                <div>{{ getResource(resource.resource).name }}</div>
-                                <div>{{ currency }}{{ (resource.number*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
-                                <p id="add-review" @click="add_review">Add Review</p>
+                <div id="border">
+                    <div id="items">
+                        <div id="header">
+                            <div id="one">Items</div>
+                            <div id="two">Total: {{ currency }}{{ total.toFixed(2) }} </div>
+                        </div>
+                        <div id="body">
+                            <div class="resource" v-for="resource in order.resources">
+                                <div id="image">
+                                    <img :src="`http://localhost:8000/${getResource(resource.resource).image1}`" alt="">
+                                    <div id="resnum">{{ resource.number }}</div>
+                                </div>
+                                <div class="name">
+                                    <div>{{ getResource(resource.resource).name }}</div>
+                                    <div>{{ currency }}{{ (resource.number*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
+                                    <p id="add-review" @click="add_review">Add Review</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div id="payment">
-                    <div>Payment Method</div>
-                    <div id="card_ending">
-                        Card ending in 1234
-                    </div>
-                </div>
                 <div id="address">
-                    <div>Delivery Address</div>
+                    <div class="title">Delivery Address</div>
                     <div id="address_lines">
                         <div>{{ user.address_line_one }}</div>
                         <div>{{ user.address_second_line }}</div>
@@ -45,22 +41,32 @@
                 </div>
             </div>
             <div id="col2">
+                <div id="payment">
+                    <div class="title">Payment Method</div>
+                    <div id="card_ending">
+                        Card ending in 1234
+                    </div>
+                </div>
                 <div id="number">
-                    <div>Phone Number</div>
+                    <div class="title">Phone Number</div>
                     <div id="user_number">
                         <div>{{ user.phone_number }}</div>
                     </div>
                 </div>
                 <div id="number">
-                    <div>Status</div>
+                    <div class="title">Status</div>
                     <div id="user_number">
                         {{ order.status }}
                     </div>
                 </div>
                 <div id="buttons">
                     <button v-if="returnable && order.status === 'Complete'">Start Return</button>
+                    <button id="cancel" v-if="order.status === 'Placed'" @click="cancel_order">Cancel</button>
                 </div>
             </div>
+        </div>
+        <div v-if="error !== ''">
+            <Error :message="error" @close-error="error=''" />
         </div>
     </div>
 </template>
@@ -71,17 +77,39 @@
     import type { Order, Resource, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
+    import Error from '@/components/user experience/error/Error.vue';
     export default defineComponent({
+        components: { Error },
         data(): {
             total: number,
             placed_order: boolean,
+            error: string,
         } { return {
             placed_order: false,
-            total: 0
+            total: 0,
+            error: ''
         }},
         methods: {
+            
             add_review(): void {
                 
+            },
+            async cancel_order(): Promise<void> {
+                let userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
+                        method: 'DELETE',
+                        credentials: 'include',
+                        headers: {
+                            'X-CSRFToken' : useUserStore().csrf
+                        },
+                        body: JSON.stringify(this.order.id)
+                    })
+                if (!userResponse.ok) {
+                    this.error = 'Error cancelling order. Please try again'
+                    return
+                }
+                let user: User = await userResponse.json()
+                useUserStore().saveUser(user)
+                useUsersStore().updateUser(user)
             },
             back(): void {
                 window.location.href = '/orders'
@@ -103,6 +131,7 @@
                         'X-CSRFToken' : useUserStore().csrf
                     }
                 })
+                if (!convertedPrice.ok) return resource.price
                 let returnedPrice: {new_price: number} = await convertedPrice.json()
                 return returnedPrice.new_price
             },
@@ -210,13 +239,17 @@
         font-size: 1.5rem;
     }
 
+    #border {
+        border: 0.1rem solid #0DCAF0;
+        border-radius: 0.8rem;
+        padding: 1rem;
+    }
+
     #body {
         height: 25rem;
         overflow-y: scroll;
-        border: 0.1rem solid #0DCAF0;
-        padding: 1rem;
-        border-radius: 0.8rem;
         display: flex;
+        padding-right: 2rem;
         flex-direction: column;
         gap: 2rem;
     }
@@ -259,6 +292,11 @@
         cursor: pointer;
     }
 
+    button:hover {
+        cursor: pointer;
+        background-color: darkgray;
+    }
+
     hr { 
         border: none;
         background-color: black;
@@ -282,8 +320,8 @@
         min-width: 1rem;
         border: 0.1rem solid black;
         background-color: white;
-        left: 6.5rem;
-        top: 6rem;
+        left: 5.8rem;
+        top: 5rem;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -314,7 +352,7 @@
     }
 
     #dark #add-review {
-        color: white;
+        color: rgb(206, 206, 206);
     }
 
     #col1, #col2 {
@@ -339,8 +377,14 @@
         margin-bottom: 1rem;
     }
 
-    #header div {
+    #header div, .title {
         font-size: 1.3rem;
+    }
+
+    #number, #payment, #address {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
     }
 
     .change_text { 
@@ -356,36 +400,36 @@
         cursor: pointer;
     }
 
-    #address_lines, #user_number {
+    #address_lines {
         display: flex;
         flex-direction: column;
-        gap: 0.2rem;
+        gap: 0.6rem;
     }
 
-    #dark #body, #dark #user_number, #dark #address_lines, #dark #card_ending {
+    #dark #border, #dark #user_number, #dark #address_lines, #dark #card_ending {
         border: 0.1rem solid white;
     }
 
-    #buttons {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        margin-top: 2rem;
+    #border, #user_number, #address_lines, #card_ending {
+        width: 22rem;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 
     #buttons button {
-        width: 7rem;
         border-radius: 0.4rem;
         border: none;
-        padding: 0.4rem;
+        padding: 0.5rem;
     }
 
-    #place_order {
-        background-color: #0DCAF0;
+    #cancel {
+        background-color: red;
+        color: white;
     }
 
-    #dark #place_order {
-        background-color: white;
+    #cancel:hover {
+        background-color: darkred;
     }
 
     #back {
@@ -424,26 +468,6 @@
         font-size: 1.2rem;
     }
 
-    #place_order:hover {
-        background-color: #3991a2;
-        cursor: pointer;
-    }
-
-    #dark #place_order:hover {
-        background-color: darkgray;
-        cursor: pointer;
-    }
-
-    #cancel {
-        background-color: red;
-        color: white;
-    }
-
-    #cancel:hover {
-        cursor: pointer;
-        background-color: darkred;
-    }
-
     #number_container button {
         border: none;
         color: white;
@@ -460,32 +484,8 @@
         height: 1.5rem;
     }
 
-    .input {
-        display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
-    }
-
     .header {
         margin-top: 0.5rem;
-    }
-
-    .clockwise {
-        background-color: red;
-    }
-
-    .clockwise:hover {
-        background-color: darkred;
-        cursor: pointer;
-    }
-
-    .save {
-        background-color: green;
-    }
-
-    .save:hover {
-        background-color: darkgreen;
-        cursor: pointer;
     }
 
     #address_lines input {

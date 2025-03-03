@@ -364,6 +364,7 @@
                         'X-CSRFToken' : useUserStore().csrf
                     }
                 })
+                if (!convertedPrice.ok) return resource.price
                 let returnedPrice: {new_price: number} = await convertedPrice.json()
                 return returnedPrice.new_price
             },

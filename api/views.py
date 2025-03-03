@@ -447,7 +447,7 @@ def cart_to_wishlist(request: HttpRequest, user: int) -> JsonResponse:
     
 
 def order(request: HttpRequest, user: int) -> JsonResponse:
-    """Defining order creation"""
+    """Defining order GET, POST, and DELTE"""
     if request.method == 'GET':
         """Creating and returning order"""
         user: User = get_object_or_404(User, id=user)
@@ -526,6 +526,12 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
         resource.save()
         cart_resource.delete()
         return JsonResponse({'user': user.as_dict(), 'resources': [resource.as_dict() for resource in Resource.objects.all()]})
+    elif request.method == 'DELETE':
+        user: User = get_object_or_404(User, id=user)
+        order: Order = get_object_or_404(Order, id=json.loads(request.body))
+        order.status = 'Cancelled'
+        order.save()
+        return JsonResponse(user.as_dict())
     return JsonResponse({})
 
 

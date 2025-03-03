@@ -2,7 +2,7 @@
     <div id="container">
         <div id="content-block">
             <p id="confirmed">Order Confirmed!</p>
-            <p>Thank you for shopping with EduSource</p>
+            <p id="message">Thank you for shopping with EduSource</p>
             <div id="viewing">
                 <p class="button" @click="view('orders')">View Orders</p>
                 <p class="button" @click="view('home')">Return Home</p>
@@ -77,13 +77,24 @@
     }
 
     .button:hover {
-        text-decoration: underline;
         background-color: #248da2 !important;
         cursor: pointer;
     }
 
     #dark .button:hover {
         background-color: darkgray !important;
+    }
+
+    #dark #container {
+        color: white;
+    }
+
+    #dark #message {
+        color: rgb(206, 206, 206);
+    }
+
+    #dark #viewing {
+        color: black;
     }
 
     /* Responsive Design */
