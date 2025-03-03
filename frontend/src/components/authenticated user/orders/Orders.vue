@@ -3,7 +3,7 @@
         <div id="header">
             <p>My Orders</p>
             <div id="order_orders">
-                <div>
+                <div  v-if="filtered_orders.length > 0">
                     <label>Order By</label>
                     <select v-model="order">
                         <option value="new">Newest</option>
@@ -28,7 +28,7 @@
         </div>
         <div id="resources">
             <div id="empty-message" v-if="user.placed_orders.length === 0">No orders yet</div>
-            <div class="orders-item"  @click="view_item(order.id)" v-for="order in user.placed_orders.filter((order, index) => (((index) < (current_page*10)) && ((index+1) > ((current_page-1)*10))) && (status === 'all' || order.status === status)).sort((a,b) => {return order === 'new' ? b.id-a.id : a.id-b.id})">
+            <div class="orders-item"  @click="view_item(order.id)" v-for="order in filtered_orders">
                 <div class="item-one">
                     <div class="item-image">
                         <img :src="`http://localhost:8000${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`" alt="">
@@ -41,11 +41,11 @@
                     </div>
                 </div>
             </div>
-            <div v-if="user.placed_orders.sort((a,b) => {return order === 'new' ? b.id-a.id : a.id-b.id}).filter(order => status === 'all' || order.status === status).length === 0">
+            <div v-if="filtered_orders.length === 0">
                 <p id="no-orders">No orders to show</p>
             </div>
         </div>
-        <div id="pagination">
+        <div id="pagination" v-if="filtered_orders.length > 0">
             <div>
                 <p>Page</p>
             </div>
@@ -99,6 +99,13 @@
             }
         },
         computed: {
+            filtered_orders(): Order[] {
+                let temp_orders = this.user.placed_orders.filter(order => this.status === 'all' || order.status === this.status)
+                this.total_pages = Math.ceil(temp_orders.length/10)
+                this.current_page = 1
+                return temp_orders.filter((order, index) => ((index) < (this.current_page*10)) && ((index+1) > ((this.current_page-1)*10)))
+                .sort((a,b) => {return this.order === 'new' ? b.id-a.id : a.id-b.id})
+            },
             user(): User {
                 return useUserStore().user
             },
@@ -297,7 +304,7 @@
     #pagination #pagination-buttons button {
         border-radius: 0.5rem;
         border: none;
-        padding: 0.5rem;
+        padding: 0.45rem;
         background-color: #0DCAF0;
         color: white;
     }
@@ -342,7 +349,7 @@
         }
 
         #resources {
-            height: 50rem;
+            height: 76vh;
         }
     }
 </style>

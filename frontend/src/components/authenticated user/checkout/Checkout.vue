@@ -775,7 +775,7 @@
             gap: 4rem;
             overflow-y: scroll;
             padding-right: 2rem;
-            max-height: 42rem;
+            max-height: 70vh;
             margin-top: 0rem;
         }
 

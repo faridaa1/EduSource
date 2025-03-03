@@ -491,4 +491,24 @@
     #address_lines input {
         border-radius: 0.5rem;
     }
+
+    /* Responsive Design */
+    @media (max-width: 1002px) {
+        #content { 
+            flex-direction: column;
+            gap: 4rem;
+            overflow-y: scroll;
+            padding-right: 1rem;
+            max-height: 86vh;
+            margin-top: 0rem;
+        }
+
+        #checkout {
+            gap: 1rem;
+        }
+
+        #buttons {
+            margin: auto;
+        }
+    }
 </style>
