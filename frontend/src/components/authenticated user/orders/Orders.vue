@@ -34,14 +34,14 @@
             </div>
         </div>
         <div id="resources">
-            <div v-if="!searching" class="orders-item"  @click="view_item(order.id)" v-for="order in filtered_orders">
+            <div v-if="!searching" class="orders-item" @click="view_item(order.id)" v-for="order in filtered_orders">
                 <div class="item-one">
                     <div class="item-image">
                         <img :src="`http://localhost:8000${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`" alt="">
                         <p id="number_of_items">{{ order_total(order) }}</p>
                     </div>
                     <div class="details">
-                        <p>Order Number {{ order.id }}</p>
+                        <p :id="order.id.toString()">Order Number {{ order.id }}</p>
                         <p id="status"> Status: {{ order.status }}</p>
                         <p id="view-details">View Details</p>
                     </div>
@@ -77,22 +77,24 @@
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent } from 'vue';
+    import { defineComponent, nextTick } from 'vue';
     import type { Order, Resource, User, } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import Loading from '@/components/user experience/loading/Loading.vue';
     export default defineComponent({
         components: { Loading },
         data(): {
-            order: 'new' | 'old'
+            mounted: boolean,
+            order: 'new' | 'old' | string
             status: 'all' | 'Placed' | 'Processing' | 'Refund Rejected' | 'Dispatched' 
-                    | 'Cancelled' | 'Complete' | 'Being Returned' | 'Refunded'
+                    | 'Cancelled' | 'Complete' | 'Being Returned' | 'Refunded' | string
             current_page: number,
             total_pages: number,
             search: string,
             searching: boolean,
             searched_items: Order[]
         } { return {
+            mounted: false,
             order: 'new',
             search: '',
             status: 'all',
@@ -103,7 +105,7 @@
         }},
         methods: {
             update_page(new_page: number): void {
-                this.current_page = this.current_page + 1
+                this.current_page = this.current_page + new_page
             },
             handle_x_click(): void {
                 const input: HTMLInputElement = document.getElementById('order-search') as HTMLInputElement
@@ -156,7 +158,7 @@
                 div.blur()
             },
             view_item(id: number): void {
-                window.location.href = `/order/${id}`
+                window.location.href = `/order/${id}/${this.status}/${this.order}/${this.current_page}`
             },
             order_total(order: Order): number {
                 let total = 0
@@ -189,12 +191,15 @@
                 const div: HTMLDivElement = document.getElementById('resources') as HTMLDivElement
                 if (!div) return
                 div.scrollTo({top: 0})
+                if ((window.location.href.split('/').length > 4) && this.mounted) return
+                console.log('soz', this.mounted)
                 this.current_page = 1
             },
             status(): void {
                 const div: HTMLDivElement = document.getElementById('resources') as HTMLDivElement
                 if (!div) return
                 div.scrollTo({top: 0})
+                if ((window.location.href.split('/').length > 4) && this.mounted) return
                 this.current_page = 1
             }
         },
@@ -205,6 +210,20 @@
                     this.search_orders()
                 }
             })
+            const window_location: string[] = window.location.href.split('/')
+            if (window_location.length > 4) {
+                // reset settings
+                this.status = window_location[5]
+                this.order = window_location[6]
+                this.current_page = parseInt(window_location[7]) 
+                const div: HTMLDivElement = document.getElementById(window_location[4]) as HTMLDivElement
+                if (div) {
+                    nextTick(() => {
+                        div.scrollIntoView()
+                        // this.mounted = true
+                    })
+                }
+            }
         }
     })
 </script>

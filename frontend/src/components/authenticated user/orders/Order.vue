@@ -82,7 +82,7 @@
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
-import Loading from '@/components/user experience/loading/Loading.vue';
+    import Loading from '@/components/user experience/loading/Loading.vue';
     export default defineComponent({
         components: { Error, Loading },
         data(): {
@@ -102,9 +102,6 @@ import Loading from '@/components/user experience/loading/Loading.vue';
                     return
                 }
                 window.location.href = `/view/${id}`
-            },
-            view_review(): void {
-                
             },
             add_review(resource: Resource): void {
                 if (this.can_review(resource)) {
@@ -135,7 +132,8 @@ import Loading from '@/components/user experience/loading/Loading.vue';
                 useUsersStore().updateUser(user)
             },
             back(): void {
-                window.location.href = '/orders'
+                const window_location: string[] = window.location.href.split('/')
+                window.location.href = `/orders/${this.order.id}/${window_location[5]}/${window_location[6]}/${window_location[7]}`
             },
             home(): void {
                 window.location.href = '/cart'
@@ -195,7 +193,7 @@ import Loading from '@/components/user experience/loading/Loading.vue';
             order(): Order {
                 if (!this.user || !this.user.placed_orders) return {} as Order
                 const window_location: string[] = window.location.href.split('/')
-                const id: number = parseInt(window_location[window_location.length-1])
+                const id: number = parseInt(window_location[4])
                 return this.user.placed_orders.find(order => order.id === id) || {} as Order
             }
         },
