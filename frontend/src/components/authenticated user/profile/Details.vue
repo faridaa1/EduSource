@@ -1192,6 +1192,14 @@
     .cancel i {
         font-size: 1.3rem;
     }
+
+    #dark #details {
+        color: white !important;
+    }
+
+    #dark #subject-preferences {
+        color: black;
+    }
     
     .save:hover {
         background-color: rgb(105, 214, 105);

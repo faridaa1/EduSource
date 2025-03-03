@@ -342,6 +342,14 @@
         color: white;
     }
 
+    #dark #view-details {
+        color: rgb(206, 206, 206);
+    }
+
+    #dark #cart-view {
+        color: white;
+    }
+
     #clear:hover, #remove_from_wishlist:hover {
         cursor: pointer;
         background-color: darkred;

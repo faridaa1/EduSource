@@ -114,12 +114,13 @@ export interface WishlistResource {
 
 export interface Order {
     id: number,
-    status: 'Processing' | 'Dispatched' | 'Complete' | 'Being Returned' | 'Refunded',
+    status: 'Placed' | 'Processing' | 'Refund Rejected' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Being Returned' | 'Refunded',
     buyer: number,
     seller: number,
     resources: OrderResource[],
     estimated_delivery_date: string,
-    delivery_image: string
+    delivery_image: string,
+    date: string,
 }
 
 export interface OrderResource {

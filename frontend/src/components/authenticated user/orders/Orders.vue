@@ -137,10 +137,6 @@
         color: #789ECA;
     }
 
-    #dark #view-details {
-        color: rgb(255, 255, 255);
-    }
-
     #view-details:hover {
         cursor: pointer;
         text-decoration: underline;
@@ -181,6 +177,18 @@
 
     select {
         border-radius: 0.5rem;
+    }
+
+    #dark #orders-view, #dark #view-details {
+        color: white;
+    }
+
+    #dark #number_of_items {
+        color: black;
+    }
+
+    #dark #status {
+        color: rgb(206, 206, 206);
     }
 
     /* Responsive Design */

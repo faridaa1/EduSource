@@ -126,6 +126,10 @@
         margin-left: auto;
         margin-bottom: 0.5rem;
     }
+
+    #dark #datee {
+        color: rgb(206, 206, 206);
+    }
    
     .date-head {
         display: flex;
@@ -199,6 +203,10 @@
         border-radius: 0.5rem;
     }
 
+    #dark .message:hover {
+        background-color: darkgray;
+    }
+
     .username {
         font-weight: bold;
         padding-left: 0.5rem;
@@ -239,6 +247,10 @@
     .nav select {
         border-radius: 0.5rem;
         padding: 0.5rem;
+    }
+
+    #dark #main {
+        color: white;
     }
 
     /* Responsive design */

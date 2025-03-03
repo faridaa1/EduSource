@@ -312,7 +312,7 @@
     }
 
     #dark #view-details {
-        color: rgb(255, 255, 255);
+        color: rgb(206, 206, 206);
     }
 
     #view-details:hover {
@@ -443,6 +443,18 @@
     #minus i {
         color: red !important;
         font-size: 0.8rem;
+    }
+
+    #dark #cart-view {
+        color: white;
+    }
+
+    #dark #minus, #dark #plus, #dark #number {
+        color: black;
+    }
+
+    #dark #view-details {
+        color: rgb(206, 206, 206);
     }
 
     /* Responsive Design */

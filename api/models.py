@@ -289,11 +289,12 @@ class Review(models.Model):
 
 class Order(models.Model):
     """Defining attributes and methods for Order model"""
-    STATUSES: list [tuple[str, str]] = [('Processing', 'Processing'), ('Dispatched', 'Dispatched'), ('Complete', 'Complete'), ('Being Returned', 'Being Returned'), ('Refunded', 'Refunded')]
-    status = models.CharField(max_length=14, choices=STATUSES, default='Processing', null=False, blank=False)
+    STATUSES: list [tuple[str, str]] = [('Placed', 'Places'), ('Processing', 'Processing'), ('Cancelled', 'Cancelled'), ('Refund Rejected', 'Refund Rejected'), ('Dispatched', 'Dispatched'), ('Complete', 'Complete'), ('Being Returned', 'Being Returned'), ('Refunded', 'Refunded')]
+    status = models.CharField(max_length=15, choices=STATUSES, default='Placed', null=False, blank=False)
     buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='buyer')
     seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='seller')
     estimated_delivery_date = models.DateField(null=False, blank=False)
+    date = models.DateField(null=False, blank=False, default=timezone.now)
     delivery_image = models.ImageField(null=False, blank=True, upload_to='delivery_images/')
 
 
@@ -307,6 +308,7 @@ class Order(models.Model):
             'seller': self.seller.id,
             'resources': [resource.as_dict() for resource in resources],
             'estimated_delivery_date': self.estimated_delivery_date,
+            'date': self.date,
             'delivery_image': self.delivery_image.url if self.delivery_image else None,
         }
     

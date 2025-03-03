@@ -311,6 +311,10 @@
         color: rgb(86, 85, 85);
     }
 
+    #dark #back i:hover {
+        color: rgb(206, 206, 206);
+    }
+
     #back i {
         font-size: 1.5rem;
     }
@@ -321,6 +325,10 @@
         flex-direction: column;
         align-items: center;
         height: 55rem;
+    }
+
+    #dark #message-container {
+        color: white;
     }
 
     #header {
@@ -445,6 +453,14 @@
         height: 0.1rem;
         width: 7rem;
    }
+
+   #dark #time, #dark #time, #dark #time1, #dark #unread, #dark #unread1 {
+        color: rgb(206, 206, 206);
+   }
+
+   #dark hr {
+        background-color: rgb(206, 206, 206);
+    }
 
     /* Responsive design */
     @media (max-width: 734px) {

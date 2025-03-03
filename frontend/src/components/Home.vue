@@ -229,6 +229,10 @@
         cursor: pointer;
     }
 
+    #dark #buyer-home {
+        color: white !important;
+    }
+
     /* Responsive Design */
     @media (max-width: 510px) {
         #recommendations, #textbooks, #notes, #stationery {

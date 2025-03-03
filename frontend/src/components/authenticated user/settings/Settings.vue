@@ -141,6 +141,10 @@
         padding-top: 1rem;
         padding-bottom: 1rem;
     }
+
+    #dark #settings-container, #dark .setting label {
+        color: white !important;
+    }
   
     .setting label {
         width: 4.5rem;
