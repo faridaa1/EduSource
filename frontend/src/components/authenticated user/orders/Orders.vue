@@ -191,15 +191,14 @@
                 const div: HTMLDivElement = document.getElementById('resources') as HTMLDivElement
                 if (!div) return
                 div.scrollTo({top: 0})
-                if ((window.location.href.split('/').length > 4) && this.mounted) return
-                console.log('soz', this.mounted)
+                if ((window.location.href.split('/').length > 4) && !this.mounted) return
                 this.current_page = 1
             },
             status(): void {
                 const div: HTMLDivElement = document.getElementById('resources') as HTMLDivElement
                 if (!div) return
                 div.scrollTo({top: 0})
-                if ((window.location.href.split('/').length > 4) && this.mounted) return
+                if ((window.location.href.split('/').length > 4) && !this.mounted) return
                 this.current_page = 1
             }
         },
@@ -215,14 +214,14 @@
                 // reset settings
                 this.status = window_location[5]
                 this.order = window_location[6]
-                this.current_page = parseInt(window_location[7]) 
-                const div: HTMLDivElement = document.getElementById(window_location[4]) as HTMLDivElement
-                if (div) {
-                    nextTick(() => {
+                this.current_page = parseInt(window_location[7])
+                nextTick(() => {
+                    const div: HTMLParagraphElement = document.getElementById(window_location[4]) as HTMLParagraphElement
+                    if (div) {
                         div.scrollIntoView()
                         // this.mounted = true
-                    })
-                }
+                    }
+                })
             }
         }
     })

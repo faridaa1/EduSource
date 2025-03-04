@@ -14,6 +14,7 @@ import Message from '@/components/authenticated user/messaging/Message.vue'
 import Messages from '@/components/authenticated user/messaging/Messages.vue'
 import SearchResults from '@/components/SearchResults.vue'
 import Settings from '@/components/authenticated user/settings/Settings.vue'
+import Return from '@/components/authenticated user/orders/Return.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -33,8 +34,9 @@ const router = createRouter({
     { path: '/checkout/', component: Checkout },
     { path: '/order-confirmation', name: 'order confirmation', component: OrderConfirmation },
     { path: '/orders', name: 'orders', component: Orders },
-    { path: '/orders/:catchAll(.*)', name: 'orders', component: Orders },
-    { path: '/order/:id/:status/:order/:page', name: 'order', component: Order },
+    { path: '/orders/:catchAll(.*)', name: 'back orders', component: Orders },
+    { path: '/order/:catchAll(.*)', name: 'order', component: Order },
+    { path: '/return/:id', name: 'return', component: Return },
     { path: '/seller/:name', name: 'seller profile', component: SellerProfile },
     { path: '/message/:user1/:user2', name: 'message', component: Message },
     { path: '/messages', name: 'messages', component: Messages },

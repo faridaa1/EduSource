@@ -1,19 +1,19 @@
 <template>
     <div id="order" v-if="Object.keys(order).length > 0 && Object.keys(all_resources).length > 0">
         <div id="order-title">
-            <div id="main">Order {{ order.id }}</div>
+            <div id="main">Order {{ order.id }}: Return</div>
             <div id="back" @click="back">
                 <i class="bi bi-arrow-left-circle-fill"></i> 
-                <p>Orders</p>
+                <p>Order</p>
             </div>
         </div>
         <div id="content">
-        <div id="col1">
+            <div id="col1">
                 <div id="border">
                     <div id="items">
                         <div id="header">
-                            <div id="one">Items</div>
-                            <div id="two">Total: {{ currency }}{{ total.toFixed(2) }} </div>
+                            <div id="one">Items for Return</div>
+                            <div id="two">Refund: {{ currency }}{{ total.toFixed(2) }} </div>
                         </div>
                         <div id="body">
                             <div class="resource" v-for="resource in order.resources" @click="(event) => view_resource(event, getResource(resource.resource).id)">
@@ -61,7 +61,7 @@
                     </div>
                 </div>
                 <div id="buttons">
-                    <button v-if="returnable && order.status === 'Complete'" @click="start_return(order)">Start Return</button>
+                    <button v-if="returnable && order.status === 'Complete'" @click="submit_return(order)">Submit</button>
                     <button id="cancel" v-if="order.status === 'Placed'" @click="cancel_order">Cancel</button>
                 </div>
             </div>
@@ -95,8 +95,8 @@
             error: ''
         }},
         methods: {
-            start_return(order: Order): void {
-                window.location.href = `/return/${order.id}`
+            submit_return(order: Order): void {
+                window.location.href = `/order/${order.id}`
             },
             view_resource(event: Event, id: number): void {
                 if (event.target && (event.target as HTMLDivElement).id === 'add-review') {
@@ -136,7 +136,7 @@
             },
             back(): void {
                 const window_location: string[] = window.location.href.split('/')
-                window.location.href = `/orders/${this.order.id}/${window_location[5]}/${window_location[6]}/${window_location[7]}`
+                window.location.href = `/order/${window_location[window_location.length-1]}`
             },
             home(): void {
                 window.location.href = '/cart'
@@ -161,7 +161,7 @@
             },
             get_total(): void {
                 this.total = 0
-                if (!this.user.cart || !this.user.cart.resources) return
+                if (!this.order || !this.order.resources) return
                 for (let item of this.order.resources) {
                     let resource = this.all_resources.find(resource => resource.id === item.resource)
                     if (resource) {
@@ -169,18 +169,12 @@
                         this.total += item.number * price
                     }
                 }
-            }
+            },
+            returnable(resourceID: number): boolean {
+                return this.all_resources.find(resource => resource.id === resourceID)?.allow_return || false
+            },
         },
         computed: {
-            returnable(): boolean {
-                for(const resource of this.order.resources) {
-                    const res = this.getResource(resource.resource)
-                    // can return 30 days within purchase date
-                    const purchase_days: number = (new Date().getTime() - new Date(this.order.date).getTime())/1000/3600/24
-                    if (res.allow_return && purchase_days <= 30) return true
-                }
-                return false
-            },
             currency(): string {
                 return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
             },
@@ -194,10 +188,12 @@
                 return useResourcesStore().resources
             },
             order(): Order {
-                if (!this.user || !this.user.placed_orders) return {} as Order
                 const window_location: string[] = window.location.href.split('/')
                 const id: number = parseInt(window_location[4])
-                return this.user.placed_orders.find(order => order.id === id) || {} as Order
+                if (!this.user || !this.user.placed_orders || !this.user.placed_orders.find(order => order.id === id)) return {} as Order
+                let order: Order = this.user.placed_orders.find(order => order.id === id) as Order
+                order.resources = order.resources.filter(resource => this.returnable(resource.resource))
+                return order
             }
         },
         async mounted(): Promise<void> {
@@ -466,7 +462,6 @@
     }
 
     #dark #buttons button {
-        color: black;
         background-color: white ;
     }
 
