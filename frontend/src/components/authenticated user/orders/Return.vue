@@ -114,6 +114,7 @@
                 <div id="buttons">
                     <button v-if="order.status === 'Complete'" @click="submit_return(order, false)">Submit</button>
                     <button id="cancel" v-if="order.status === 'Requested Return'" @click="submit_return(order, true)">Cancel</button>
+                    <button id="message_seller" v-if="order.status === 'Requested Return'" @click="message_seller(order.seller)">Message Seller</button>
                 </div>
             </div>
         </div>
@@ -156,6 +157,9 @@
             changing_address: false,
         }},
         methods: {
+            message_seller(seller_id: number): void {
+                window.location.href = `/message/${this.user.id}/${seller_id}`
+            },
             async return_item(return_number: number, resource_id: number): Promise<void> {
                 let returnItemResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/return/${this.order.id}/${resource_id}/`, {
                         method: 'PUT',
@@ -725,6 +729,11 @@
         text-overflow: ellipsis;
     }
 
+    #buttons {
+        display: flex;
+        gap: 1rem;
+    }
+    
     #buttons button {
         border-radius: 0.4rem;
         border: none;

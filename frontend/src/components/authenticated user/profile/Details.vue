@@ -1152,8 +1152,13 @@
     }
 
     .save {
-        background-color: green;
         padding: 0.3rem;
+        background-color: green;
+    }
+
+    button:disabled {
+        background-color: lightgray !important;
+        cursor: not-allowed;
     }
 
     .cancel {

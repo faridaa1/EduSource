@@ -324,7 +324,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        height: 55rem;
+        height: 86vh;
     }
 
     #dark #message-container {

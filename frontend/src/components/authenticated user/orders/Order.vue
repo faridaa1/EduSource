@@ -63,6 +63,7 @@
                 <div id="buttons">
                     <button v-if="returnable && order.status === 'Complete'" @click="start_return(order)">Start Return</button>
                     <button id="cancel" v-if="returnable && order.status === 'Requested Return'" @click="start_return(order)">Cancel Return</button>
+                    <button id="message_seller" v-if="returnable && order.status === 'Requested Return'" @click="message_seller(order.seller)">Message Seller</button>
                     <button id="cancel" v-if="order.status === 'Placed'" @click="cancel_order">Cancel</button>
                 </div>
             </div>
@@ -96,6 +97,9 @@
             error: ''
         }},
         methods: {
+            message_seller(seller_id: number): void {
+                window.location.href = `/message/${this.user.id}/${seller_id}`
+            },
             start_return(order: Order): void {
                 const window_location: string[] = window.location.href.split('/')
                 if (window_location.length === 5) {
@@ -470,6 +474,11 @@
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
+    }
+
+    #buttons {
+        display: flex;
+        gap: 1rem;
     }
 
     #buttons button {
