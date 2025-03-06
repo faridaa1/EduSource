@@ -27,7 +27,7 @@
                                     <div v-if="order.status !== 'Requested Return'">{{ currency }}{{ (parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
                                     <div v-else>{{ currency }}{{ (resource.number_for_return*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
                                     <div id="toggle" v-if="order.status !== 'Requested Return'">
-                                        <div id="resnum">{{ resource.number_for_return }}</div>
+                                        <div id="resnum1">{{ resource.number_for_return }}</div>
                                         <div id=controls>
                                             <div id="plus" v-if="resource.number_for_return < resource.number" @click="return_item(resource.number_for_return+1, resource.id)">+</div>
                                             <hr v-if="resource.number_for_return > 0 && resource.number_for_return < resource.number">
@@ -342,7 +342,12 @@
                 useUserStore().saveUser(data.user)
                 useUsersStore().updateUser(data.user)
                 useResourcesStore().saveResources(data.resources)
-                window.location.href = `/order/${order.id}`
+                const window_location: string[] = window.location.href.split('/')
+                if (window_location.length <= 5) {
+                    window.location.href = `/order/${window_location[4]}`
+                    return
+                }
+                window.location.href = `/order/${window_location[4]}/${this.order.status}/${window_location[6]}/${window_location[7]}`
             },
             attribute_existence(data: string): boolean {
                 const user = useUsersStore().users.filter(user => user.id !== this.user.id).find(user => user.phone_number === data)
@@ -350,10 +355,11 @@
             },
             back(): void {
                 const window_location: string[] = window.location.href.split('/')
-                window.location.href = `/order/${window_location[4]}/${window_location[5]}/${window_location[6]}/${window_location[7]}`
-            },
-            home(): void {
-                window.location.href = '/cart'
+                if (window_location.length <= 5) {
+                    window.location.href = `/order/${window_location[4]}`
+                    return
+                }
+                window.location.href = `/order/${window_location[4]}/${this.order.status}/${window_location[6]}/${window_location[7]}`
             },
             getResource(resource_id: number): Resource {
                 const resource: Resource | undefined = this.all_resources.find(resource => resource.id === resource_id)
@@ -606,6 +612,10 @@
     #minus i {
         color: red !important;
         font-size: 0.8rem;
+    }
+
+    #resnum1 {
+        margin: auto;
     }
 
     #resnum {
