@@ -239,6 +239,11 @@
         gap: 1rem;
     }
 
+    #order-search {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
     #header {
         display: flex;
         justify-content: space-between;
