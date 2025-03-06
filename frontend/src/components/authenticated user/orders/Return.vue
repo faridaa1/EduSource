@@ -948,6 +948,11 @@
         #checkout {
             gap: 1rem;
         }
+
+        #back {
+            left: 1rem;
+            margin-top: 0.2rem;
+        }
     }
 
     @media (max-width: 686px) {
