@@ -431,6 +431,10 @@
     background-color: #0DCAF0;
   }
 
+  #hamburger, #profile-nav {
+    z-index: 1;
+  }
+
 
   /* Responsive Design */
   @media (max-width: 871px) {

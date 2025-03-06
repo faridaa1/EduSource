@@ -4,7 +4,7 @@ import json
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate
-from django.db.models import Avg, OuterRef
+from django.db.models import Avg
 from django.contrib import auth
 import torch
 from .forms import SignupForm, AddressForm, LoginForm
@@ -447,7 +447,7 @@ def cart_to_wishlist(request: HttpRequest, user: int) -> JsonResponse:
     
 
 def order(request: HttpRequest, user: int) -> JsonResponse:
-    """Defining order GET, POST, and DELTE"""
+    """Defining order GET, POST, and DELETE"""
     if request.method == 'GET':
         """Creating and returning order"""
         user: User = get_object_or_404(User, id=user)
@@ -716,6 +716,44 @@ def semantic_search_orders(request: HttpRequest, id: int, search: str, mode: str
         return JsonResponse(matching_orders, safe=False)
     return JsonResponse({})
 
-
 def order_data(item: tuple):
     return item[1] # sort based on values
+
+
+def order_return(request: HttpRequest, user: id, order: id, resource: id) -> JsonResponse:
+    """Defining PUT and POST for return"""
+    user: User = get_object_or_404(User, id=user)
+    order: Order = get_object_or_404(Order, id=order)
+    resource: OrderResource = get_object_or_404(OrderResource, id=resource)
+    if request.method == 'PUT':
+        resource.number_for_return = json.loads(request.body)
+        if resource.number_for_return > 0:
+            resource.for_return = True
+        else:
+            resource.for_return = False
+        resource.save()
+        return JsonResponse({'user': user.as_dict(), 'resource': resource.as_dict()})
+    return JsonResponse({})
+
+
+def submit_return(request: HttpRequest, user: id, order: id) -> JsonResponse:
+    """Defining PUT and POST for return"""
+    user: User = get_object_or_404(User, id=user)
+    order: Order = get_object_or_404(Order, id=order)
+    if request.method == 'PUT':
+        data = json.loads(request.body)
+        order.status = 'Complete' if data['cancel'] == 'true' else 'Requested Return'
+        order.save()
+        print(data, data['cancel'] == 'true')
+        if data['cancel'] == 'true':
+            for order_resource in order.order_resource.all():
+                order_resource.for_return = False
+                order_resource.number_for_return = 0
+                order_resource.save()
+            order.return_reason = ''
+        else:
+            order.return_method = data['return_method']
+            order.return_reason = data['return_reason']
+        order.save()
+        return JsonResponse({'user': user.as_dict(), 'resources': [resource.as_dict() for resource in Resource.objects.all()]})
+    return JsonResponse({})

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
-from .views import order, signout, semantic_search_orders, semantic_search_subjects, semantic_search, message, messages, signup, login, users, edit_review, currency_conversion, cart_to_wishlist, user, review, resources, user_details, check_details, update_wishlist, new_listing, sentiment_analysis, update_cart, get_cart
+from .views import order, order_return, signout, submit_return, semantic_search_orders, semantic_search_subjects, semantic_search, message, messages, signup, login, users, edit_review, currency_conversion, cart_to_wishlist, user, review, resources, user_details, check_details, update_wishlist, new_listing, sentiment_analysis, update_cart, get_cart
 
 urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [
     path('signout/', signout, name='signout'),
@@ -16,6 +16,8 @@ urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [
     path('api/currency-conversion/<int:id>/<str:from_currency>/<str:to_currency>/', currency_conversion, name='currency conversion'),
     path('api/user/', user, name='user'),
     path('api/user/<int:user>/order/', order, name='order'),
+    path('api/user/<int:user>/return/<int:order>/', submit_return, name='submit_return'),
+    path('api/user/<int:user>/return/<int:order>/<int:resource>/', order_return, name='toggle return'),
     path('api/resources/', resources, name='resources'),
     path('api/user/<int:user>/cart-to-wishlist/', cart_to_wishlist, name='cart to wishlist'),
     path('api/user/<int:user>/wishlist/', update_wishlist, name='update wishlist'),

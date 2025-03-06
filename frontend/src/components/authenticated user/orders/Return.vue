@@ -12,36 +12,33 @@
                 <div id="border">
                     <div id="items">
                         <div id="header">
-                            <div id="one">Items for Return</div>
+                            <div id="one">Returnable Items</div>
                             <div id="two">Refund: {{ currency }}{{ total.toFixed(2) }} </div>
                         </div>
                         <div id="body">
-                            <div class="resource" v-for="resource in order.resources" @click="(event) => view_resource(event, getResource(resource.resource).id)">
+                            <div id="select_item_error" v-if="select_item_error !== ''">{{ select_item_error }}</div>
+                            <div class="resource" v-for="resource in order.resources.filter(resource => getResource(resource.resource).allow_return)">
                                 <div id="image">
                                     <img :src="`http://localhost:8000/${getResource(resource.resource).image1}`" alt="">
-                                    <div id="resnum">{{ resource.number }}</div>
+                                    <div v-if="order.status === 'Requested Return'" id="resnum">{{ resource.number_for_return }}</div>
                                 </div>
                                 <div class="name">
                                     <div>{{ getResource(resource.resource).name }}</div>
-                                    <div>{{ currency }}{{ (resource.number*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
-                                    <p id="add-review" v-if="!(getResource(resource.resource).user === user.id) && can_review(getResource(resource.resource))">Add Review</p>
-                                    <p id="add-review" v-if="!(getResource(resource.resource).user === user.id) && !can_review(getResource(resource.resource))">View Review</p>
+                                    <div v-if="order.status !== 'Requested Return'">{{ currency }}{{ (parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
+                                    <div v-else>{{ currency }}{{ (resource.number_for_return*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
+                                    <div id="toggle" v-if="order.status !== 'Requested Return'">
+                                        <div id="resnum">{{ resource.number_for_return }}</div>
+                                        <div id=controls>
+                                            <div id="plus" v-if="resource.number_for_return < resource.number" @click="return_item(resource.number_for_return+1, resource.id)">+</div>
+                                            <hr v-if="resource.number_for_return > 0 && resource.number_for_return < resource.number">
+                                            <div id="minus" v-if="resource.number_for_return > 0" :class="resource.number < getResource(resource.resource).stock ? '' : 'round-border'" @click="return_item(resource.number_for_return-1, resource.id)">-</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div id="address">
-                    <div class="title">Delivery Address</div>
-                    <div id="address_lines">
-                        <div>{{ user.address_line_one }}</div>
-                        <div>{{ user.address_second_line }}</div>
-                        <div>{{ user.city }}</div>
-                        <div>{{ user.postcode }}</div>
-                    </div>
-                </div>
-            </div>
-            <div id="col2">
                 <div id="payment">
                     <div class="title">Payment Method</div>
                     <div id="card_ending">
@@ -49,20 +46,74 @@
                     </div>
                 </div>
                 <div id="number">
-                    <div class="title">Phone Number</div>
+                    <div>Seller Phone Number</div>
                     <div id="user_number">
-                        <div>{{ user.phone_number }}</div>
+                        <div id="number_container">
+                            <div><input id="number_input" type="text" :value="seller.phone_number" disabled @input="clear_number_error"></div>
+                            <div class="edit-buttons" v-if="changing_number">
+                                <button class="save" @click="change_phone_number"><i class="bi bi-floppy-fill"></i></button>
+                                <button class="clockwise" @click="cancel_edit(0)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                            </div>
+                        </div>
+                        <!-- <div v-if="!changing_number" class="change_text" @click="changing_number = true">Change Phone Number</div> -->
                     </div>
                 </div>
+            </div>
+            <div id="col2">
                 <div id="number">
                     <div class="title">Status</div>
                     <div id="user_number">
                         {{ order.status }}
                     </div>
                 </div>
+                <div id="address">
+                    <div>Seller Address</div>
+                    <div id="address_lines">
+                        <div v-if="!changing_address">{{ seller.address_line_one }}</div>
+                        <div v-if="seller.address_second_line && !changing_address">{{ seller.address_second_line }}</div>
+                        <div v-if="!changing_address">{{ seller.city }}</div>
+                        <div v-if="!changing_address">{{ seller.postcode }}</div>
+                        <!-- <div v-if="!changing_address" class="change_text" @click="changing_address = true">Change Address</div> -->
+                        <div v-if="changing_address" class="input">
+                            <label for="">First Line</label>
+                            <input id="address1" type="text" :value="user.address_line_one" @input="clear_address_error">
+                        </div>
+                        <div v-if="changing_address" class="input">
+                            <label for="" class="header">Second Line</label>
+                            <input id="address2" type="text" :value="user.address_second_line" @input="clear_address_error">
+                        </div>
+                        <div v-if="changing_address" class="input">
+                            <label for="" class="header">City</label>
+                            <input id="city" type="text" :value="user.city" @input="clear_address_error">
+                        </div>
+                        <div v-if="changing_address" class="input">
+                            <label for="" class="header">Postcode</label>
+                            <input id="postcode" type="text" :value="user.postcode" @input="clear_address_error">
+                        </div>
+                        <div v-if="changing_address" class="edit-buttons header">
+                            <button class="save" @click="change_address"><i class="bi bi-floppy-fill"></i></button>
+                            <button class="clockwise" @click="cancel_edit(1)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div id="number">
+                    <div class="title">Return Method</div>
+                    <div id="user_number">
+                        <select :disabled="order.status === 'Requested Return'" v-model="return_method">
+                            <option value="Delivery">Delivery</option>
+                            <option value="Collection">Collection</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="return_reason"  v-if="order.status !== 'Requested Return' || (order.status === 'Requested Return' && order.return_reason !== '')">
+                    <div class="title">Return Reason (optional)</div>
+                    <div id="user_number">
+                        <textarea :disabled="order.status === 'Requested Return'" v-model="return_reason" placeholder="Enter reason for return"></textarea>
+                    </div>
+                </div>
                 <div id="buttons">
-                    <button v-if="returnable && order.status === 'Complete'" @click="submit_return(order)">Submit</button>
-                    <button id="cancel" v-if="order.status === 'Placed'" @click="cancel_order">Cancel</button>
+                    <button v-if="order.status === 'Complete'" @click="submit_return(order, false)">Submit</button>
+                    <button id="cancel" v-if="order.status === 'Requested Return'" @click="submit_return(order, true)">Cancel</button>
                 </div>
             </div>
         </div>
@@ -78,7 +129,7 @@
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
     import { defineComponent } from 'vue';
-    import type { Order, Resource, Review, User } from '@/types';
+    import type { Order, OrderResource, Resource, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
@@ -87,56 +138,219 @@
         components: { Error, Loading },
         data(): {
             total: number,
+            return_reason: string,
             placed_order: boolean,
             error: string,
+            changing_number: boolean,
+            changing_address: boolean,
+            return_method: 'Delivery' | 'Collection',
+            select_item_error: string,
         } { return {
+            return_method: 'Delivery',
             placed_order: false,
+            select_item_error: '',
+            return_reason: '',
             total: 0,
-            error: ''
+            error: '',
+            changing_number: false,
+            changing_address: false,
         }},
         methods: {
-            submit_return(order: Order): void {
-                window.location.href = `/order/${order.id}`
-            },
-            view_resource(event: Event, id: number): void {
-                if (event.target && (event.target as HTMLDivElement).id === 'add-review') {
-                    const resource: Resource = this.all_resources.find(resource => resource.id === id) as Resource
-                    this.add_review(resource)
-                    return
-                }
-                window.location.href = `/view/${id}`
-            },
-            add_review(resource: Resource): void {
-                if (this.can_review(resource)) {
-                    window.location.href = `/view/${resource.id}/add-review`
-                } else {
-                    window.location.href = `/view/${resource.id}/review/${(resource.reviews.find(review => review.user === this.user.id && review.resource === resource.id) as Review).id}`
-                }
-            },
-            can_review(resource: Resource): boolean {
-                if (!resource.reviews || resource.reviews.length === 0) return true
-                return resource.reviews.find(review => review.user === this.user.id && review.resource === resource.id) ? false : true
-            },
-            async cancel_order(): Promise<void> {
-                let userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
-                        method: 'DELETE',
+            async return_item(return_number: number, resource_id: number): Promise<void> {
+                let returnItemResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/return/${this.order.id}/${resource_id}/`, {
+                        method: 'PUT',
                         credentials: 'include',
                         headers: {
-                            'X-CSRFToken' : useUserStore().csrf
+                            'X-CSRFToken' : useUserStore().csrf,
+                            'Content-Type' : 'application/json',
                         },
-                        body: JSON.stringify(this.order.id)
+                        body: JSON.stringify(return_number)
                     })
-                if (!userResponse.ok) {
-                    this.error = 'Error cancelling order. Please try again'
+                if (!returnItemResponse.ok) {
+                    this.error = 'Error updating return status. Please try again.'
                     return
                 }
-                let user: User = await userResponse.json()
-                useUserStore().saveUser(user)
-                useUsersStore().updateUser(user)
+                if (return_number > 0) {
+                    this.select_item_error = ''
+                }
+                let data: {user: User, resource: Resource} = await returnItemResponse.json()
+                useUserStore().saveUser(data.user)
+                useUsersStore().updateUser(data.user)
+                useResourcesStore().updateResource(data.resource)
+            },
+            cancel_edit(attribute: number): void {
+                if (attribute === 0) {
+                    this.changing_number = false
+                } else {
+                    this.changing_address = false
+                }
+            },
+            clear_address_error(): void {
+                const address1Element: HTMLInputElement = document.getElementById('address1') as HTMLInputElement
+                const address2Element: HTMLInputElement = document.getElementById('address2') as HTMLInputElement
+                const cityElement: HTMLInputElement = document.getElementById('city') as HTMLInputElement
+                const postcodeElement: HTMLInputElement = document.getElementById('postcode') as HTMLInputElement
+                if (!address1Element || !address2Element || !cityElement || !postcodeElement) return
+                address1Element.setCustomValidity('')
+                address2Element.setCustomValidity('')
+                cityElement.setCustomValidity('')
+                postcodeElement.setCustomValidity('')
+            },
+            clear_number_error(): void {
+                const numberElement: HTMLInputElement = document.getElementById('number_input') as HTMLInputElement
+                if (!numberElement) return
+                numberElement.setCustomValidity('')
+            },
+            async change_address(): Promise<void> {
+                const address1Element: HTMLInputElement = document.getElementById('address1') as HTMLInputElement
+                const address2Element: HTMLInputElement = document.getElementById('address2') as HTMLInputElement
+                const cityElement: HTMLInputElement = document.getElementById('city') as HTMLInputElement
+                const postcodeElement: HTMLInputElement = document.getElementById('postcode') as HTMLInputElement
+                if (!address1Element || !address2Element || !cityElement || !postcodeElement) return
+
+                // validate address line 1 
+                const address1Input = address1Element.value
+                if (address1Input.length === 0) {
+                    address1Element.setCustomValidity('Cannot be empty')
+                    address1Element.reportValidity()
+                    return
+                } else if (!(/^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/.test(address1Input))) {
+                    address1Element.setCustomValidity('No special characters allowed')
+                    address1Element.reportValidity()
+                    return
+                }
+
+                // validate address line 2
+                const address2Input = address2Element.value
+                if (address2Input.length !== 0 && !(/^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/.test(address2Input))) {
+                    address2Element.setCustomValidity('No special characters allowed')
+                    address2Element.reportValidity()
+                    return
+                }
+
+                // validate city
+                const cityInput = cityElement.value
+                if (cityInput.length === 0) {
+                    cityElement.setCustomValidity('Cannot be empty')
+                    cityElement.reportValidity()
+                    return
+                } else if (!(/^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/.test(cityInput))) {                     
+                    cityElement.setCustomValidity('No special characters allowed')
+                    cityElement.reportValidity()
+                    return
+                }
+
+                // validate postcode
+                const postcodeInput = postcodeElement.value
+                if (postcodeInput.length === 0) {
+                    postcodeElement.setCustomValidity('Cannot be empty')
+                    postcodeElement.reportValidity()
+                    return
+                } else if (!(/^[A-Za-z0-9]{5,7}$/.test(postcodeInput))) {
+                    postcodeElement.setCustomValidity('Enter 5-7 character postcode without spaces')
+                    postcodeElement.reportValidity()
+                    return
+                }
+                this.changing_address = false
+                await this.update_address('address_line_one', address1Input)
+                await this.update_address('address_line_two', address2Input)
+                await this.update_address('city', cityInput)
+                await this.update_address('postcode', postcodeInput)
+            },
+            async update_address(attribute: string, data: string): Promise<void> {
+                let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/${attribute}/`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                if (userResponse.ok) {
+                    const user: User = await userResponse.json()
+                    useUsersStore().updateUser(user)
+                    useUserStore().saveUser(user)
+                } else {
+                    this.error = 'Error updating address. Please try again'
+                }
+            },
+            async change_phone_number(): Promise<void> {
+                const numberElement: HTMLInputElement = document.getElementById('number_input') as HTMLInputElement
+                if (!numberElement) return
+                const input = numberElement.value
+                if (input.length === 0) {
+                    numberElement.setCustomValidity('Phone number cannot be empty')
+                    numberElement.reportValidity()
+                    return
+                } else if (!(/^07(\d{8,9})$/.test(input))) {
+                    numberElement.setCustomValidity('Must be 10 or 11 digit number starting with 07')
+                    numberElement.reportValidity()
+                    return
+                }
+                let correctNumber: boolean = this.attribute_existence(input)
+                if (correctNumber) {
+                    numberElement.setCustomValidity('Account already exists with this phone number')
+                    numberElement.reportValidity()
+                    return
+                } 
+                let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/number/`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
+                    },
+                    body: JSON.stringify(input)
+                })
+                if (userResponse.ok) {
+                    const user: User = await userResponse.json()
+                    useUsersStore().updateUser(user)
+                    useUserStore().saveUser(user)
+                    this.changing_number = false
+                    numberElement.blur()
+                } else {
+                    this.error = 'Error updating number. Please try again.'
+                }
+            },
+            async submit_return(order: Order, cancel: boolean): Promise<void> {
+                let selected_item = false
+                for (const order_resource of order.resources) {
+                    if (order_resource.number_for_return > 0) {
+                        selected_item = true
+                        break
+                    }
+                }
+                if (!selected_item) {
+                    this.select_item_error = 'Select at least one item to be returned.'
+                    return
+                }
+                let returnResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/return/${this.order.id}/`, {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: {
+                            'X-CSRFToken' : useUserStore().csrf,
+                            'Content-Type' : 'application/json',
+                        },
+                        body: JSON.stringify({cancel: cancel ? 'true' : 'false', return_reason: this.return_reason, return_method: this.return_method})
+                    })
+                if (!returnResponse.ok) {
+                    this.error = 'Error submitting return. Please try again.'
+                    return
+                }
+                let data: {user: User, resources: Resource[]} = await returnResponse.json()
+                useUserStore().saveUser(data.user)
+                useUsersStore().updateUser(data.user)
+                useResourcesStore().saveResources(data.resources)
+                window.location.href = `/order/${order.id}`
+            },
+            attribute_existence(data: string): boolean {
+                const user = useUsersStore().users.filter(user => user.id !== this.user.id).find(user => user.phone_number === data)
+                return user === undefined ? false : true
             },
             back(): void {
                 const window_location: string[] = window.location.href.split('/')
-                window.location.href = `/order/${window_location[window_location.length-1]}`
+                window.location.href = `/order/${window_location[4]}/${window_location[5]}/${window_location[6]}/${window_location[7]}`
             },
             home(): void {
                 window.location.href = '/cart'
@@ -163,10 +377,12 @@
                 this.total = 0
                 if (!this.order || !this.order.resources) return
                 for (let item of this.order.resources) {
-                    let resource = this.all_resources.find(resource => resource.id === item.resource)
+                    let resource = this.all_resources.find(resource => resource.id === item.resource && resource.allow_return)
                     if (resource) {
+                        const order_resource: OrderResource | undefined = this.order.resources.find(order_resource => order_resource.resource === resource.id)
+                        if (!order_resource) return
                         const price = parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€',''))
-                        this.total += item.number * price
+                        this.total += order_resource.number_for_return * price
                     }
                 }
             },
@@ -184,6 +400,9 @@
             user(): User {
                 return useUserStore().user
             },
+            seller(): User {
+                return useUsersStore().users.find(user => user.id === this.order.seller) || {} as User
+            },
             all_resources(): Resource[] {
                 return useResourcesStore().resources
             },
@@ -192,7 +411,6 @@
                 const id: number = parseInt(window_location[4])
                 if (!this.user || !this.user.placed_orders || !this.user.placed_orders.find(order => order.id === id)) return {} as Order
                 let order: Order = this.user.placed_orders.find(order => order.id === id) as Order
-                order.resources = order.resources.filter(resource => this.returnable(resource.resource))
                 return order
             }
         },
@@ -202,6 +420,45 @@
             }
             this.placed_order = false
             this.get_total()
+            this.return_method = this.order.return_method
+            this.return_reason = this.order.return_reason
+            document.addEventListener('keydown', (event) => {
+                if (this.error != '') {
+                    event.preventDefault()
+                    return
+                }
+                if ((event.key === 'ArrowDown' || event.key === 'Enter') && this.changing_address) {
+                    const input: HTMLInputElement = event.target as HTMLInputElement
+                    if (!input) return
+                    if (input.id === 'address1') {
+                        const input2: HTMLInputElement = document.getElementById('address2') as HTMLInputElement
+                        if (input2) input2.focus()
+                    } else if (input.id === 'address2') {
+                        const input2: HTMLInputElement = document.getElementById('city') as HTMLInputElement
+                        if (input2) input2.focus()
+                    } else if (input.id === 'city') {
+                        const input2: HTMLInputElement = document.getElementById('postcode') as HTMLInputElement
+                        if (input2) input2.focus()
+                    } else if (input.id === 'postcode') {
+                        this.change_address()
+                    }
+                } else if (event.key === 'ArrowUp' && this.changing_address) {
+                    const input: HTMLInputElement = event.target as HTMLInputElement
+                    if (!input) return
+                    if (input.id === 'address2') {
+                        const input2: HTMLInputElement = document.getElementById('address1') as HTMLInputElement
+                        if (input2) input2.focus()
+                    } else if (input.id === 'city') {
+                        const input2: HTMLInputElement = document.getElementById('address2') as HTMLInputElement
+                        if (input2) input2.focus()
+                    } else if (input.id === 'postcode') {
+                        const input2: HTMLInputElement = document.getElementById('city') as HTMLInputElement
+                        if (input2) input2.focus()
+                    }
+                } else if (event.key === 'Enter' && this.changing_number) {
+                    this.change_phone_number()
+                }
+            })
         },
         watch: {
             async all_resources(): Promise<void> {
@@ -215,7 +472,7 @@
                     resource.price = await this.listedprice(resource)
                 }
                 this.get_total()
-            },
+            }
         },
     })
 </script>
@@ -239,8 +496,10 @@
     }
 
     #number_container input {
-        width: 7rem;
+        width: 12rem;
+        background-color: white;
         border-radius: 0.5rem;
+        font-size: 1.3rem;
     }
 
     .edit-buttons {
@@ -280,15 +539,9 @@
 
     .resource {
         display: flex;
-        padding: 0.4rem;
         align-items: center;
         gap: 2rem;
-    }
-
-    .resource:hover {
-        background-color: lightgray;
-        cursor: pointer;
-        border-radius: 0.5rem;
+        text-align: center;
     }
 
     #dark .resource:hover {
@@ -309,6 +562,10 @@
         align-items: center;
     }
 
+    #toggle:hover {
+        background-color: #D9D9D9;
+    }
+
     #controls {
         display: flex;
         background-color: white;
@@ -325,11 +582,6 @@
         cursor: pointer;
     }
 
-    button:hover {
-        cursor: pointer;
-        background-color: darkgray;
-    }
-
     hr { 
         border: none;
         background-color: black;
@@ -341,9 +593,19 @@
         border-bottom-left-radius: 0.2rem;
     }
 
-    #minus:hover {
+    #minus {
         border-top-right-radius: 0.2rem;
         border-bottom-right-radius: 0.2rem;
+    }
+
+    .round-border {
+        border-top-left-radius: 0.2rem;
+        border-bottom-left-radius: 0.2rem;
+    }
+
+    #minus i {
+        color: red !important;
+        font-size: 0.8rem;
     }
 
     #resnum {
@@ -360,6 +622,16 @@
         align-items: center;
     }
 
+    #dark #resnum {
+        color: black;
+    }
+
+    .name {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
     .name {
         display: flex;
         flex-direction: column;
@@ -370,22 +642,15 @@
         position: relative;
     }
 
+    .name {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
     #content { 
         display: flex;
         gap: 8rem;
-    }
-
-    #add-review {
-        color: #789ECA;
-    }
-
-    #add-review:hover {
-        text-decoration: underline;
-        cursor: pointer;
-    }
-
-    #dark #add-review {
-        color: rgb(206, 206, 206);
     }
 
     #col1, #col2 {
@@ -394,14 +659,15 @@
         gap: 3rem;
     }
 
-    #payment {
-        display: fl;
-    }
-
     #card_ending, #address_lines, #user_number {
         border: 0.1rem solid #0DCAF0;
         padding: 1rem;
         border-radius: 0.8rem;
+    }
+
+    #payment div, #number div, #return_reason div, #address div {
+        gap: 0.8rem;
+        font-size: 1.3rem;
     }
 
     #header {
@@ -410,11 +676,11 @@
         margin-bottom: 1rem;
     }
 
-    #header div, .title {
+    #header div, .title, button {
         font-size: 1.3rem;
     }
 
-    #number, #payment, #address {
+    #number, #payment, #address, #return_reason {
         display: flex;
         flex-direction: column;
         gap: 1rem;
@@ -433,10 +699,10 @@
         cursor: pointer;
     }
 
-    #address_lines {
+    #address_lines, #user_number {
         display: flex;
         flex-direction: column;
-        gap: 0.6rem;
+        gap: 0.2rem;
     }
 
     #dark #border, #dark #user_number, #dark #address_lines, #dark #card_ending {
@@ -462,7 +728,7 @@
     }
 
     #dark #buttons button {
-        background-color: white ;
+        background-color: white;
     }
 
     #dark #buttons button:hover {
@@ -470,13 +736,27 @@
     }
 
     #cancel {
-        background-color: red;
+        background-color: red !important;
         color: white;
     }
 
     #cancel:hover {
-        background-color: darkred;
+        cursor: pointer;
+        background-color: darkred !important;
     }
+
+    #number_container button, #address_lines button {
+        border: none;
+        color: white;
+        border-radius: 0.5rem;
+        width: 2rem;
+        height: 2rem;
+    }
+
+    #number_container button i, #address_lines button i {
+        font-size: 1.2rem;
+    }
+
 
     #back {
         display: flex;
@@ -514,28 +794,112 @@
         font-size: 1.2rem;
     }
 
-    #number_container button {
-        border: none;
-        color: white;
-        border-radius: 0.2rem;
-        width: 1.5rem;
-        height: 1.5rem;
+    .input {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
     }
 
-    #address_lines button {
-        border: none;
-        color: white;
-        border-radius: 0.2rem;
-        width: 1.5rem;
-        height: 1.5rem;
+    .input input {
+        padding: 0.6rem !important;
     }
 
     .header {
         margin-top: 0.5rem;
     }
 
+    .clockwise {
+        background-color: red;
+    }
+
+    .clockwise:hover {
+        background-color: darkred;
+        cursor: pointer;
+    }
+
+    .save {
+        background-color: green;
+    }
+
+    .save:hover {
+        background-color: darkgreen;
+        cursor: pointer;
+    }
+
     #address_lines input {
         border-radius: 0.5rem;
+    }
+
+    #dark #checkout, #dark #number_input {
+        color: white;
+    }
+
+    #dark #resnum, #dark #plus, #dark #minus {
+        color: black;
+    }
+
+    #dark #number_input {
+        background-color: transparent;
+    }
+
+    #for_return, #not_for_return {
+        border: none;
+        padding: 0.4rem;
+        padding-left: 0.6rem;
+        padding-right: 0.6rem;
+        border-radius: 0.5rem;
+    }
+
+    #not_for_return {
+        background-color: lightgray;
+    }
+
+    #for_return {
+        background-color: green;
+        color: white;
+    }
+
+    #for_return:hover, #not_for_return:hover {
+        cursor: pointer;
+    }
+
+    #not_for_return:hover {
+        background-color: darkgray;
+    }
+
+    #for_return:hover {
+        background-color: rgb(106, 184, 106);
+    }
+
+    .input input {
+        width: 92% !important;
+    }
+
+    button:hover {
+        cursor: pointer;
+    }
+
+    #select_item_error {
+        color: red;
+        text-align: center;
+    }
+
+    input:disabled, textarea:disabled, select:disabled {
+        color: black !important;
+        background-color: white !important;
+    }
+
+    select:disabled {
+        appearance: none; /* remove arrow */
+    }
+
+    select, #return_reason textarea {
+        border: none;
+        font-size: 1.3rem;
+    }
+
+    #return_reason textarea {
+        padding: 0.5rem;
     }
 
     /* Responsive Design */
@@ -555,6 +919,21 @@
 
         #buttons {
             margin: auto;
+        }
+    }
+
+    @media (max-width: 782px) {
+        #content { 
+            flex-direction: column;
+            gap: 4rem;
+            overflow-y: scroll;
+            padding-right: 2rem;
+            max-height: 70vh;
+            margin-top: 0rem;
+        }
+
+        #checkout {
+            gap: 1rem;
         }
     }
 </style>

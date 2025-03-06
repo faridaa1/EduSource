@@ -289,13 +289,16 @@ class Review(models.Model):
 
 class Order(models.Model):
     """Defining attributes and methods for Order model"""
-    STATUSES: list [tuple[str, str]] = [('Placed', 'Placed'), ('Processing', 'Processing'), ('Cancelled', 'Cancelled'), ('Refund Rejected', 'Refund Rejected'), ('Dispatched', 'Dispatched'), ('Complete', 'Complete'), ('Being Returned', 'Being Returned'), ('Refunded', 'Refunded')]
-    status = models.CharField(max_length=15, choices=STATUSES, default='Placed', null=False, blank=False)
+    STATUSES: list [tuple[str, str]] = [('Placed', 'Placed'), ('Processing', 'Processing'), ('Cancelled', 'Cancelled'), ('Refund Rejected', 'Refund Rejected'), ('Dispatched', 'Dispatched'), ('Complete', 'Complete'), ('Requested Return', 'Requested Return'), ('Being Returned', 'Being Returned'), ('Refunded', 'Refunded')]
+    status = models.CharField(max_length=16, choices=STATUSES, default='Placed', null=False, blank=False)
     buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='buyer')
     seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='seller')
     estimated_delivery_date = models.DateField(null=False, blank=False)
     date = models.DateField(null=False, blank=False, default=timezone.now)
     delivery_image = models.ImageField(null=False, blank=True, upload_to='delivery_images/')
+    RETURN_METHODS: list [tuple[str, str]] = [('Delivery', 'Delivery'), ('Collection', 'Collection')]
+    return_method = models.CharField(max_length=10, choices=RETURN_METHODS, default='Delivery', null=False, blank=False)
+    return_reason = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
 
 
     def as_dict(self) -> str:
@@ -310,6 +313,8 @@ class Order(models.Model):
             'estimated_delivery_date': self.estimated_delivery_date,
             'date': self.date,
             'delivery_image': self.delivery_image.url if self.delivery_image else None,
+            'return_method': self.return_method,
+            'return_reason': self.return_reason,
         }
     
 
@@ -318,12 +323,16 @@ class OrderResource(models.Model):
     resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name='resource')
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_resource')
     number = models.IntegerField(null=False, blank=False)
+    for_return = models.BooleanField(null=False, blank=False, default=False)
+    number_for_return = models.IntegerField(null=False, blank=False, default=0)
 
     def as_dict(self) -> str:
         """Dictionary representation of OrderResource"""
         return {
             'id': self.id,
             'resource': self.resource.id,
+            'number_for_return': self.number_for_return,
+            'for_return': self.for_return,
             'number': self.number,
         }
 

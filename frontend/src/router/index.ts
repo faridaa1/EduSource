@@ -36,7 +36,7 @@ const router = createRouter({
     { path: '/orders', name: 'orders', component: Orders },
     { path: '/orders/:catchAll(.*)', name: 'back orders', component: Orders },
     { path: '/order/:catchAll(.*)', name: 'order', component: Order },
-    { path: '/return/:id', name: 'return', component: Return },
+    { path: '/return/:catchAll(.*)', name: 'return', component: Return },
     { path: '/seller/:name', name: 'seller profile', component: SellerProfile },
     { path: '/message/:user1/:user2', name: 'message', component: Message },
     { path: '/messages', name: 'messages', component: Messages },

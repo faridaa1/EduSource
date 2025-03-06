@@ -27,6 +27,7 @@
                         <option value="Refund Rejected">Refund Rejected</option>
                         <option value="Dispatched">Dispatched</option>
                         <option value="Complete">Complete</option>
+                        <option value="Requested Return">Requested Return</option>
                         <option value="Being Returned">Being Returned</option>
                         <option value="Refunded">Refunded</option>
                     </select>
@@ -212,7 +213,7 @@
             const window_location: string[] = window.location.href.split('/')
             if (window_location.length > 4) {
                 // reset settings
-                this.status = window_location[5]
+                this.status = window_location[5].replace('%20', ' ')
                 this.order = window_location[6]
                 this.current_page = parseInt(window_location[7])
                 nextTick(() => {
@@ -238,7 +239,6 @@
         gap: 1rem;
     }
 
-
     #header {
         display: flex;
         justify-content: space-between;
@@ -252,6 +252,7 @@
 
     #look {
         background-color: #d9d9d9;
+        color: black;
         border-top-right-radius: 0.5rem;
         border-bottom-right-radius: 0.5rem;
         padding: 0.5rem;

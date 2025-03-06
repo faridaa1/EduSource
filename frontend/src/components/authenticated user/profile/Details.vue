@@ -743,7 +743,8 @@
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
-                    'X-CSRFToken' : useUserStore().csrf
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
                     },
                     body: JSON.stringify(data)
                 })  
@@ -760,8 +761,6 @@
                 return 'error'
             },
             async update_details(attribute: string, data: string): Promise<void> {
-                this.error = `Error updating value. Please try again`
-                return
                 const saveButton: HTMLButtonElement = 
                     attribute === 'email' ? document.getElementById('email-save') as HTMLButtonElement 
                     : attribute === 'username' ? document.getElementById('username-save') as HTMLButtonElement 
@@ -794,7 +793,8 @@
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
-                    'X-CSRFToken' : useUserStore().csrf
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
                     },
                     body: JSON.stringify(data)
                 })

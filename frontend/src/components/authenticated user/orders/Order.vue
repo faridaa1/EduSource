@@ -62,6 +62,7 @@
                 </div>
                 <div id="buttons">
                     <button v-if="returnable && order.status === 'Complete'" @click="start_return(order)">Start Return</button>
+                    <button id="cancel" v-if="returnable && order.status === 'Requested Return'" @click="start_return(order)">Cancel Return</button>
                     <button id="cancel" v-if="order.status === 'Placed'" @click="cancel_order">Cancel</button>
                 </div>
             </div>
@@ -84,7 +85,7 @@
     import Error from '@/components/user experience/error/Error.vue';
     import Loading from '@/components/user experience/loading/Loading.vue';
     export default defineComponent({
-        components: { Error, Loading },
+        components: { Error, Loading }, 
         data(): {
             total: number,
             placed_order: boolean,
@@ -96,7 +97,12 @@
         }},
         methods: {
             start_return(order: Order): void {
-                window.location.href = `/return/${order.id}`
+                const window_location: string[] = window.location.href.split('/')
+                if (window_location.length === 5) {
+                    window.location.href = `/return/${order.id}`
+                } else {
+                    window.location.href = `/return/${order.id}/${window_location[5]}/${window_location[6]}/${window_location[7]}`
+                }
             },
             view_resource(event: Event, id: number): void {
                 if (event.target && (event.target as HTMLDivElement).id === 'add-review') {
@@ -136,7 +142,11 @@
             },
             back(): void {
                 const window_location: string[] = window.location.href.split('/')
-                window.location.href = `/orders/${this.order.id}/${window_location[5]}/${window_location[6]}/${window_location[7]}`
+                if (window_location.length === 5) {
+                    window.location.href = '/orders'
+                } else {
+                    window.location.href = `/orders/${this.order.id}/${window_location[5]}/${window_location[6]}/${window_location[7]}`
+                }
             },
             home(): void {
                 window.location.href = '/cart'
@@ -263,6 +273,10 @@
         font-size: 1.5rem;
     }
 
+    div, button {
+        font-size: 1.3rem;
+    }
+
     #border {
         border: 0.1rem solid #0DCAF0;
         border-radius: 0.8rem;
@@ -362,6 +376,10 @@
         display: flex;
         justify-content: center;
         align-items: center;
+    }
+
+    #dark #resnum {
+        color: black;
     }
 
     .name {
@@ -474,15 +492,6 @@
         background-color: darkgray;
     }
 
-    #cancel {
-        background-color: red;
-        color: white;
-    }
-
-    #cancel:hover {
-        background-color: darkred;
-    }
-
     #back {
         display: flex;
         align-items: center;
@@ -505,10 +514,6 @@
 
     #dark #order {
         color: white;
-    }
-
-    #dark #resnum {
-        color: black;
     }
 
     #back p:hover {
@@ -541,6 +546,15 @@
 
     #address_lines input {
         border-radius: 0.5rem;
+    }
+
+    #cancel {
+        background-color: red !important;
+        color: white;
+    }
+
+    #cancel:hover {
+        background-color: darkred !important;
     }
 
     /* Responsive Design */

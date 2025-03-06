@@ -231,7 +231,8 @@
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
-                    'X-CSRFToken' : useUserStore().csrf
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
                     },
                     body: JSON.stringify(textarea.value)
                 })

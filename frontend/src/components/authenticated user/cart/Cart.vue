@@ -24,7 +24,7 @@
                             <div class="number_controls">
                                 <p v-if="resource.number < (allResources.find(res => res.id === resource.resource) as Resource)?.stock" id="plus" @click="toggle_cart(resource, 1)">+</p>
                                 <hr v-if="resource.number < (allResources.find(res => res.id === resource.resource) as Resource)?.stock">
-                                <p id="minus" @click="toggle_cart(resource, -1)"><i :class="resource.number === 1 ? 'bi bi-trash3-fill' : ''"></i>{{ resource.number === 1 ? '' : '-' }}</p>
+                                <p id="minus" :class="resource.number < (allResources.find(res => res.id === resource.resource) as Resource)?.stock ? '' : 'round-border'" @click="toggle_cart(resource, -1)"><i :class="resource.number === 1 ? 'bi bi-trash3-fill' : ''"></i>{{ resource.number === 1 ? '' : '-' }}</p>
                             </div>
                         </div>
                         <div>
@@ -379,6 +379,11 @@
     .number_controls p:hover {
         background-color: darkgray;
         cursor: pointer;
+    }
+
+    .round-border {
+        border-top-left-radius: 0.3rem;
+        border-bottom-left-radius: 0.3rem;
     }
 
     #minus {

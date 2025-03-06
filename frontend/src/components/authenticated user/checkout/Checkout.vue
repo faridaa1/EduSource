@@ -18,8 +18,8 @@
                                         <div id="resnum">{{ resource.number }}</div>
                                         <div id=controls>
                                             <div id="plus" v-if="resource.number < getResource(resource.resource).stock" @click="add_to_cart(resource)">+</div>
-                                            <hr>
-                                            <div id="minus" @click="remove_from_cart(resource)"><i :class="resource.number === 1 ? 'bi bi-trash3-fill' : ''"></i>{{ resource.number === 1 ? '' : '-' }}</div>
+                                            <hr v-if="resource.number < getResource(resource.resource).stock">
+                                            <div id="minus" :class="resource.number < getResource(resource.resource).stock ? '' : 'round-border'" @click="remove_from_cart(resource)"><i :class="resource.number === 1 ? 'bi bi-trash3-fill' : ''"></i>{{ resource.number === 1 ? '' : '-' }}</div>
                                         </div>
                                     </div>
                                     <div>{{ currency }}{{ (resource.number*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
@@ -249,7 +249,8 @@
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
-                    'X-CSRFToken' : useUserStore().csrf
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
                     },
                     body: JSON.stringify(data)
                 })
@@ -284,7 +285,8 @@
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
-                    'X-CSRFToken' : useUserStore().csrf
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
                     },
                     body: JSON.stringify(input)
                 })
@@ -579,9 +581,14 @@
         border-bottom-left-radius: 0.2rem;
     }
 
-    #minus:hover {
+    #minus {
         border-top-right-radius: 0.2rem;
         border-bottom-right-radius: 0.2rem;
+    }
+
+    .round-border {
+        border-top-left-radius: 0.2rem;
+        border-bottom-left-radius: 0.2rem;
     }
 
     #minus i {
@@ -750,7 +757,7 @@
         border-radius: 0.5rem;
     }
 
-    #dark #checkout, #number_input {
+    #dark #checkout, #dark #number_input {
         color: white;
     }
 
@@ -763,7 +770,7 @@
     }
 
     /* Responsive Design */
-    @media (max-width: 1077px) {
+    @media (max-width: 1110px) {
         .input input {
             width: 92% !important;
         }
