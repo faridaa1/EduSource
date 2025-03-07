@@ -4,8 +4,8 @@
             <div id="heading1">
                 <p>Search Results</p>
             </div>
-            <div id="heading2" v-if="filtered_resources.length > 0">
-                <div id="sort_by">
+            <div id="heading2">
+                <div id="sort_by" v-if="filtered_resources.length > 0">
                     <label id="label">Sort by</label>
                     <select v-model="sort_by">
                         <option value="listing-new">Listing: New to Old</option>
@@ -16,7 +16,7 @@
                         <option value="price-high" v-if="Object.keys(user).length > 0">Price: High to Low</option>
                     </select>
                 </div>
-                <div id="filter" v-if="filtered_resources.length > 0">
+                <div id="filter">
                     <label id="label">Filter <i class="bi bi-sliders" @click="filtering=!filtering"></i></label>
                     <div id="filter-area" v-if="filtering">
                         <div id="condition">
@@ -46,7 +46,7 @@
                         </div>
                         <div v-if="Object.keys(user).length > 0" class="filter-row">
                             <label>Price</label>
-                            <div>
+                            <div id="price-filter">
                                 <input type="number" min="0" step="0.01" v-model="min_price">
                                 <p>to</p>
                                 <input type="number" :min="min_price" step="0.01" v-model="max_price">
@@ -268,7 +268,10 @@
                     }
                 }
                 return temp_resources.filter(resource => {
-                    if (this.condition_new && resource.condition === 'New'
+                    if (
+                        ((parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) >= this.min_price)
+                        && (parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) <= this.max_price))
+                        && (this.condition_new && resource.condition === 'New'
                         || this.condition_used && resource.condition === 'Used'
                         || this.rating_all
                         || this.type_all
@@ -279,8 +282,12 @@
                         || (this.five && resource.rating >= 5)
                         || (this.textbook && resource.type === 'Textbook')
                         || (this.stationery && resource.type === 'Stationery')
-                        || (this.notes && resource.type === 'Notes')
+                        || (this.notes && resource.type === 'Notes'))
                     ) {
+                        console.log(
+                            (parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) >= this.min_price)
+                        && (parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) <= this.max_price)
+                        )
                         return true
                     }  
                     return false
@@ -299,9 +306,21 @@
                     resource.price = await this.listedprice(resource)
                 }
             },
-            sort_by() {
+            sort_by(): void {
                 this.sort_resources()
             },
+            min_price(): void {
+                if (this.min_price.toString() === '' || this.min_price < 0) this.min_price = 0
+                if (this.min_price > this.max_price) {
+                    this.max_price = this.min_price
+                } 
+            },
+            max_price(): void {
+                if (this.max_price.toString() === '' || this.max_price < 0) this.max_price = 0
+                if (this.min_price > this.max_price) {
+                    this.min_price = this.max_price
+                }
+            }
         },
     })
 </script>
@@ -316,11 +335,27 @@
         gap: 0.2rem;
     }
 
+    #price-filter {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    #price-filter input {
+        text-align: center;
+        width: 5rem;
+    }
+
+    input {
+        border-radius: 0.5rem;
+    }
+
     #search-container {
         display: flex;
         flex-direction: column;
         gap: 2rem;
         margin: 1rem;
+        color: white;
     }
 
     #search-heading {
@@ -379,6 +414,12 @@
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
+        border: 0.1rem solid black;
+    }
+
+    #dark #filter-area {
+        background-color: rgb(41, 41, 41);
+        border: 0.1rem solid white;
     }
 
     #condition {
@@ -389,13 +430,21 @@
 
     .new, .used {
         background-color: green;
-        color: white;
         padding: 0.5rem;
         border-radius: 0.5rem;
     }
 
+    #dark .new, #dark .used {
+        background-color: #d9d9d9;
+        color: black;
+    }
+
     .new:hover, .used:hover {
         background-color: rgb(97, 205, 97);
+    }
+
+    #dark .new:hover, #dark .used:hover{
+        background-color: darkgray;
     }
 
     .not {
@@ -404,9 +453,19 @@
         border-radius: 0.5rem;
     }
 
+    #dark .not {
+        background-color: darkgray;
+        color: black;
+    }
+
     .not:hover {
         background-color: green;
         color: white;
+    }
+
+    #dark .not:hover {
+        background-color: #d9d9d9;
+        color: black;
     }
 
     #noresources {

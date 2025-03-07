@@ -21,7 +21,7 @@
         </div>
         <div id="search-div">
           <input id="search" @input="semantic_search" type="text" placeholder="Search">
-          <div id="search-results" v-if="searching">
+          <div id="search-results" v-if="searching && search_results.length > 0">
             <div class="search-result" v-for="resource in search_results" @click="conduct_search(resource)">
               {{ resource.name }}
             </div>
@@ -214,13 +214,13 @@
         }
       },
       async semantic_search(): Promise<void> {
-        this.searching = true
         const search: HTMLInputElement = document.getElementById('search') as HTMLInputElement
-        if (!search) return
-        if (search.value === '') {
+        if (!search || search.value === '') {
+          this.searching = false
           this.search_results = []
           return
         }
+        this.searching = true
         const searchResults: Response = await fetch(`http://localhost:8000/api/semantic-search/`, {
           method: 'POST',
           credentials: 'include',
@@ -287,6 +287,7 @@
     display: flex;
     flex-direction: column;
     width: 11.6rem;
+    border: 0.1rem solid black;
   }
 
   .search-result {
