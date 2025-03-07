@@ -46,10 +46,18 @@
                         </div>
                         <div v-if="Object.keys(user).length > 0" class="filter-row">
                             <label>Price</label>
-                            <div id="price-filter">
+                            <div class="number-filter">
                                 <input type="number" min="0" step="0.01" v-model="min_price">
                                 <p>to</p>
                                 <input type="number" :min="min_price" step="0.01" v-model="max_price">
+                            </div>
+                        </div>
+                        <div class="filter-row">
+                            <label>Height</label>
+                            <div class="number-filter">
+                                <input type="number" min="0" step="0.01" v-model="min_height">
+                                <p>to</p>
+                                <input type="number" :min="min_height" step="0.01" v-model="max_height">
                             </div>
                         </div>
                         <!-- 
@@ -127,6 +135,8 @@
             five: boolean,
             min_price: number,
             max_price: number,
+            min_height: number,
+            max_height: number,
             rating_all: boolean,
             type_all: boolean,
             textbook: boolean,
@@ -142,6 +152,8 @@
             two: true,
             min_price: 0,
             max_price: 100,
+            min_height: 1,
+            max_height: 100,
             three: true,
             four: true,
             five: true,
@@ -271,6 +283,7 @@
                     if (
                         ((parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) >= this.min_price)
                         && (parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) <= this.max_price))
+                        && ((resource.height <= this.max_height) && (resource.height >= this.min_height))
                         && (this.condition_new && resource.condition === 'New'
                         || this.condition_used && resource.condition === 'Used'
                         || this.rating_all
@@ -320,6 +333,18 @@
                 if (this.min_price > this.max_price) {
                     this.min_price = this.max_price
                 }
+            },
+            min_height(): void {
+                if (this.min_height.toString() === '' || this.min_height < 1) this.min_height = 1
+                if (this.min_height > this.max_height) {
+                    this.max_height = this.min_height
+                } 
+            },
+            max_height(): void {
+                if (this.max_height.toString() === '' || this.max_height < 1) this.max_height = 1
+                if (this.min_height > this.max_height) {
+                    this.min_height = this.max_height
+                }
             }
         },
     })
@@ -335,15 +360,15 @@
         gap: 0.2rem;
     }
 
-    #price-filter {
+    .number-filter {
         display: flex;
         gap: 1rem;
         align-items: center;
     }
 
-    #price-filter input {
+    .number-filter input {
         text-align: center;
-        width: 5rem;
+        width: 5rem !important;
     }
 
     input {
