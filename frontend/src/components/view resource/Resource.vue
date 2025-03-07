@@ -44,6 +44,7 @@
         <div id="view-sellers">
             <p @click="show_sellers">View Sellers</p>
             <p id="buynow" @click=buy_now v-if="Object.keys(user).length > 0">Buy Now</p>
+            <p id="exchange" @click=exchange() v-if="Object.keys(user).length > 0">Exchange</p>
         </div>
         <ViewSellers :resources="allResources" :seller="seller" v-if="viewing_sellers" @close-view="viewing_sellers = false" @update_seller="update_seller" />
         <div id="resource-details">
@@ -294,13 +295,14 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent, nextTick } from 'vue';
     import ViewSellers from './ViewSellers.vue';
-    import type { Cart, CartResource, Resource, Review, User, Wishlist } from '@/types';
+    import type { Cart, CartResource, Exchange, Resource, Review, User, Wishlist } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import Stars from './Stars.vue';
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         components: { Stars, ViewSellers },
         data(): {
+            exchanging: boolean,
             seen_review: boolean,
             buying_now: boolean,
             in_wishlist: boolean,
@@ -330,6 +332,7 @@
             filter_video: boolean,
             cart_price: number,
         } { return {
+            exchanging: false,
             seen_review: false,
             in_wishlist: false,
             currentResource: {} as Resource,
@@ -364,6 +367,37 @@
             image: new File([''], ''),
         }},
         methods: {
+            async exchange(): Promise<void> {
+                if (this.seller === -1) {
+                    this.viewing_sellers = true
+                    this.exchanging = true
+                    return
+                }
+                if (Object.keys(this.resource).length > 0) {
+                    const resource: Resource | undefined = this.allResources.find(resource => resource.id === this.seller)
+                    if (!resource) {
+                        console.log('errr')
+                        return
+                    }
+                    const exchangeResponse: Response = await fetch(`http://localhost:8000/api/exchange/user/${this.user.id}/seller/${resource.user}/resource/${this.seller}/`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'X-CSRFToken' : useUserStore().csrf,
+                            'Content-Type' : 'application/json',
+                        },
+                    })
+                    if (!exchangeResponse.ok) { console.error('Error editing wishlist') }
+                    else { 
+                        const data: {user: User, exchange: Exchange} = await exchangeResponse.json()
+                        useUserStore().saveUser(data.user)
+                        useUsersStore().updateUser(data.user)
+                        window.location.href = `/exchange/${data.exchange.id}`
+                    }
+                } else {
+                    console.log('error')
+                }
+            },
             buy_now(): void {
                 this.buying_now = true
                 if (this.seller === -1) {
@@ -943,6 +977,9 @@
                 return returnedResources
             },
             resource(): Resource | {} {
+                if (this.seller !== -1) {
+                    return this.allResources.find(resource => resource.id === this.seller) as Resource
+                }
                 const window_location: string[] = window.location.href.split('/')
                 return this.allResources[0]
             },
@@ -1010,6 +1047,10 @@
                 })
             },
             viewing_sellers(new_viewing): void {
+                if (this.exchanging) {
+                    this.exchange()
+                    return
+                }
                 const div: HTMLDivElement = document.getElementById('resource-view') as HTMLDivElement
                 if (div && new_viewing) {
                     div.style.overflowY = 'hidden'
@@ -1122,7 +1163,7 @@
         padding-left: 1rem;
         gap: 2rem;
         max-height: 92vh;
-        overflow-y: scroll;
+        overflow-y: auto;
         padding-right: 1rem;
         position: relative;
     }
@@ -1218,7 +1259,7 @@
         border: 0.3rem solid #D9D9D9;
         padding: 0.4rem;
         height: 100%;
-        overflow-y: scroll;
+        overflow-y: auto;
     }
 
     #resource-cart {

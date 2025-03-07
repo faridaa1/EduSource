@@ -309,7 +309,7 @@
         display: flex;
         flex-direction: column;
         gap: 3rem;
-        overflow-y: scroll;
+        overflow-y: auto;
         height: 76vh;
     }
 

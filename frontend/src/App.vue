@@ -10,6 +10,7 @@
               <div id="profile-nav" v-if="clicked_profile">
                 <RouterLink class="profile-item border-bottom rounded-top" to="/details" >Details</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='buyer'">Orders</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/exchanges" v-if="has_resources()">Exchanges</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/messages">Messages</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/cart">Cart</RouterLink>
                 <RouterLink class="profile-item rounded-bottom" to="/wishlist" v-if="user.mode==='buyer'">Wishlist</RouterLink>
@@ -42,6 +43,7 @@
               <div id="profile-nav" v-if="clicked_profile_mobile">
                 <RouterLink class="profile-item border-bottom rounded-top" to="/details" >Details</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='buyer'">Orders</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/exchanges" v-if="has_resources()">Exchanges</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/messages">Messages</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/cart">Cart</RouterLink>
                 <RouterLink class="profile-item rounded-bottom" to="/wishlist" v-if="user.mode==='buyer'">Wishlist</RouterLink>
@@ -173,6 +175,10 @@
       }
     },
     methods: {
+      has_resources(): boolean {
+        const resources = useResourcesStore().resources.filter(resource => resource.id === this.user.id)
+        return resources.length > 0
+      },
       toggle_profile_view(): void {
         this.clicked_profile = !this.clicked_profile
       },

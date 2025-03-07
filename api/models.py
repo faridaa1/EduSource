@@ -75,6 +75,7 @@ class User(AbstractUser):
         sold_orders = Order.objects.filter(seller=self)
         messages = Messages.objects.filter(Q(user1=self) | Q(user2=self))
         subjects = Subject.objects.filter(user=self)
+        exchanges = Exchange.objects.filter(Q(user1=self) | Q(user2=self))
         return {
             'id': self.id,
             'email': self.email,
@@ -97,7 +98,8 @@ class User(AbstractUser):
             'messages': [message.as_dict() for message in messages],
             'subjects': [subject.as_dict() for subject in subjects],
             'cart': self.cart.as_dict(),
-            'wishlist': self.wishlist.as_dict()
+            'wishlist': self.wishlist.as_dict(),
+            'exchanges': [exchange.as_dict() for exchange in exchanges],
         }
 
 class Subject(models.Model):
@@ -373,4 +375,27 @@ class Message(models.Model):
             'user': self.user.id,
             'message': self.message,
             'sent': self.sent,
+        }
+    
+
+class Exchange(models.Model):
+    """Defining attributes and methods for Exchange model"""
+    STATUSES: list [tuple[str, str]] = [('Pending', 'Pending'), ('Rejected', 'Rejected'), ('Accepted', 'Accepted')]
+    status1 = models.CharField(max_length=10, choices=STATUSES, default='Pending', null=False, blank=False)
+    status2 = models.CharField(max_length=10, choices=STATUSES, default='Pending', null=False, blank=False)
+    user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='exchange_user1')
+    user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='exchange_user2')
+    resource1 = models.ForeignKey(Resource, null=True, blank=False, on_delete=models.CASCADE, related_name='resource1')
+    resource2 = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name='resource2')
+
+    def as_dict(self) -> str:
+        """Dictionary representation of Exchange"""
+        return {
+            'id': self.id,
+            'status1': self.status1,
+            'status2': self.status2,
+            'user1': self.user1.id,
+            'user2': self.user2.id,
+            'resource1': self.resource1.id if self.resource1 else -1,
+            'resource2': self.resource2.id,
         }

@@ -1304,7 +1304,7 @@
         max-height: 10rem;
         border: 0.01rem solid darkgray;
         border-radius: 0.5rem;
-        overflow-y: scroll;
+        overflow-y: auto;
     }
 
     .option {

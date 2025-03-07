@@ -8,7 +8,7 @@ from django.db.models import Avg
 from django.contrib import auth
 import torch
 from .forms import SignupForm, AddressForm, LoginForm
-from .models import Cart, CartResource, Messages, Order, OrderResource, Resource, Review, Subject, User, Address, WishlistResource, Message
+from .models import Cart, CartResource, Exchange, Messages, Order, OrderResource, Resource, Review, Subject, User, Address, WishlistResource, Message
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 from transformers import pipeline
@@ -756,4 +756,50 @@ def submit_return(request: HttpRequest, user: id, order: id) -> JsonResponse:
             order.return_reason = data['return_reason']
         order.save()
         return JsonResponse({'user': user.as_dict(), 'resources': [resource.as_dict() for resource in Resource.objects.all()]})
+    return JsonResponse({})
+
+
+def exchange(request: HttpRequest, user: int, seller: int, resource: int) -> JsonResponse:
+    """Defining GET, PUT, and POST for Exchange"""
+    if request.method == 'GET':
+        # Return Exchange instance
+        return JsonResponse(get_object_or_404(Exchange, id=resource).as_dict())
+    elif request.method == 'POST':
+        # Create and return new Exchange instance
+        exchange: Exchange = Exchange.objects.create(
+            user1=get_object_or_404(User, id=user),
+            user2=get_object_or_404(User, id=seller),
+            resource2=get_object_or_404(Resource, id=resource),
+        )
+        user_to_send: User = get_object_or_404(User, id=user)
+        if exchange.user1 == user_to_send:
+            exchange.status1 = 'Accepted'
+        else:
+            exchange.status2 = 'Accepted'
+        exchange.save()
+        return JsonResponse({'user': user_to_send.as_dict(), 'exchange': exchange.as_dict()})
+    elif request.method == 'PUT':
+        # Updating user selected resource
+        exchange: Exchange = get_object_or_404(Exchange, id=resource)
+        data = json.loads(request.body)
+        if exchange.user1.id == user:
+            if data['field'] == 'resource':
+                exchange.resource1 = get_object_or_404(Resource, id=data['data'])
+                exchange.status2 = 'Pending'
+            else:
+                exchange.status1 = data['data']
+        else:
+            if data['field'] == 'resource':
+                exchange.resource2 = get_object_or_404(Resource, id=data['data'])
+                exchange.status1 = 'Pending'
+            else:
+                exchange.status2 = data['data']
+        exchange.save()
+        user_to_send: User = get_object_or_404(User, id=user)
+        return JsonResponse({'user': user_to_send.as_dict(), 'exchange': exchange.as_dict()})
+    elif request.method == 'DELETE':
+        exchange: Exchange = get_object_or_404(Exchange, id=resource)
+        exchange.delete()
+        user = get_object_or_404(User, id=user)
+        return JsonResponse(user.as_dict())
     return JsonResponse({})

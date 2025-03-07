@@ -285,7 +285,7 @@
         padding: 0.5rem;
         border: 0.3rem solid #D9D9D9;
         border-radius: 0.5rem;
-        overflow-y: scroll;
+        overflow-y: auto;
         display: flex;
         flex-direction: column;
     }

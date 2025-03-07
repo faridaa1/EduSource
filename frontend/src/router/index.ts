@@ -15,6 +15,8 @@ import Messages from '@/components/authenticated user/messaging/Messages.vue'
 import SearchResults from '@/components/SearchResults.vue'
 import Settings from '@/components/authenticated user/settings/Settings.vue'
 import Return from '@/components/authenticated user/orders/Return.vue'
+import Exchange from '@/components/authenticated user/exchange/Exchange.vue'
+import Exchanges from '@/components/authenticated user/exchange/Exchanges.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -41,6 +43,8 @@ const router = createRouter({
     { path: '/message/:user1/:user2', name: 'message', component: Message },
     { path: '/messages', name: 'messages', component: Messages },
     { path: '/search/:name', name: 'search', component: SearchResults },
+    { path: '/exchanges', name: 'exchanges', component: Exchanges },
+    { path: '/exchange/:catchAll(.*)', name: 'exchange', component: Exchange }
   ],
 })
 

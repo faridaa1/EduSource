@@ -157,7 +157,7 @@
         width: 98vw;
         margin-top: 1.5rem;
         margin-bottom: 1.5rem;
-        overflow-y: scroll;
+        overflow-y: auto;
         gap: 1.5rem;
     }
 

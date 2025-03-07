@@ -401,7 +401,7 @@
 
    #messages {
         padding-right: 2rem;
-        overflow-y: scroll;
+        overflow-y: auto;
         margin-top: 2rem;
         height: 38rem;
         display: flex;

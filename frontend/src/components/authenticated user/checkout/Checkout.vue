@@ -510,7 +510,7 @@
 
     #body {
         height: 25rem;
-        overflow-y: scroll;
+        overflow-y: auto;
         padding-right: 1rem;
         display: flex;
         flex-direction: column;
@@ -780,7 +780,7 @@
         #content { 
             flex-direction: column;
             gap: 4rem;
-            overflow-y: scroll;
+            overflow-y: auto;
             padding-right: 2rem;
             max-height: 70vh;
             margin-top: 0rem;

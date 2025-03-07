@@ -21,6 +21,7 @@ export interface User {
     subjects: Subject[];
     messages: Messages[];
     wishlist: Wishlist;
+    exchanges: Exchange[];
 }
 
 export interface Subject {
@@ -100,6 +101,17 @@ export interface Wishlist {
     items: number,
     total: number
 }
+
+export interface Exchange {
+    id: number,
+    status1: 'Pending' | 'Rejected' | 'Accepted',
+    status2: 'Pending' | 'Rejected' | 'Accepted',
+    user1: number,
+    user2: number,
+    resource1: number,
+    resource2: number
+}
+
 
 export interface CartResource {
     id: number,

@@ -161,7 +161,7 @@
 
     #overflow {
         display: flex;
-        overflow-y: scroll;
+        overflow-y: auto;
         flex-direction: column;
         height: 47rem;
         width: 40rem;

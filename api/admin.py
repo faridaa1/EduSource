@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cart, CartResource, Messages, Order, OrderResource, Resource, Review, Subject, User, Address, Message
+from .models import Cart, CartResource, Exchange, Messages, Order, OrderResource, Resource, Review, Subject, User, Address, Message
 from django.forms import BaseInlineFormSet, ValidationError
 
 
@@ -46,6 +46,11 @@ class OrderResourceInline(admin.StackedInline):
 class MessageInline(admin.StackedInline):
     model = Message
     extra = 0
+
+@admin.register(Exchange)
+class ExchangeAdmin(admin.ModelAdmin):
+    """Defining Exchange model appearance on django admin"""
+    list_display: tuple[str] = ('id', 'user1', 'user2', 'resource1', 'resource2')
 
 
 @admin.register(Order)

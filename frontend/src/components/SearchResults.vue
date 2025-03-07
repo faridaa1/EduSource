@@ -357,7 +357,7 @@
 
     #search-content {
         height: 88vh;
-        overflow-y: scroll;
+        overflow-y: auto;
     }
 
     select:hover {
@@ -372,7 +372,7 @@
         height: 30rem;
         position: absolute;
         background-color: white;
-        overflow-y: scroll;
+        overflow-y: auto;
         padding: 0.5rem;
         border-radius: 0.8rem;
         right: 3rem;
