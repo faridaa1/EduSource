@@ -495,36 +495,95 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
         user.cart.cart_resource.all().delete()
         return JsonResponse({'user': user.as_dict(), 'resources': [resource.as_dict() for resource in Resource.objects.all()]})
     elif request.method == 'POST':
+        data = json.loads(request.body)
         user: User = get_object_or_404(User, id=user)
-        cart_resource: CartResource = get_object_or_404(CartResource, id=json.loads(request.body))
-        resource: Resource = cart_resource.resource
         current_date = datetime.datetime.now()
-        if resource.estimated_delivery_units == 'day':
-            estimated_date = current_date + datetime.timedelta(days=int(resource.estimated_delivery_time))
-        elif resource.estimated_delivery_units == 'minute':
-            estimated_date = current_date + datetime.timedelta(minutes=int(resource.estimated_delivery_time))
-        elif resource.estimated_delivery_units == 'hour':
-            estimated_date = current_date + datetime.timedelta(hours=int(resource.estimated_delivery_time))
-        elif resource.estimated_delivery_units == 'week':
-            estimated_date = current_date + datetime.timedelta(weeks=int(resource.estimated_delivery_time))
+        if data.get('exchange_id'):
+            exchange: Exchange = get_object_or_404(Exchange, id=data.get('exchange_id'))
+            resource1: Resource = exchange.resource1
+            if resource1.estimated_delivery_units == 'day':
+                estimated_date = current_date + datetime.timedelta(days=int(resource1.estimated_delivery_time))
+            elif resource1.estimated_delivery_units == 'minute':
+                estimated_date = current_date + datetime.timedelta(minutes=int(resource1.estimated_delivery_time))
+            elif resource1.estimated_delivery_units == 'hour':
+                estimated_date = current_date + datetime.timedelta(hours=int(resource1.estimated_delivery_time))
+            elif resource1.estimated_delivery_units == 'week':
+                estimated_date = current_date + datetime.timedelta(weeks=int(resource1.estimated_delivery_time))
+            else:
+                estimated_date = current_date + datetime.timedelta(weeks=4*int(resource1.estimated_delivery_time))
+            order: Order = Order.objects.create(
+                buyer=exchange.user2,
+                seller=resource1.user,
+                estimated_delivery_date=estimated_date.date(),
+                is_exchange=True
+            )
+            orderResource: OrderResource = OrderResource.objects.create(
+                resource=resource1,
+                order=order,
+                number=exchange.resource1_number
+            )
+            orderResource.save()
+            order.save()
+            # reduce stock
+            resource1.stock = resource1.stock - exchange.resource1_number
+            resource1.save()
+            resource2: Resource = exchange.resource2
+            if resource2.estimated_delivery_units == 'day':
+                estimated_date = current_date + datetime.timedelta(days=int(resource2.estimated_delivery_time))
+            elif resource2.estimated_delivery_units == 'minute':
+                estimated_date = current_date + datetime.timedelta(minutes=int(resource2.estimated_delivery_time))
+            elif resource2.estimated_delivery_units == 'hour':
+                estimated_date = current_date + datetime.timedelta(hours=int(resource2.estimated_delivery_time))
+            elif resource2.estimated_delivery_units == 'week':
+                estimated_date = current_date + datetime.timedelta(weeks=int(resource2.estimated_delivery_time))
+            else:
+                estimated_date = current_date + datetime.timedelta(weeks=4*int(resource2.estimated_delivery_time))
+            order2: Order = Order.objects.create(
+                buyer=exchange.user1,
+                seller=resource2.user,
+                estimated_delivery_date=estimated_date.date(),
+                is_exchange=True
+            )
+            orderResource2: OrderResource = OrderResource.objects.create(
+                resource=resource2,
+                order=order2,
+                number=exchange.resource2_number
+            )
+            orderResource2.save()
+            order2.save()
+            # reduce stock
+            resource2.stock = resource2.stock - exchange.resource2_number
+            resource2.save()
+            exchange.delete()
         else:
-            estimated_date = current_date + datetime.timedelta(weeks=4*int(resource.estimated_delivery_time))
-        order: Order = Order.objects.create(
-            buyer=user,
-            seller=resource.user,
-            estimated_delivery_date=estimated_date.date(),
-        )
-        orderResource: OrderResource = OrderResource.objects.create(
-            resource=resource,
-            order=order,
-            number=cart_resource.number
-        )
-        orderResource.save()
-        order.save()
-        # reduce stock
-        resource.stock = resource.stock - cart_resource.number
-        resource.save()
-        cart_resource.delete()
+            cart_resource: CartResource = get_object_or_404(CartResource, id=json.loads(request.body))
+            resource: Resource = cart_resource.resource
+            if resource.estimated_delivery_units == 'day':
+                estimated_date = current_date + datetime.timedelta(days=int(resource.estimated_delivery_time))
+            elif resource.estimated_delivery_units == 'minute':
+                estimated_date = current_date + datetime.timedelta(minutes=int(resource.estimated_delivery_time))
+            elif resource.estimated_delivery_units == 'hour':
+                estimated_date = current_date + datetime.timedelta(hours=int(resource.estimated_delivery_time))
+            elif resource.estimated_delivery_units == 'week':
+                estimated_date = current_date + datetime.timedelta(weeks=int(resource.estimated_delivery_time))
+            else:
+                estimated_date = current_date + datetime.timedelta(weeks=4*int(resource.estimated_delivery_time))
+            order: Order = Order.objects.create(
+                buyer=user,
+                seller=resource.user,
+                estimated_delivery_date=estimated_date.date(),
+            )
+            orderResource: OrderResource = OrderResource.objects.create(
+                resource=resource,
+                order=order,
+                number=cart_resource.number
+            )
+            orderResource.save()
+            order.save()
+            # reduce stock
+            resource.stock = resource.stock - cart_resource.number
+            resource.save()
+            cart_resource.delete()
         return JsonResponse({'user': user.as_dict(), 'resources': [resource.as_dict() for resource in Resource.objects.all()]})
     elif request.method == 'DELETE':
         user: User = get_object_or_404(User, id=user)
@@ -640,6 +699,7 @@ def semantic_search(request: HttpRequest) -> JsonResponse:
             resources.append(resource.as_dict())
         return JsonResponse(resources, safe=False)
     return JsonResponse({})
+
 
 def semantic_search_subjects(request: HttpRequest) -> JsonResponse:
     """Defining semantic search used to return relevant subjects to user"""
@@ -786,14 +846,26 @@ def exchange(request: HttpRequest, user: int, seller: int, resource: int) -> Jso
             if data['field'] == 'resource':
                 exchange.resource1 = get_object_or_404(Resource, id=data['data'])
                 exchange.status2 = 'Pending'
-            else:
+            elif data['field'] == 'status':
                 exchange.status1 = data['data']
+            elif data['field'] == 'user1':
+                exchange.resource1_number = data['data']
+                exchange.status2 = 'Pending'
+            elif data['field'] == 'user2':
+                exchange.resource2_number = data['data']
+                exchange.status2 = 'Pending'
         else:
             if data['field'] == 'resource':
                 exchange.resource2 = get_object_or_404(Resource, id=data['data'])
                 exchange.status1 = 'Pending'
-            else:
+            elif data['field'] == 'status':
                 exchange.status2 = data['data']
+            elif data['field'] == 'user1':
+                exchange.resource2_number = data['data']
+                exchange.status1 = 'Pending'
+            elif data['field'] == 'user2':
+                exchange.resource1_number = data['data']
+                exchange.status1 = 'Pending'
         exchange.save()
         user_to_send: User = get_object_or_404(User, id=user)
         return JsonResponse({'user': user_to_send.as_dict(), 'exchange': exchange.as_dict()})

@@ -109,7 +109,9 @@ export interface Exchange {
     user1: number,
     user2: number,
     resource1: number,
-    resource2: number
+    resource2: number,
+    resource1_number: number,
+    resource2_number: number,
 }
 
 
@@ -134,7 +136,8 @@ export interface Order {
     delivery_image: string,
     date: string,
     return_method: 'Delivery' | 'Collection',
-    return_reason: string
+    return_reason: string,
+    is_exchange: boolean
 }
 
 export interface OrderResource {

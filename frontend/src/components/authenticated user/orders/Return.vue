@@ -24,8 +24,8 @@
                                 </div>
                                 <div class="name">
                                     <div>{{ getResource(resource.resource).name }}</div>
-                                    <div v-if="order.status !== 'Requested Return'">{{ currency }}{{ (parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
-                                    <div v-else>{{ currency }}{{ (resource.number_for_return*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
+                                    <div v-if="order.status !== 'Requested Return'">{{ currency }}{{ order.is_exchange ? parseFloat((0).toString()).toFixed(2) : (parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
+                                    <div v-else>{{ currency }}{{ order.is_exchange ? parseFloat((0).toString()).toFixed(2) : (resource.number_for_return*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
                                     <div id="toggle" v-if="order.status !== 'Requested Return'">
                                         <div id="resnum1">{{ resource.number_for_return }}</div>
                                         <div id=controls>
@@ -385,7 +385,7 @@
             },
             get_total(): void {
                 this.total = 0
-                if (!this.order || !this.order.resources) return
+                if (!this.order || !this.order.resources || this.order.resources.length === 0 || this.order.is_exchange) return
                 for (let item of this.order.resources) {
                     let resource = this.all_resources.find(resource => resource.id === item.resource && resource.allow_return)
                     if (resource) {

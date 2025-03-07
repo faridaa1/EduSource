@@ -23,7 +23,7 @@
                                 </div>
                                 <div class="name">
                                     <div>{{ getResource(resource.resource).name }}</div>
-                                    <div>{{ currency }}{{ (resource.number*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
+                                    <div>{{ currency }}{{ order.is_exchange ? parseFloat((0).toString()).toFixed(2) : (resource.number*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
                                     <p id="add-review" v-if="!(getResource(resource.resource).user === user.id) && can_review(getResource(resource.resource))">Add Review</p>
                                     <p id="add-review" v-if="!(getResource(resource.resource).user === user.id) && !can_review(getResource(resource.resource))">View Review</p>
                                 </div>
@@ -175,7 +175,7 @@
             },
             get_total(): void {
                 this.total = 0
-                if (!this.user.cart || !this.user.cart.resources) return
+                if (!this.order || !this.order.resources || this.order.resources.length === 0 || this.order.is_exchange) return
                 for (let item of this.order.resources) {
                     let resource = this.all_resources.find(resource => resource.id === item.resource)
                     if (resource) {

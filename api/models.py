@@ -300,6 +300,7 @@ class Order(models.Model):
     delivery_image = models.ImageField(null=False, blank=True, upload_to='delivery_images/')
     RETURN_METHODS: list [tuple[str, str]] = [('Delivery', 'Delivery'), ('Collection', 'Collection')]
     return_method = models.CharField(max_length=10, choices=RETURN_METHODS, default='Delivery', null=False, blank=False)
+    is_exchange = models.BooleanField(null=False, blank=False, default=False)
     return_reason = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
 
 
@@ -317,6 +318,7 @@ class Order(models.Model):
             'delivery_image': self.delivery_image.url if self.delivery_image else None,
             'return_method': self.return_method,
             'return_reason': self.return_reason,
+            'is_exchange': self.is_exchange,
         }
     
 
@@ -387,6 +389,8 @@ class Exchange(models.Model):
     user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='exchange_user2')
     resource1 = models.ForeignKey(Resource, null=True, blank=False, on_delete=models.CASCADE, related_name='resource1')
     resource2 = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name='resource2')
+    resource1_number = models.IntegerField(null=False, blank=False, default=0)
+    resource2_number = models.IntegerField(null=False, blank=False, default=0)
 
     def as_dict(self) -> str:
         """Dictionary representation of Exchange"""
@@ -398,4 +402,6 @@ class Exchange(models.Model):
             'user2': self.user2.id,
             'resource1': self.resource1.id if self.resource1 else -1,
             'resource2': self.resource2.id,
+            'resource1_number': self.resource1_number,
+            'resource2_number': self.resource2_number,
         }

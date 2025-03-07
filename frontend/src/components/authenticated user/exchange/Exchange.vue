@@ -14,6 +14,14 @@
                     <div class="image">
                         <img v-if="(user.id === exchange.user1 && (Object.keys(get_resource(exchange.resource1)).length > 0) && get_resource(exchange.resource1).image1) || (user.id === exchange.user2 && (Object.keys(get_resource(exchange.resource2)).length > 0) && get_resource(exchange.resource2).image1)" :src="user.id === exchange.user1 ? `http://localhost:8000/${get_resource(exchange.resource1).image1}` : `http://localhost:8000/${get_resource(exchange.resource2).image1}`">
                     </div>
+                    <div id="toggle">
+                        <div id="resnum">{{ user.id === exchange.user1 ? exchange.resource1_number : exchange.resource2_number }}</div>
+                        <div id=controls>
+                            <div id="plus" v-if="me_within_stock()" @click="set_resource('user1', user.id === exchange.user1 ? exchange.resource1_number+1 : exchange.resource2_number+1)">+</div>
+                            <hr v-if="me_within_stock() && (((user.id === exchange.user1) && (exchange.resource1_number > 0)) || ((user.id === exchange.user2) && (exchange.resource2_number > 0)))">
+                            <div v-if="((user.id === exchange.user1) && (exchange.resource1_number > 0)) || ((user.id === exchange.user2) && (exchange.resource2_number > 0))" id="minus" :class="me_within_stock() ? '' : 'round-border'" @click="set_resource('user1', user.id === exchange.user1 ? exchange.resource1_number-1 : exchange.resource2_number-1)">-</div> 
+                        </div>
+                    </div>
                     <div class="select">
                         <div class="label">Resource</div>
                         <div class="label">Status</div>
@@ -36,6 +44,14 @@
                     <div class="image clickable" @click="view">
                         <img v-if="(user.id === exchange.user1 && get_resource(exchange.resource2).image1) || (user.id === exchange.user2 && get_resource(exchange.resource1).image1)" :src="user.id === exchange.user1 ? get_resource(exchange.resource2).image1 ? `http://localhost:8000/${get_resource(exchange.resource2).image1}` : '' : get_resource(exchange.resource1).image1 ? `http://localhost:8000/${get_resource(exchange.resource1).image1}` : ''">
                     </div>
+                    <div id="toggle">
+                        <div id="resnum">{{ user.id === exchange.user1 ? exchange.resource2_number : exchange.resource1_number }}</div>
+                        <div id=controls>
+                            <div id="plus" v-if="seller_within_stock()" @click="set_resource('user2', user.id === exchange.user1 ? exchange.resource2_number+1 : exchange.resource1_number+1)">+</div>
+                            <hr v-if="seller_within_stock() && (((user.id === exchange.user1) && (exchange.resource2_number > 0)) || ((user.id === exchange.user2) && (exchange.resource1_number > 0)))">
+                            <div v-if="((user.id === exchange.user1) && (exchange.resource2_number > 0)) || ((user.id === exchange.user2) && (exchange.resource1_number > 0))" id="minus" :class="seller_within_stock() ? '' : 'round-border'" @click="set_resource('user2', user.id === exchange.user1 ? exchange.resource2_number-1 : exchange.resource1_number-1)">-</div> 
+                        </div>
+                    </div>
                     <div class="select">
                         <div class="label seller-res">Resource</div>
                         <div class="label">Status</div>
@@ -48,7 +64,8 @@
             </div>
         </div>
         <div id="button">
-            <button v-if="(user.id === exchange.user1) && (user.id === exchange.user1 ? exchange.status1 : exchange.status2) !== 'Pending'" @click="cancel">Cancel</button>
+            <button id="cancel" v-if="(user.id === exchange.user1) && (user.id === exchange.user1 ? exchange.status1 : exchange.status2) !== 'Pending'" @click="cancel">Cancel</button>
+            <button id="submit" v-if="(exchange.status1 === 'Accepted') && (exchange.status2 === 'Accepted') && (exchange.resource1_number > 0) && (exchange.resource2_number > 0)" @click="submit">Place Order</button>
         </div>
         <div v-if="error !== ''">
             <Error :message="error" @close-error="error=''" />
@@ -81,6 +98,12 @@
             status: 'Pending',
         }},
         methods: {
+            me_within_stock(): boolean {
+                return ((this.user.id === this.exchange.user1) && (this.exchange.resource1_number < this.get_resource(this.exchange.resource1).stock)) || ((this.user.id === this.exchange.user2) && (this.exchange.resource2_number < this.get_resource(this.exchange.resource2).stock))
+            },
+            seller_within_stock(): boolean {
+                return ((this.user.id === this.exchange.user1) && (this.exchange.resource2_number < this.get_resource(this.exchange.resource2).stock)) || ((this.user.id === this.exchange.user2) && (this.exchange.resource1_number < this.get_resource(this.exchange.resource1).stock))
+            },
             back(): void {
                 window.location.href = '/exchanges'
             },
@@ -98,6 +121,26 @@
                     return true
                 }
                 return false
+            },
+            async submit(): Promise<void> {
+                const submitResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'X-CSRFToken' : useUserStore().csrf
+                        },
+                        body: JSON.stringify({'exchange_id': this.exchange.id})
+                    })
+                if (!submitResponse.ok) { 
+                    this.error = 'Error submitting. Please try again.'
+                    return 
+                } else { 
+                    const data: {user: User, resources: Resource[]} = await submitResponse.json()
+                    useUserStore().saveUser(data.user)
+                    useUsersStore().updateUser(data.user)
+                    useResourcesStore().saveResources(data.resources)
+                    window.location.href = '/order-confirmation'
+                }
             },
             async cancel(): Promise<void> {
                 const exchangeResponse: Response = await fetch(`http://localhost:8000/api/exchange/user/${this.user.id}/seller/${this.user2.id}/resource/${this.exchange.id}/`, {
@@ -117,7 +160,7 @@
                     window.location.href = '/exchanges'
                 }
             },
-            async set_resource(field: string): Promise<void> {
+            async set_resource(field: string, number?: number): Promise<void> {
                 const exchangeResponse: Response = await fetch(`http://localhost:8000/api/exchange/user/${this.user.id}/seller/${this.user2.id}/resource/${this.exchange.id}/`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -125,7 +168,9 @@
                         'X-CSRFToken' : useUserStore().csrf,
                         'Content-Type' : 'application/json',
                     },
-                    body: JSON.stringify({'field': field, data: field === 'resource' ? (document.getElementById('selected_resource') as HTMLSelectElement).value : (document.getElementById('status') as HTMLSelectElement).value})
+                    body: JSON.stringify({'field': field, data: field === 'resource' ? (document.getElementById('selected_resource') as HTMLSelectElement).value 
+                                            : field === 'status' ? (document.getElementById('status') as HTMLSelectElement).value : number
+                                        })
                 })
                 if (!exchangeResponse.ok) { 
                     this.error = 'Error saving change. Please try again.'
@@ -200,7 +245,7 @@
 
     #header {
         text-align: center;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
     }
 
     .image {
@@ -219,6 +264,9 @@
         display: flex;
         gap: 4rem;
         align-items: center;
+        height: 80vh;
+        padding-right: 1rem;
+        overflow-y: auto;
     }
 
     .resource {
@@ -278,15 +326,34 @@
     }
 
     #button button {
-        background-color: red;
         border: none;
-        color: white;
         padding: 0.5rem;
+        color: white;
         border-radius: 0.5rem;
-        margin-top: 2rem;
     }
 
-    #button button:hover {
+    #button {
+        display: flex;
+        gap: 1rem;
+    }
+
+    #cancel {
+        background-color: red;
+    }
+
+    #submit {
+        background-color: rgb(45, 168, 45);
+    }
+
+    #submit:hover {
+        background-color: green;
+    }
+
+    button:hover {
+        cursor: pointer;
+    }
+
+    #cancel:hover {
         background-color: darkred;
         cursor: pointer;
     }
@@ -348,6 +415,70 @@
         font-size: 1.3rem;
     }
 
+    #toggle {
+        background-color: #D9D9D9;
+        display: flex;
+        width: 6rem;
+        padding-left: 0.4rem;
+        padding-right: 0.4rem;
+        padding-top: 0.2rem;
+        padding-bottom: 0.2rem;
+        border-radius: 0.5rem;
+        align-items: center;
+        color: black;
+        text-align: center;
+    }
+
+    #toggle:hover {
+        background-color: #D9D9D9;
+    }
+
+    #controls {
+        display: flex;
+        background-color: white;
+        margin-left: auto;
+        border-radius: 0.2rem;
+    }
+
+    #controls div {
+        width: 1rem;
+    }
+
+    #controls div:hover {
+        background-color: darkgray;
+        cursor: pointer;
+    }
+
+    hr { 
+        border: none;
+        background-color: black;
+        width: 0.01rem;
+    }
+
+    #plus:hover {
+        border-top-left-radius: 0.2rem;
+        border-bottom-left-radius: 0.2rem;
+    }
+
+    #minus {
+        border-top-right-radius: 0.2rem;
+        border-bottom-right-radius: 0.2rem;
+    }
+
+    .round-border {
+        border-top-left-radius: 0.2rem;
+        border-bottom-left-radius: 0.2rem;
+    }
+
+    #minus i {
+        color: red !important;
+        font-size: 0.8rem;
+    }
+
+    #resnum {
+        margin: auto;
+    }
+
     /* Responsive Design */
     @media (max-width: 808px) {
         .image {
@@ -357,7 +488,7 @@
 
         #exchange-area {
             flex-direction: column;
-            gap: 3rem;
+            gap: 2rem;
         }
 
         #back p, #back i {
