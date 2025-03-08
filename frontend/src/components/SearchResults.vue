@@ -165,10 +165,6 @@
                                     <p :class="online ? 'used' : 'not'" @click="online=!online">Online</p>
                                 </div>
                             </div>
-                             <!-- 
-                'subject': self.subjects
-                'author': self.author,
-                -->
                             <div class="filter-row">
                                 <label>Estimated Delivery</label>
                                 <div class="number-filter">
@@ -215,32 +211,50 @@
         </div>
         <div id="search-content">
             <div id="noresources" v-if="filtered_resources.length === 0">No resources found</div>
-            <div class="search-item" v-for="resource in filtered_resources" @click="showResourcePage(resource.id)">
-                <div id="search-picture">
-                    <img :src="`http://localhost:8000${resource.image1}`" alt="">
-                </div>
-                <div id="search-data">
-                    <p>{{ resource.name }}</p>
-                    <p>{{ Object.keys(user).length > 0 ? currency : unauth_currency(resource) }}{{ Object.keys(user).length > 0 ? parseFloat(resource.price.toString().replace('€','').replace('£','').replace('$','')).toFixed(2) : parseFloat(resource.price.toString()).toFixed(2) }}</p>
-                    <div id="stars">
-                        <p>{{ resource.rating }}</p>
-                        <i v-if="resource.rating > 0" class="bi bi-star-fill" style="color: orange;"></i>
-                        <i v-if="resource.rating < 1" class="bi bi-star-fill"></i>
-                        <i v-if="resource.rating > 1" class="bi bi-star-fill" style="color: orange;"></i>
-                        <i v-if="resource.rating < 2" class="bi bi-star-fill"></i>
-                        <i v-if="resource.rating > 2" class="bi bi-star-fill" style="color: orange;"></i>
-                        <i v-if="resource.rating < 3" class="bi bi-star-fill"></i>
-                        <i v-if="resource.rating > 3" class="bi bi-star-fill" style="color: orange;"></i>
-                        <i v-if="resource.rating < 4" class="bi bi-star-fill"></i>
-                        <i v-if="resource.rating > 4" class="bi bi-star-fill" style="color: orange;"></i>
-                        <i v-if="resource.rating < 5" class="bi bi-star-fill"></i>
+            <div class="search-item" v-for="resource in filtered_resources">
+                <div id="col1" @click="showResourcePage(resource.id)">
+                    <div id="search-picture">
+                        <img :src="`http://localhost:8000${resource.image1}`" alt="">
+                    </div>
+                    <div id="search-data">
+                        <p id="resource-name">{{ resource.name }}</p>
+                        <p>{{ Object.keys(user).length > 0 ? currency : unauth_currency(resource) }}{{ Object.keys(user).length > 0 ? parseFloat(resource.price.toString().replace('€','').replace('£','').replace('$','')).toFixed(2) : parseFloat(resource.price.toString()).toFixed(2) }}</p>
+                        <div id="stars">
+                            <i v-if="resource.rating > 0" class="bi bi-star-fill" style="color: orange;"></i>
+                            <i v-if="resource.rating < 1" class="bi bi-star-fill"></i>
+                            <i v-if="resource.rating > 1" class="bi bi-star-fill" style="color: orange;"></i>
+                            <i v-if="resource.rating < 2" class="bi bi-star-fill"></i>
+                            <i v-if="resource.rating > 2" class="bi bi-star-fill" style="color: orange;"></i>
+                            <i v-if="resource.rating < 3" class="bi bi-star-fill"></i>
+                            <i v-if="resource.rating > 3" class="bi bi-star-fill" style="color: orange;"></i>
+                            <i v-if="resource.rating < 4" class="bi bi-star-fill"></i>
+                            <i v-if="resource.rating > 4" class="bi bi-star-fill" style="color: orange;"></i>
+                            <i v-if="resource.rating < 5" class="bi bi-star-fill"></i>
+                            <p>{{ resource.rating }}</p>
+                        </div>
+                        <p id="view-details" @click="showResourcePage(resource.id)">View Details</p>
                     </div>
                 </div>
-                <div v-if="Object.keys(user).length > 0">
+                <div id="col2">
+                    <div v-if="Object.keys(user).length > 0" id="cart-filter">
+                        <div id="toggle">
+                            <div id="resnum">{{ Object.keys(cart_resource(resource)).length > 0 ? cart_resource(resource).number : 0 }}</div>
+                            <div id=controls>
+                                <div id="plus" :class="(Object.keys(cart_resource(resource)).length > 0) ? '' : 'round-hover'" v-if="(Object.keys(cart_resource(resource)).length === 0) || (cart_resource(resource).number < resource.stock)" @click="add_to_cart(resource)">+</div>
+                                <hr v-if="((Object.keys(cart_resource(resource)).length > 0) && (cart_resource(resource).number > 0)) && (cart_resource(resource).number < resource.stock)">
+                                <div v-if="(Object.keys(cart_resource(resource)).length > 0) && (cart_resource(resource).number > 0)" id="minus" :class="(cart_resource(resource).number < resource.stock) ? '' : 'round-border'" @click="remove_from_cart(resource)">-</div>
+                            </div>
+                        </div>
+                        <div>{{ currency }}{{ (Object.keys(cart_resource(resource)).length === 0) ? parseInt((0).toString()).toFixed(2) : (cart_resource(resource).number*parseFloat(get_resource(cart_resource(resource).resource).price.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
+                    </div>
+                    <div v-if="Object.keys(user).length > 0">
+                        <button>Add to Wishlist</button>
+                    </div>      
                 </div>
-                <div v-if="Object.keys(user).length > 0">
-                </div>      
             </div>
+        </div>
+        <div v-if="error!==''">
+            <Error :message="error" @close-error="error=''" />
         </div>
     </div>
 </template>
@@ -248,10 +262,13 @@
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
     import { defineComponent } from 'vue';
-    import type { Resource, User } from '@/types';
+    import type { Cart, CartResource, Resource, User, Wishlist } from '@/types';
     import { useUsersStore } from '@/stores/users';
+    import Error from './user experience/error/Error.vue';
     export default defineComponent({
+        components: { Error },
         data(): {
+            error: string,
             subject_all: boolean, subject_one: boolean, subject_two: boolean, subject_three: boolean, subject_four: boolean, subject_five: boolean,
             author_all: boolean, author_one: boolean, author_two: boolean, author_three: boolean, author_four: boolean, author_five: boolean,
             colour_all: boolean, black: boolean, red: boolean, yellow: boolean, pink: boolean, purple: boolean, green: boolean, blue: boolean, white: boolean, orange: boolean, brown: boolean, grey: boolean,
@@ -307,6 +324,7 @@
             dimension_unit: 'cm',
             two: true,
             min_price: 0,
+            error: '',
             zero: true,
             max_price: 100,
             min_height: 0,
@@ -370,6 +388,70 @@
             }
         },
         methods: {
+            async remove_from_cart(resource: Resource): Promise<void> {
+                const del: boolean = (this.cart_resource(resource).number === 1) ? true : false
+                const putCartItem: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${this.cart_resource(resource).id}/resource/${resource.id}/`, {
+                    method: del ? 'DELETE' : 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
+                    },
+                    body: JSON.stringify(this.cart_resource(resource).number-1)
+                })
+                if (!putCartItem.ok) {
+                    this.error = 'Error editing cart. Please try again'
+                    return
+                }
+                const data: {resource: CartResource, cart: Cart, wishlist: Wishlist} = await putCartItem.json()
+                useUserStore().updateCart(data.cart)
+                useUsersStore().updateUser(this.user)
+            },
+            async add_to_cart(resource: Resource): Promise<void> {
+                let putCartItem: Response
+                if (Object.keys(this.cart_resource(resource)).length === 0) {
+                    // create cart resource
+                    putCartItem = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/-1/resource/${resource.id}/`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'X-CSRFToken' : useUserStore().csrf,
+                        },
+                    })
+                } else {
+                    putCartItem = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${this.cart_resource(resource).id}/resource/${resource.id}/`, {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: {
+                            'X-CSRFToken' : useUserStore().csrf,
+                            'Content-Type' : 'application/json',
+                        },
+                        body: JSON.stringify(this.cart_resource(resource).number+1)
+                    })
+                }
+                if (!putCartItem.ok) {
+                    this.error = 'Error editing cart. Please try again'
+                    return
+                }
+                const data: {resource: CartResource, cart: Cart, wishlist: Wishlist} = await putCartItem.json()
+                useUserStore().updateCart(data.cart)
+                useUsersStore().updateUser(this.user)
+            },
+            get_resource(resource_id: number): Resource {
+                return this.resources.find(resource => resource.id === resource_id) as Resource
+            },
+            cart_resource(resource: Resource): CartResource {
+                let cart_resource = this.user.cart.resources.find(cart_resource => cart_resource.resource === resource.id)
+                if (cart_resource === undefined) {
+                    for (let resource of this.resources) {
+                        const potential_cart_resource = this.resources.find(res => res.id !== resource.id && res.name === resource.name && resource.author === res.author && !resource.unique)
+                        if (potential_cart_resource) {
+                            return this.user.cart.resources.find(cart_resource => cart_resource.resource === potential_cart_resource.id) || {} as CartResource
+                        } 
+                    }
+                }
+                return cart_resource || {} as CartResource
+            },
             check_authors(): void {
                 this.author_all = this.author_one && this.author_two && this.author_three && this.author_four && this.author_five
             },
@@ -552,9 +634,9 @@
                     } else if (this.sort_by === 'rating-low') {
                         return a.rating - b.rating
                     } else if (this.sort_by === 'price-high') {
-                        return b.price - a.price
+                        return parseFloat(b.price.toString().replace('$','').replace('£','').replace('€','')) - parseFloat(a.price.toString().replace('$','').replace('£','').replace('€',''))
                     }
-                    return a.price - b.price
+                    return parseFloat(a.price.toString().replace('$','').replace('£','').replace('€','')) - parseFloat(b.price.toString().replace('$','').replace('£','').replace('€',''))
                 })
             },
             maximum_price(): void {
@@ -649,8 +731,8 @@
             },
             valid_date(resource: Resource): boolean {
                 if (this.all_delivery) {
-                        // return true if all deliveries are allowed or the units are the same and the value is within the upper and lower bounds
-                        return true
+                    // return true if all deliveries are allowed or the units are the same and the value is within the upper and lower bounds
+                    return true
                 }
                 if (resource.estimated_delivery_units === this.min_delivery_option) {
                     if (this.min_delivery_option === this.max_delivery_option) {
@@ -1129,11 +1211,17 @@
 <style scoped>
     img {
         width: 10rem;
+        height: 10rem;
+        object-fit: contain;
     }
 
     #stars {
         display: flex;
         gap: 0.2rem;
+    }
+
+    #stars p {
+        margin-left: 0.5rem;
     }
 
     .number-filter {
@@ -1151,25 +1239,36 @@
         border-radius: 0.5rem;
     }
 
+    #search-data {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
     #search-container {
         display: flex;
         flex-direction: column;
         gap: 2rem;
-        margin: 1rem;
+        margin: 1.5rem;
+    }
+
+    #dark #search-container {
         color: white;
     }
 
     #search-heading {
         display: flex;
+        align-items: center;
         justify-content: space-between;
     }
 
     #heading1 p, #heading2 #label, #filter i {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
     }
 
     #heading2 {
         display: flex;
+        align-items: center;
         gap: 2rem;
     }
 
@@ -1180,10 +1279,6 @@
         border: none;
     }
 
-    option {
-        font-size: 1.3rem;
-    }
-
     #sort_by {
         display: flex;
         align-items: center;
@@ -1192,6 +1287,9 @@
 
     #search-content {
         height: 88vh;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
         overflow-y: auto;
     }
 
@@ -1239,7 +1337,7 @@
     }
 
     .new, .used, .all {
-        background-color: green;
+        background-color: #0DCAF0;
         padding: 0.5rem;
         border-radius: 0.5rem;
     }
@@ -1250,7 +1348,7 @@
     }
 
     .new:hover, .used:hover, .all:hover, .all:hover {
-        background-color: rgb(97, 205, 97);
+        background-color: #2d8da0;
     }
 
     #dark .new:hover, #dark .used:hover, #dark .all:hover {
@@ -1269,8 +1367,7 @@
     }
 
     .not:hover {
-        background-color: green;
-        color: white;
+        background-color: #2d8da0;
     }
 
     #dark .not:hover {
@@ -1299,13 +1396,139 @@
         text-align: center;
     }
 
-    .search-item:hover {
-        border: 0.2rem solid black;
+    .search-item {
+        padding: 0.5rem;
+    }
+
+    #col1:hover {
         cursor: pointer;
+    }
+
+    #view-details {
+        color: rgb(121, 189, 218);
+    }
+
+    #view-details:hover {
+        text-decoration: underline;
+    }
+
+    #dark #view-details {
+        color: rgb(206, 206, 206);
+    }
+
+    #toggle {
+        background-color: #D9D9D9;
+        display: flex;
+        width: 6rem;
+        padding-left: 0.4rem;
+        padding-right: 0.4rem;
+        padding-top: 0.2rem;
+        padding-bottom: 0.2rem;
+        border-radius: 0.5rem;
+        align-items: center;
+    }
+
+    #toggle:hover {
+        background-color: #D9D9D9;
+    }
+
+    #controls {
+        display: flex;
+        background-color: white;
+        margin-left: auto;
+        border-radius: 0.2rem;
+        text-align: center;
+    }
+
+    #controls div {
+        width: 1rem;
+    }
+
+    #controls div:hover {
+        background-color: darkgray;
+        cursor: pointer;
+    }
+
+    hr { 
+        border: none;
+        background-color: black;
+        width: 0.01rem;
+    }
+
+    #plus:hover {
+        border-top-left-radius: 0.2rem;
+        border-bottom-left-radius: 0.2rem;
+    }
+
+    #minus {
+        border-top-right-radius: 0.2rem;
+        border-bottom-right-radius: 0.2rem;
+    }
+
+    .round-border {
+        border-top-left-radius: 0.2rem;
+        border-bottom-left-radius: 0.2rem;
+    }
+
+    #minus i {
+        color: red !important;
+        font-size: 0.8rem;
+    }
+
+    #resnum {
+        margin: auto;
+    }
+
+    .round-hover {
+        border-radius: 0.2rem;
+    }
+
+    #cart-filter {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem
+    }
+
+    .search-item {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        justify-content: space-between;
+    }
+
+    #col1, #col2 {
+        display: flex;
+        gap: 4rem;
+        align-items: center;
+    }
+
+    #col2 button {
+        border: none;
+        padding: 0.5rem;
+        background-color: #0DCAF0;
         border-radius: 0.5rem;
     }
 
+    #dark #toggle {
+        color: black;
+    }
 
+    #col2 button:hover {
+        background-color: #2d8da0;
+        cursor: pointer;
+    }
 
+    #dark #col2 button {
+        background-color: white;
+    }
 
+    #dark #col2 button:hover {
+        background-color: darkgray;
+    }
+
+    #resource-name {
+        width: 50vw;
+        word-wrap: break-word;
+    }
 </style>

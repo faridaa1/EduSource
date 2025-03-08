@@ -20,7 +20,7 @@
           </transition>
         </div>
         <div id="search-div">
-          <input id="search" @input="semantic_search" @keydown.enter="conduct_search()" type="text" placeholder="Search">
+          <input id="search" @click="semantic_search" @input="semantic_search" @keydown.enter="conduct_search()" type="text" placeholder="Search">
           <div id="search-results" v-if="searching && search_results.length > 0">
             <div class="search-result" v-for="resource in search_results" @click="conduct_search(resource)">
               {{ resource.name }}
@@ -107,7 +107,6 @@
             this.clicked_profile_mobile = false
           } 
         }
-        this.searching = false
         let target: HTMLElement = event.target as HTMLElement
         if (target.id === 'logo' && !(window.location.pathname === '/') && !(window.location.pathname === '/listings')) this.go_home()
         if (target.id !== 'search') {
@@ -295,6 +294,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 0.25rem;
+    z-index: 2;
   }
 
   .search-result:hover {

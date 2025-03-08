@@ -84,6 +84,11 @@
         cursor: pointer;
     }
 
+    #dark button:hover {
+        background-color: #d9d9d9;
+        color: black;
+    }
+
     /* Responsive Design */
     @media (max-width: 522px) {
         #message, button, p {

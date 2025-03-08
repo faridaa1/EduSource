@@ -374,9 +374,13 @@ def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> Js
         cartResource: CartResource = get_object_or_404(CartResource, id=cart)
         if cartResource.resource.id != int(resource):
             cartResource.resource = Resource.objects.get(id=resource)
-        cartResource.number = json.loads(request.body)
+        if json.loads(request.body) > cartResource.resource.stock:
+            cartResource.number = cartResource.resource.stock
+        else:
+            cartResource.number = json.loads(request.body)
         cartResource.save()
         user.cart.items += json.loads(request.body)
+        user.cart.save()
         return JsonResponse({'resource': cartResource.as_dict(), 'cart': user.cart.as_dict(), 'wishlist': user.wishlist.as_dict()})
     elif request.method == 'DELETE':
         resource: CartResource = get_object_or_404(CartResource, id=cart)
