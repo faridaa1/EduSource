@@ -254,6 +254,21 @@
                 </div>
             </div>
         </div>
+        <div id="pagination" v-if="filtered_resources.length > 0">
+            <div>
+                <p>Page</p>
+            </div>
+            <div id="of">
+                <select v-model="current_page">
+                    <option :value="page" v-for="page in total_pages">{{ page }}</option>
+                </select>
+                <p>of {{ total_pages }}</p>
+            </div>
+            <div id="pagination-buttons">
+                <button :disabled="current_page===1" @click="update_page(-1)"><i class="bi bi-arrow-left"></i></button>
+                <button :disabled="current_page===total_pages" @click="update_page(1)"><i class="bi bi-arrow-right"></i></button>
+            </div>
+        </div>
         <div v-if="error!==''">
             <Error :message="error" @close-error="error=''" />
         </div>
@@ -269,6 +284,7 @@
     export default defineComponent({
         components: { Error },
         data(): {
+            current_page: number,
             error: string,
             subject_all: boolean, subject_one: boolean, subject_two: boolean, subject_three: boolean, subject_four: boolean, subject_five: boolean,
             author_all: boolean, author_one: boolean, author_two: boolean, author_three: boolean, author_four: boolean, author_five: boolean,
@@ -300,6 +316,7 @@
             max_height: number,
             rating_all: boolean,
             type_all: boolean,
+            total_pages: number,
             all_height: boolean,
             all_width: boolean,
             all_weight: boolean,
@@ -328,6 +345,7 @@
             error: '',
             zero: true,
             max_price: 100,
+            current_page: 1,
             min_height: 0,
             max_height: 100,
             min_width:0,
@@ -344,6 +362,7 @@
             resources: [],
             all_height: true,
             all_price: true,
+            total_pages: 1,
             all_width: true,
             all_weight: true,
             all_pages: true,
@@ -389,6 +408,9 @@
             }
         },
         methods: {
+            update_page(new_page: number): void {
+                this.current_page = this.current_page + new_page
+            },
             async add_to_wishlist(resource: Resource): Promise<void> {
                 if (Object.keys(this.cart_resource(resource)).length > 0) {
                     // move from cart to wishlist
@@ -874,7 +896,7 @@
                         temp_resources.push(resource) 
                     }
                 }
-                return temp_resources.filter(resource => {
+                temp_resources=temp_resources.filter(resource => {
                     if (
                         (this.all_price || ((parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) >= this.min_price)
                         && (parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) <= this.max_price)))
@@ -949,6 +971,8 @@
                     }  
                     return false
                 })
+                this.total_pages = Math.ceil(temp_resources.length/5)
+                return temp_resources.filter((_, index) => ((index) < (this.current_page*5)) && ((index+1) > ((this.current_page-1)*5)))
             }
         },
         watch: {
@@ -1262,7 +1286,7 @@
                     this.min_delivery = this.max_delivery
                 }
                 this.all_delivery = false
-            }
+            },
         },
     })
 </script>
@@ -1276,7 +1300,7 @@
 
     #stars {
         display: flex;
-        gap: 0.2rem;
+        gap: 0.3rem;
     }
 
     #stars p {
@@ -1345,11 +1369,10 @@
     }
 
     #search-content {
-        height: 88vh;
+        height: 80vh;
         display: flex;
         flex-direction: column;
         gap: 1rem;
-        overflow-y: auto;
     }
 
     select:hover {
@@ -1567,6 +1590,7 @@
         padding: 0.5rem;
         background-color: #0DCAF0;
         border-radius: 0.5rem;
+        width: 12rem;
     }
 
     #dark #toggle {
@@ -1589,5 +1613,62 @@
     #resource-name {
         width: 50vw;
         word-wrap: break-word;
+    }
+
+    #pagination {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    #pagination p {
+        font-size: 1.3rem;
+    }
+
+    #pagination select, #pagination i {
+        font-size: 1rem;
+    }
+
+    #pagination #pagination-buttons {
+        display: flex;
+        gap: 1.5rem;
+        margin-left: 1rem;
+    }
+
+    #pagination #pagination-buttons button {
+        border-radius: 0.5rem;
+        border: none;
+        padding: 0.45rem;
+        background-color: #0DCAF0;
+        color: white;
+    }
+
+    #dark #pagination #pagination-buttons button {
+        background-color: white;
+        color: black;
+    }
+
+    #dark #pagination #pagination-buttons button:hover {
+        background-color: darkgray;
+    }
+
+    #pagination #pagination-buttons button:hover {
+        cursor: pointer;
+        background-color: #15acca;
+    }
+
+    #pagination #pagination-buttons button:disabled, #dark #pagination #pagination-buttons button:disabled {
+        background-color: lightgrey;
+    }
+
+    #pagination #pagination-buttons button:disabled:hover {
+        cursor: not-allowed;
+    }
+
+    #of {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 </style>

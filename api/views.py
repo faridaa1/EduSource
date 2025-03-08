@@ -695,7 +695,8 @@ def semantic_search(request: HttpRequest) -> JsonResponse:
         sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
 
         # only keeping results at least 50% similar
-        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.5]
+        # keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.5]
+        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0]
         resources: list = []
         # using iteration to preserve order of resources
         for key in keys:
