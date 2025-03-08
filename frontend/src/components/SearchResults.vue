@@ -78,22 +78,31 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="filter-row">
+                            <label>Weight</label>
+                            <div class="number-filter">
+                                <input type="number" min="0" step="0.01" v-model="min_weight">
+                                <p>to</p>
+                                <input type="number" :min="min_width" step="0.01" v-model="max_weight">
+                                <select v-model="weight_dimension">
+                                    <option value="lb">lb</option>
+                                    <option value="kg">kg</option>
+                                    <option value="ml">ml</option>
+                                    <option value="L">L</option>
+                                    <option value="mg">mg</option>
+                                    <option value="oz">oz</option>
+                                </select>
+                            </div>
+                        </div>
                         <!-- 
-            'height': self.height,
-            'width': self.width,
             'weight': self.weight,
-            'price': self.price,
             'estimated_delivery_time': self.estimated_delivery_time,
             'subject': self.subject,
             'author': self.author,
             'self_made': self.self_made,
             'page_start': self.page_start,
             'page_end': self.page_end,
-            'height_unit': self.height_unit,
-            'width_unit': self.width_unit,
             'estimated_delivery_units': self.estimated_delivery_units,
-            'type': self.type,
-            subject
             'colour': self.colour,
             'source': self.source,
             'media': self.media,
@@ -148,6 +157,8 @@
             sorting: boolean,
             one: boolean, 
             two: boolean,
+            min_weight: number,
+            max_weight: number,
             three: boolean,
             four: boolean,
             five: boolean,
@@ -164,6 +175,7 @@
             dimension_unit: 'in' | 'm' | 'cm',
             stationery: boolean,
             filtering: boolean,
+            weight_dimension: 'lb' | 'kg' | 'ml' | 'L' | 'mg' |'oz',
             condition_new: boolean,
             condition_used: boolean, 
             sort_by: 'listing-new' | 'listing-old' | 'rating-low' | 'rating-high' | 'price-low' | 'price-high'
@@ -189,6 +201,9 @@
             resources: [],
             condition_new: true,
             condition_used: true,
+            min_weight: 0,
+            max_weight: 100,
+            weight_dimension: 'kg',
             sorting: false,
             filtering: false,
             sort_by: 'listing-new'
@@ -226,6 +241,87 @@
             }
         },
         methods: {
+            converted_weight(resource: Resource): number {
+                if (
+                    (resource.weight_unit === 'L' && this.weight_dimension === 'L')
+                    || (resource.weight_unit === 'lb' && this.weight_dimension === 'lb')
+                    || (resource.weight_unit === 'kg' && this.weight_dimension === 'kg')
+                    || (resource.weight_unit === 'ml' && this.weight_dimension === 'ml')
+                    || (resource.weight_unit === 'mg' && this.weight_dimension === 'mg')
+                    || (resource.weight_unit === 'mg' && this.weight_dimension === 'mg') 
+                ) {
+                    return resource.weight
+                }
+                if (this.weight_dimension === 'lb') {
+                    if (resource.weight_unit === 'kg') {
+                        return resource.weight*2.205
+                    } else if (resource.weight_unit === 'ml') {
+                        return resource.weight*0.0022
+                    } else if (resource.weight_unit === 'L') {
+                        return resource.weight*2.2042
+                    } else if (resource.weight_unit === 'mg') {
+                        return resource.weight/453600
+                    } else {
+                        return resource.weight/16
+                    }
+                } else if (this.weight_dimension === 'kg') {
+                    if (resource.weight_unit === 'lb') {
+                        return resource.weight/2.205
+                    } else if (resource.weight_unit === 'ml') {
+                        return resource.weight*0.001
+                    } else if (resource.weight_unit === 'L') {
+                        return resource.weight
+                    } else if (resource.weight_unit === 'mg') {
+                        return resource.weight/1e+6
+                    } else {
+                        return resource.weight/35.274
+                    }
+                } else if (this.weight_dimension === 'ml') {
+                    if (resource.weight_unit === 'lb') {
+                        return resource.weight*453.592
+                    } else if ((resource.weight_unit === 'kg') || (resource.weight_unit === 'L')) {
+                        return resource.weight*1000
+                    } else if (resource.weight_unit === 'mg') {
+                        return resource.weight/1000
+                    } else {
+                        return resource.weight*28.413
+                    }
+                } else if (this.weight_dimension === 'L') {
+                    if (resource.weight_unit === 'lb') {
+                        return resource.weight/2.205
+                    } else if ((resource.weight_unit === 'ml') || (resource.weight_unit === 'mg')) {
+                        return resource.weight/1000
+                    } else if (resource.weight_unit === 'kg') {
+                        return resource.weight
+                    } else {
+                        return resource.weight/35.195
+                    }
+                } else if (this.weight_dimension === 'mg') {
+                    if (resource.weight_unit === 'lb') {
+                        return resource.weight*453600
+                    } else if (resource.weight_unit === 'ml') {
+                        return resource.weight*1000
+                    } else if (resource.weight_unit === 'L') {
+                        return resource.weight*1000000
+                    } else if (resource.weight_unit === 'kg') {
+                        return resource.weight*1e+6
+                    } else {
+                        return resource.weight*28350
+                    }
+                } else {
+                    if (resource.weight_unit === 'lb') {
+                        return resource.weight*16
+                    } else if (resource.weight_unit === 'ml') {
+                        return resource.weight/28.413
+                    } else if (resource.weight_unit === 'L') {
+                        return resource.weight*33.814
+                    } else if (resource.weight_unit === 'mg') {
+                        return resource.weight/28350
+                    } else {
+                        return resource.weight*35.274
+                    }
+                }                 
+            },
             converted_dimension(resource: Resource, dimension: string): number {
                 // convert dimension 
                 if ((resource.height_unit === 'm' && this.dimension_unit === 'm') 
@@ -252,7 +348,6 @@
                         return (dimension === 'height' ? resource.height : resource.width)/2.54
                     }
                 }
-                return 1
             },
             check_all(): void {
                 if (this.one && this.two && this.three && this.four && this.five) {
@@ -337,6 +432,7 @@
                         && (parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) <= this.max_price))
                         && ((this.converted_dimension(resource, 'height') <= this.max_height) && (this.converted_dimension(resource, 'height') >= this.min_height))
                         && ((this.converted_dimension(resource, 'width') <= this.max_width) && (this.converted_dimension(resource, 'width') >= this.min_width))
+                        && ((this.converted_weight(resource) <= this.max_weight) && (this.converted_weight(resource) >= this.min_weight))
                         && (this.condition_new && resource.condition === 'New'
                         || this.condition_used && resource.condition === 'Used'
                         || this.rating_all
