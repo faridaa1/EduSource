@@ -104,23 +104,47 @@
                                 <label>Pages</label>
                                 <div class="number-filter">
                                     <button :class="all_pages ? 'all' : 'not'" @click="all_pages=!all_pages">All</button>
-                                    <input type="number" min="01" step="1" v-model="min_pages">
+                                    <input type="number" min="1" step="1" v-model="min_pages">
                                     <p>to</p>
                                     <input type="number" :min="min_price" step="1" v-model="max_pages">
                                 </div>
                             </div>
+                            <div class="filter-row">
+                                <label>Estimated Delivery</label>
+                                <div class="number-filter">
+                                    <button :class="all_delivery ? 'all' : 'not'" @click="all_delivery=!all_delivery">All</button>
+                                    <input type="number" min="1" max="9999" step="1" v-model="min_delivery">
+                                    <select v-model="min_delivery_option">
+                                        <option value="minute">{{ min_delivery === 1 ? 'minute' : 'minutes'}}</option>
+                                        <option value="hour">{{ min_delivery === 1 ? 'hour' : 'hours'}}</option>
+                                        <option value="day">{{ min_delivery === 1 ? 'day' : 'days'}}</option>
+                                        <option value="week">{{ min_delivery === 1 ? 'week' : 'weeks'}}</option>
+                                        <option value="month">{{ min_delivery === 1 ? 'month' : 'months'}}</option>
+                                    </select>
+                                    <p>to</p>
+                                    <input type="number" min="1" max="9999" step="1" v-model="max_delivery">
+                                    <select v-model="max_delivery_option">
+                                        <option v-if="min_delivery_option === 'minute'" value="minute">{{ max_delivery === 1 ? 'minute' : 'minutes'}}</option>
+                                        <option v-if="(min_delivery_option === 'minute') || (min_delivery_option === 'hour')" value="hour">{{ max_delivery === 1 ? 'hour' : 'hours'}}</option>
+                                        <option v-if="(min_delivery_option === 'minute') || (min_delivery_option === 'hour') || (min_delivery_option === 'day')" value="day">{{ max_delivery === 1 ? 'day' : 'days'}}</option>
+                                        <option v-if="(min_delivery_option === 'minute') || (min_delivery_option === 'day') || (min_delivery_option === 'hour') || (min_delivery_option === 'week')" value="week">{{ max_delivery === 1 ? 'week' : 'weeks'}}</option>
+                                        <option v-if="(min_delivery_option === 'minute') || (min_delivery_option === 'day') || (min_delivery_option === 'hour') || (min_delivery_option === 'week') || (min_delivery_option === 'month')" value="month">{{ max_delivery === 1 ? 'month' : 'months'}}</option>
+                                    </select>
+                                </div>
+                            </div>
                         <!-- 
-            'estimated_delivery_time': self.estimated_delivery_time,
-            'subject': self.subject,
-            'author': self.author,
-            'self_made': self.self_made,
-            'estimated_delivery_units': self.estimated_delivery_units,
-            'colour': self.colour,
-            'source': self.source,
-            'media': self.media,
-            'allow_delivery': self.allow_delivery,
-            'allow_collection': self.allow_collection,
-            'allow_return': self.allow_return, -->
+                'estimated_delivery_time': self.estimated_delivery_time,
+                'estimated_delivery_units': self.estimated_delivery_units,
+                'subject': self.subject,s
+                'author': self.author,
+                'self_made': self.self_made,
+                'colour': self.colour,
+                'source': self.source,
+                'media': self.media,
+                'allow_delivery': self.allow_delivery,
+                'allow_collection': self.allow_collection,
+                'allow_return': self.allow_return, 
+                -->
                         </div>
                     </div>
                 </div>
@@ -165,6 +189,11 @@
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
+            all_delivery: boolean,
+            max_delivery: number,
+            min_delivery: number,
+            min_delivery_option: 'day' | 'minute' | 'hour' | 'week' | 'month',
+            max_delivery_option: 'day' | 'minute' | 'hour' | 'week' | 'month',
             resources: Resource[],
             search_value: string,
             sorting: boolean,
@@ -207,10 +236,15 @@
             two: true,
             min_price: 0,
             zero: true,
+            min_delivery_option: 'day',
+            max_delivery_option: 'day',
             max_price: 100,
             min_height: 0,
             max_height: 100,
             min_width:0,
+            all_delivery: true,
+            max_delivery: 1,
+            min_delivery: 1,
             max_width: 100,
             three: true,
             four: true,
@@ -519,6 +553,44 @@
                     }
                 }
                 this.min_pages = min
+            },
+            valid_date(resource: Resource): boolean {
+                if (this.all_delivery) {
+                        // return true if all deliveries are allowed or the units are the same and the value is within the upper and lower bounds
+                        return true
+                }
+                if (resource.estimated_delivery_units === this.min_delivery_option) {
+                    if (this.min_delivery_option === this.max_delivery_option) {
+                        return ((resource.estimated_delivery_time >= this.min_delivery) && (resource.estimated_delivery_time <= this.max_delivery)) 
+                    }
+                    return (resource.estimated_delivery_time >= this.min_delivery)
+                }
+                if (!((this.min_delivery_option === 'minute')
+                    || ((this.min_delivery_option === 'hour' && resource.estimated_delivery_units !== 'minute'))
+                    || ((this.min_delivery_option === 'day') && (resource.estimated_delivery_units !== 'hour') && (resource.estimated_delivery_units !== 'minute'))
+                    || ((this.min_delivery_option === 'week') && ((resource.estimated_delivery_units === 'week') || (resource.estimated_delivery_units === 'month')))
+                    || ((this.min_delivery_option === 'month') && (resource.estimated_delivery_units === 'month')))) {
+                    // return false if units are below the minimum
+                        return false
+                } else if (!((this.max_delivery_option === 'minute' && resource.estimated_delivery_units === 'minute')
+                    || ((this.max_delivery_option === 'hour') && (resource.estimated_delivery_units !== 'day') && (resource.estimated_delivery_units !== 'week') && (resource.estimated_delivery_units !== 'month'))
+                    || ((this.max_delivery_option === 'day') && (resource.estimated_delivery_units !== 'week') && (resource.estimated_delivery_units !== 'month'))
+                    || ((this.max_delivery_option === 'week') && (resource.estimated_delivery_units !== 'month'))
+                    || (this.max_delivery_option === 'month'))) {
+                        // return false if units are below the minimum
+                        return false
+                }
+                
+                // dealing with cases where min and max units are not the same, already assumed to meet the minimum based on tests above
+                if ((this.max_delivery_option === 'hour') && (resource.estimated_delivery_units === 'hour')
+                    || (this.max_delivery_option === 'day') && (resource.estimated_delivery_units === 'day')
+                    || (this.max_delivery_option === 'week') && (resource.estimated_delivery_units === 'week')
+                    || (this.max_delivery_option === 'month') && (resource.estimated_delivery_units === 'month')
+                ) {
+                    return resource.estimated_delivery_time <= this.max_delivery
+                }
+                // resource is within max delivery option so if they are not the same then the max would cover it
+                return true
             }
         },
         computed: {
@@ -532,7 +604,6 @@
                 return useUserStore().user
             },
             filtered_resources(): Resource[] {
-                let seen_resources: { [key: string]: string } = {}
                 let temp_resources = []
                 for (let resource of this.resources) {
                     if (resource.unique) {
@@ -565,6 +636,7 @@
                             (resource.page_end <= this.max_pages) 
                             && (resource.page_start >= this.min_pages)
                         ))
+                        && this.valid_date(resource)
                     ) {
                         return true
                     }  
@@ -641,36 +713,100 @@
                 if (this.min_height > this.max_height) {
                     this.max_height = this.min_height
                 } 
+                this.all_height = false
             },
             max_height(): void {
                 if (this.max_height.toString() === '' || this.max_height < 0) this.max_height = 0
                 if (this.min_height > this.max_height) {
                     this.min_height = this.max_height
                 }
+                this.all_height = false
             },
             min_width(): void {
                 if (this.min_width.toString() === '' || this.min_width < 0) this.min_width = 0
                 if (this.min_width > this.max_width) {
                     this.max_width = this.min_width
                 } 
+                this.all_width = false
             },
             max_width(): void {
                 if (this.max_width.toString() === '' || this.max_width < 0) this.max_width = 0
                 if (this.min_width > this.max_width) {
                     this.min_width = this.max_width
                 }
+                this.all_width = false
             },
             min_pages(): void {
                 if (this.min_pages.toString() === '' || this.min_pages < 1) this.min_pages = 1
                 if (this.min_pages > this.max_pages) {
                     this.max_pages = this.min_pages
                 } 
+                this.all_pages = false
             },
             max_pages(): void {
                 if (this.max_pages.toString() === '' || this.max_pages < 1) this.max_pages = 1
                 if (this.min_pages > this.max_pages) {
                     this.min_pages = this.max_pages
                 }
+                this.all_pages = false
+            },
+            min_delivery_option(): void {
+                if (this.min_delivery_option === 'month') {
+                    this.max_delivery_option = 'month'
+                } else if (this.min_delivery_option === 'week') {
+                    if ((this.max_delivery_option === 'day') || (this.max_delivery_option === 'hour') || (this.max_delivery_option === 'minute')) {
+                        this.max_delivery_option = 'week'
+                    }
+                } else if (this.min_delivery_option === 'day') {
+                    if ((this.max_delivery_option === 'hour') || (this.max_delivery_option === 'minute')) {
+                        this.max_delivery_option = 'day'
+                    }
+                } else if (this.min_delivery_option === 'hour') {
+                    if ((this.max_delivery_option === 'minute')) {
+                        this.max_delivery_option = 'hour'
+                    }
+                } 
+                this.all_delivery = false
+            },
+            max_delivery_option(): void {
+                if ((this.min_delivery > this.max_delivery) && (
+                    (this.min_delivery_option === 'day' && this.max_delivery_option === 'day')
+                    || (this.min_delivery_option === 'minute' && this.max_delivery_option === 'minute')
+                    || (this.min_delivery_option === 'hour' && this.max_delivery_option === 'hour')
+                    || (this.min_delivery_option === 'week' && this.max_delivery_option === 'week')
+                    || (this.min_delivery_option === 'month' && this.max_delivery_option === 'month')
+                )) {
+                    this.min_delivery = this.max_delivery
+                }
+                this.all_delivery = false
+            },
+            min_delivery(): void {
+                if (this.min_delivery.toString() === '' || this.min_delivery < 1) this.min_delivery = 1
+                if (this.min_delivery > 9999) this.min_delivery = 9999
+                if ((this.min_delivery > this.max_delivery) && (
+                    (this.min_delivery_option === 'day' && this.max_delivery_option === 'day')
+                    || (this.min_delivery_option === 'minute' && this.max_delivery_option === 'minute')
+                    || (this.min_delivery_option === 'hour' && this.max_delivery_option === 'hour')
+                    || (this.min_delivery_option === 'week' && this.max_delivery_option === 'week')
+                    || (this.min_delivery_option === 'month' && this.max_delivery_option === 'month')
+                )) {
+                    this.max_delivery = this.min_delivery
+                } 
+                this.all_delivery = false
+            },
+            max_delivery(): void {
+                if (this.max_delivery.toString() === '' || this.max_delivery < 1) this.max_delivery = 1
+                if (this.max_delivery > 9999) this.max_delivery = 9999
+                if ((this.min_delivery > this.max_delivery) && (
+                    (this.min_delivery_option === 'day' && this.max_delivery_option === 'day')
+                    || (this.min_delivery_option === 'minute' && this.max_delivery_option === 'minute')
+                    || (this.min_delivery_option === 'hour' && this.max_delivery_option === 'hour')
+                    || (this.min_delivery_option === 'week' && this.max_delivery_option === 'week')
+                    || (this.min_delivery_option === 'month' && this.max_delivery_option === 'month')
+                )) {
+                    this.min_delivery = this.max_delivery
+                }
+                this.all_delivery = false
             }
         },
     })
