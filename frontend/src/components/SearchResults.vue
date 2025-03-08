@@ -248,7 +248,8 @@
                         <div>{{ currency }}{{ (Object.keys(cart_resource(resource)).length === 0) ? parseInt((0).toString()).toFixed(2) : (cart_resource(resource).number*parseFloat(get_resource(cart_resource(resource).resource).price.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
                     </div>
                     <div v-if="Object.keys(user).length > 0">
-                        <button>Add to Wishlist</button>
+                        <button v-if="!in_wishlist(resource)" @click="add_to_wishlist(resource)">Add to Wishlist</button>
+                        <button v-if="in_wishlist(resource)" @click="remove_from_wishlist(resource)">Remove from Wishlist</button>
                     </div>      
                 </div>
             </div>
@@ -388,6 +389,63 @@
             }
         },
         methods: {
+            async add_to_wishlist(resource: Resource): Promise<void> {
+                if (Object.keys(this.cart_resource(resource)).length > 0) {
+                    // move from cart to wishlist
+                    const moveToWishlist: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/cart-to-wishlist/`, {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: {
+                            'X-CSRFToken' : useUserStore().csrf,
+                            'Content-Type' : 'application/json',
+                        },
+                        body: JSON.stringify(this.cart_resource(resource).id)
+                    })
+                    if (!moveToWishlist.ok) {
+                        this.error = 'Error moving to wishlist. Please try again.'
+                        return
+                    }
+                    const data: {wishlist: Wishlist, cart: Cart} = await moveToWishlist.json()
+                    useUserStore().updateCart(data.cart)
+                    useUserStore().updateWishlist(data.wishlist)
+                    useUsersStore().updateUser(this.user)
+                } else {
+                    // add to wishlist
+                    const editWishlistResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/wishlist/`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'X-CSRFToken' : useUserStore().csrf,
+                            'Content-Type' : 'application/json',
+                        },
+                        body: JSON.stringify(resource.id)
+                    })
+                    if (!editWishlistResponse.ok) { this.error = 'Error editing wishlist. Please try again' }
+                    else { 
+                        const data: { wishlist: Wishlist } = await editWishlistResponse.json()
+                        useUserStore().updateWishlist(data.wishlist)
+                    }
+                }
+            },
+            async remove_from_wishlist(resource: Resource): Promise<void> {
+                const editWishlistResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/wishlist/`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
+                    },
+                    body: JSON.stringify(resource.id)
+                })
+                if (!editWishlistResponse.ok) { this.error = 'Error editing wishlist. Please try again' }
+                else { 
+                    const data: { wishlist: Wishlist } = await editWishlistResponse.json()
+                    useUserStore().updateWishlist(data.wishlist)
+                }
+            },
+            in_wishlist(resource: Resource): boolean {
+                return this.user.wishlist.resources.find(wishlist_resource => wishlist_resource.resource === resource.id) ? true : false
+            },
             async remove_from_cart(resource: Resource): Promise<void> {
                 const del: boolean = (this.cart_resource(resource).number === 1) ? true : false
                 const putCartItem: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${this.cart_resource(resource).id}/resource/${resource.id}/`, {
@@ -408,6 +466,7 @@
                 useUsersStore().updateUser(this.user)
             },
             async add_to_cart(resource: Resource): Promise<void> {
+                if (this.in_wishlist(resource)) this.remove_from_wishlist(resource)
                 let putCartItem: Response
                 if (Object.keys(this.cart_resource(resource)).length === 0) {
                     // create cart resource

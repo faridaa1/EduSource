@@ -438,7 +438,7 @@ def cart_to_wishlist(request: HttpRequest, user: int) -> JsonResponse:
     if request.method == 'PUT':
         user: User = User.objects.get(id=user)
         cart_resource: CartResource = get_object_or_404(CartResource, id=json.loads(request.body))
-        wishlist_resource: WishlistResource = WishlistResource.objects.create(
+        WishlistResource.objects.create(
             resource=cart_resource.resource,
             wishlist=user.wishlist,
         )
