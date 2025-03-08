@@ -971,8 +971,8 @@
                     }  
                     return false
                 })
-                this.total_pages = Math.ceil(temp_resources.length/5)
-                return temp_resources.filter((_, index) => ((index) < (this.current_page*5)) && ((index+1) > ((this.current_page-1)*5)))
+                this.total_pages = Math.ceil(temp_resources.length/10)
+                return temp_resources.filter((_, index) => ((index) < (this.current_page*10)) && ((index+1) > ((this.current_page-1)*10)))
             }
         },
         watch: {
@@ -1370,6 +1370,7 @@
 
     #search-content {
         height: 80vh;
+        overflow-y: auto;
         display: flex;
         flex-direction: column;
         gap: 1rem;
@@ -1589,8 +1590,12 @@
         border: none;
         padding: 0.5rem;
         background-color: #0DCAF0;
+        width: 10rem;
         border-radius: 0.5rem;
-        width: 12rem;
+    }
+
+    #col2 {
+        margin-right: 1rem;
     }
 
     #dark #toggle {
@@ -1611,7 +1616,7 @@
     }
 
     #resource-name {
-        width: 50vw;
+        width: 40vw;
         word-wrap: break-word;
     }
 
@@ -1671,4 +1676,59 @@
         align-items: center;
         gap: 1rem;
     }
+
+    .search-item img {
+        background-color: #d9d9d9;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1156px) {
+        #col2 {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        #cart-filter {
+            flex-direction: row;
+            gap: 1rem;
+        }
+    }
+
+    @media (max-width: 852px) {
+        .search-item {
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+
+        #col2 {
+            align-items: flex-start;
+            flex-direction: row;
+            gap: 2rem;
+            margin-right: 0;
+            align-self: center;
+        }
+
+        #cart-filter {
+            flex-direction: column;
+            gap: 1rem;
+        }
+    }
+
+    @media (max-width: 559px) {
+        .search-item p, button, .search-item div, p {
+            font-size: 1rem !important;
+        }
+
+        .search-item img {
+            height: 6rem;
+        }
+
+        #col1 {
+            gap: 1rem;
+        }
+    }
+
 </style>
