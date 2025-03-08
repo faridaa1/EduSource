@@ -47,6 +47,28 @@
                                 </div>
                             </div>
                             <div id="type">
+                                <label>Subject</label>
+                                <div>
+                                    <p :class="subject_all ? 'new' : 'not'" @click="subject_all=!subject_all">All</p>
+                                    <p :class="subject_one ? 'used' : 'not'" @click="subject_one=!subject_one">{{ subjects[0] }}</p>
+                                    <p v-if="subjects[1]" :class="subject_two ? 'used' : 'not'" @click="subject_two=!subject_two">{{ subjects[1] }}</p>
+                                    <p v-if="subjects[2]" :class="subject_three ? 'used' : 'not'" @click="subject_three=!subject_three">{{ subjects[2] }}</p>
+                                    <p v-if="subjects[3]" :class="subject_four ? 'used' : 'not'" @click="subject_four=!subject_four">{{ subjects[3] }}</p>
+                                    <p v-if="subjects[4]" :class="subject_five ? 'used' : 'not'" @click="subject_five=!subject_five">{{ subjects[4] }}</p>
+                                </div>
+                            </div>
+                            <div id="type">
+                                <label>Subject</label>
+                                <div>
+                                    <p :class="author_all ? 'new' : 'not'" @click="author_all=!author_all">All</p>
+                                    <p :class="author_one ? 'used' : 'not'" @click="author_one=!author_one">{{ authors[0] }}</p>
+                                    <p v-if="authors[1]" :class="author_two ? 'used' : 'not'" @click="author_two=!author_two">{{ authors[1] }}</p>
+                                    <p v-if="authors[2]" :class="author_three ? 'used' : 'not'" @click="author_three=!author_three">{{ authors[2] }}</p>
+                                    <p v-if="authors[3]" :class="author_four ? 'used' : 'not'" @click="author_four=!author_four">{{ authors[3] }}</p>
+                                    <p v-if="authors[4]" :class="author_five ? 'used' : 'not'" @click="author_five=!author_five">{{ authors[4] }}</p>
+                                </div>
+                            </div>
+                            <div id="type">
                                 <label>Colour</label>
                                 <div>
                                     <p :class="colour_all ? 'new' : 'not'" @click="colour_all=!colour_all">All</p>
@@ -230,6 +252,8 @@
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
+            subject_all: boolean, subject_one: boolean, subject_two: boolean, subject_three: boolean, subject_four: boolean, subject_five: boolean,
+            author_all: boolean, author_one: boolean, author_two: boolean, author_three: boolean, author_four: boolean, author_five: boolean,
             colour_all: boolean, black: boolean, red: boolean, yellow: boolean, pink: boolean, purple: boolean, green: boolean, blue: boolean, white: boolean, orange: boolean, brown: boolean, grey: boolean,
             media_all: boolean, paper: boolean, online: boolean,
             source_all: boolean, source_self: boolean, source_ai: boolean, source_internet: boolean,
@@ -272,6 +296,8 @@
             condition_used: boolean, 
             sort_by: 'listing-new' | 'listing-old' | 'rating-low' | 'rating-high' | 'price-low' | 'price-high'
         } { return {
+            subject_all: true, subject_one: true, subject_two: true, subject_three: true, subject_four: true, subject_five: true,
+            author_all: true, author_one: true, author_two: true, author_three: true, author_four: true, author_five: true,
             colour_all: true, black: true, red: true, yellow: true, pink: true, purple: true, green: true, blue: true, white: true, orange: true, brown: true, grey: true,
             media_all: true, paper: true, online: true,
             options_all: true, delivery: true, collection: true,
@@ -344,6 +370,12 @@
             }
         },
         methods: {
+            check_authors(): void {
+                this.author_all = this.author_one && this.author_two && this.author_three && this.author_four && this.author_five
+            },
+            check_subjects(): void {
+                this.subject_all = this.subject_one && this.subject_two && this.subject_three && this.subject_four && this.subject_five
+            },
             check_colours(): void {
                 this.colour_all = this.black && this.red && this.yellow && this.pink && this.purple && this.green && this.blue && this.white && this.orange && this.brown && this.grey
             },
@@ -655,6 +687,30 @@
             }
         },
         computed: {
+            subjects(): string[] {
+                // return top 5 most common subjects for filtering
+                let subjects_map: {[key: string] : number} = {}
+                for (let resource of this.resources) {
+                    if (!subjects_map[resource.subject]) {
+                        subjects_map[resource.subject] = 1
+                    } else {
+                        subjects_map[resource.subject] += 1
+                    }
+                }
+                return Object.keys(subjects_map).sort((a,b) => subjects_map[b]-subjects_map[a]).slice(0,6)
+            },
+            authors(): string[] {
+                // return top 5 most common authors for filtering
+                let authors_map: {[key: string] : number} = {}
+                for (let resource of this.resources) {
+                    if (!authors_map[resource.author]) {
+                        authors_map[resource.author] = 1
+                    } else {
+                        authors_map[resource.author] += 1
+                    }
+                }
+                return Object.keys(authors_map).sort((a,b) => authors_map[b]-authors_map[a]).slice(0,6)
+            },
             currency(): string {
                 return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
             },
@@ -729,6 +785,24 @@
                             || (this.brown && resource.colour === 'Brown')
                             || (this.grey && resource.colour === 'Grey')
                         )
+                        && (
+                            this.subject_all || (
+                                (this.subject_one && resource.subject === this.subjects[0])
+                                || (this.subject_two && resource.subject === this.subjects[1])
+                                || (this.subject_three && resource.subject === this.subjects[2])
+                                || (this.subject_four && resource.subject === this.subjects[3])
+                                || (this.subject_five && resource.subject === this.subjects[4])
+                            )
+                        )
+                        && (
+                            this.author_all || (
+                                (this.author_one && resource.author === this.authors[0])
+                                || (this.author_two && resource.author === this.authors[1])
+                                || (this.author_three && resource.author === this.authors[2])
+                                || (this.author_four && resource.author === this.authors[3])
+                                || (this.author_five && resource.author === this.authors[4])
+                            )
+                        )
                     ) {
                         return true
                     }  
@@ -737,6 +811,54 @@
             }
         },
         watch: {
+            subject_one(): void {
+                this.check_subjects()
+            },
+            subject_two(): void {
+                this.check_subjects()
+            },
+            subject_three(): void {
+                this.check_subjects()
+            },
+            subject_four(): void {
+                this.check_subjects()
+            },
+            subject_five(): void {
+                this.check_subjects()
+            },
+            subject_all(): void {
+                if (this.subject_all) {
+                    this.subject_one = true
+                    this.subject_two = true
+                    this.subject_three = true
+                    this.subject_four = true
+                    this.subject_five = true
+                }
+            },
+            author_one(): void {
+                this.check_authors()
+            },
+            author_two(): void {
+                this.check_authors()
+            },
+            author_three(): void {
+                this.check_authors()
+            },
+            author_four(): void {
+                this.check_authors()
+            },
+            author_five(): void {
+                this.check_authors()
+            },
+            author_all(): void {
+                if (this.author_all) {
+                    this.author_one = true
+                    this.author_two = true
+                    this.author_three = true
+                    this.author_four = true
+                    this.author_five = true
+                }
+            },
             red(): void {
                 this.check_colours()
             },
