@@ -109,6 +109,15 @@
                                     <input type="number" :min="min_price" step="1" v-model="max_pages">
                                 </div>
                             </div>
+                            <div id="type" v-if="(textbook || notes) && (some_unique())">
+                                <label>Source</label>
+                                <div>
+                                    <p :class="source_all ? 'new' : 'not'" @click="source_all=!source_all">All</p>
+                                    <p :class="source_self ? 'used' : 'not'" @click="source_self=!source_self">Self Made</p>
+                                    <p :class="source_ai ? 'used' : 'not'" @click="source_ai=!source_ai">AI</p>
+                                    <p :class="source_internet ? 'used' : 'not'" @click="source_internet=!source_internet">Internet</p>
+                                </div>
+                            </div>
                             <div class="filter-row">
                                 <label>Estimated Delivery</label>
                                 <div class="number-filter">
@@ -132,13 +141,20 @@
                                     </select>
                                 </div>
                             </div>
-                            <div id="type" v-if="(textbook || notes) && (some_unique())">
-                                <label>Source</label>
+                            <div id="type">
+                                <label>Delivery Options</label>
                                 <div>
-                                    <p :class="source_all ? 'new' : 'not'" @click="source_all=!source_all">All</p>
-                                    <p :class="source_self ? 'used' : 'not'" @click="source_self=!source_self">Self Made</p>
-                                    <p :class="source_ai ? 'used' : 'not'" @click="source_ai=!source_ai">AI</p>
-                                    <p :class="source_internet ? 'used' : 'not'" @click="source_internet=!source_internet">Internet</p>
+                                    <p :class="options_all ? 'new' : 'not'" @click="options_all=!options_all">All</p>
+                                    <p :class="delivery ? 'used' : 'not'" @click="delivery=!delivery">Delivery</p>
+                                    <p :class="collection ? 'used' : 'not'" @click="collection=!collection">Collection</p>
+                                </div>
+                            </div>
+                            <div id="type">
+                                <label>Return Options</label>
+                                <div>
+                                    <p :class="returns_all ? 'new' : 'not'" @click="returns_all=!returns_all">All</p>
+                                    <p :class="returns ? 'used' : 'not'" @click="returns=!returns">Returns</p>
+                                    <p :class="no_returns ? 'used' : 'not'" @click="no_returns=!no_returns">No Returns</p>
                                 </div>
                             </div>
                         <!-- 
@@ -146,9 +162,6 @@
                 'author': self.author,
                 'colour': self.colour,
                 'media': self.media,
-                'allow_delivery': self.allow_delivery,
-                'allow_collection': self.allow_collection,
-                'allow_return': self.allow_return, 
                 -->
                         </div>
                     </div>
@@ -194,15 +207,10 @@
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
-            source_all: boolean,
-            source_self: boolean,
-            source_ai: boolean,
-            source_internet: boolean,
-            all_delivery: boolean,
-            max_delivery: number,
-            min_delivery: number,
-            min_delivery_option: 'day' | 'minute' | 'hour' | 'week' | 'month',
-            max_delivery_option: 'day' | 'minute' | 'hour' | 'week' | 'month',
+            source_all: boolean, source_self: boolean, source_ai: boolean, source_internet: boolean,
+            all_delivery: boolean, max_delivery: number, min_delivery: number, min_delivery_option: 'day' | 'minute' | 'hour' | 'week' | 'month', max_delivery_option: 'day' | 'minute' | 'hour' | 'week' | 'month',
+            options_all: boolean, delivery: boolean, collection: boolean,
+            returns_all: boolean, returns: boolean, no_returns: boolean,
             resources: Resource[],
             search_value: string,
             sorting: boolean,
@@ -239,6 +247,8 @@
             condition_used: boolean, 
             sort_by: 'listing-new' | 'listing-old' | 'rating-low' | 'rating-high' | 'price-low' | 'price-high'
         } { return {
+            options_all: true, delivery: true, collection: true,
+            returns_all: true, returns: true, no_returns: true,
             search_value: '',
             one: true,
             dimension_unit: 'cm',
@@ -307,6 +317,12 @@
             }
         },
         methods: {
+            check_options(): void {
+                this.options_all = this.delivery && this.collection
+            },
+            check_returns(): void {
+                this.returns_all = this.returns && this.no_returns
+            },
             check_source(): void {
                 this.source_all = this.source_ai && this.source_internet && this.source_self
             },
@@ -655,6 +671,14 @@
                             || (this.source_internet && resource.source === 'Internet')  
                             || (this.source_self && resource.source === 'None')  
                         ))
+                        && (this.options_all 
+                            || (this.delivery && resource.allow_delivery)
+                            || (this.collection && resource.allow_collection)
+                        )
+                        && (this.returns_all 
+                            || (this.returns && resource.allow_return)
+                            || (this.no_returns && !resource.allow_return)
+                        )
                     ) {
                         return true
                     }  
@@ -663,6 +687,37 @@
             }
         },
         watch: {
+            delivery(): void {
+                this.check_options()
+            },
+            collection(): void {
+                this.check_options()
+            },
+            options_all(): void {
+                if (this.options_all) {
+                    this.collection = true
+                    this.delivery = true
+                }
+            },
+            returns_all(): void {
+                if (this.returns_all) {
+                    this.returns = true
+                    this.no_returns = true
+                }
+            },
+            returns(): void {
+                this.check_returns()
+            },
+            no_returns(): void {
+                this.check_returns()
+            },
+            source_all(): void {
+                if (this.source_all) {
+                    this.source_ai = true
+                    this.source_internet = true
+                    this.source_self = true
+                }
+            },
             source_self(): void {
                 this.check_source()
             },
