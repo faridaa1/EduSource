@@ -118,6 +118,19 @@
                                     <p :class="source_internet ? 'used' : 'not'" @click="source_internet=!source_internet">Internet</p>
                                 </div>
                             </div>
+                            <div id="type" v-if="(textbook || notes)">
+                                <label>Media</label>
+                                <div>
+                                    <p :class="media_all ? 'new' : 'not'" @click="media_all=!media_all">All</p>
+                                    <p :class="paper ? 'used' : 'not'" @click="paper=!paper">Paper</p>
+                                    <p :class="online ? 'used' : 'not'" @click="online=!online">Online</p>
+                                </div>
+                            </div>
+                             <!-- 
+                'subject': self.subjects
+                'author': self.author,
+                'colour': self.colour,
+                -->
                             <div class="filter-row">
                                 <label>Estimated Delivery</label>
                                 <div class="number-filter">
@@ -157,12 +170,6 @@
                                     <p :class="no_returns ? 'used' : 'not'" @click="no_returns=!no_returns">No Returns</p>
                                 </div>
                             </div>
-                        <!-- 
-                'subject': self.subjects
-                'author': self.author,
-                'colour': self.colour,
-                'media': self.media,
-                -->
                         </div>
                     </div>
                 </div>
@@ -207,6 +214,7 @@
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
+            media_all: boolean, paper: boolean, online: boolean,
             source_all: boolean, source_self: boolean, source_ai: boolean, source_internet: boolean,
             all_delivery: boolean, max_delivery: number, min_delivery: number, min_delivery_option: 'day' | 'minute' | 'hour' | 'week' | 'month', max_delivery_option: 'day' | 'minute' | 'hour' | 'week' | 'month',
             options_all: boolean, delivery: boolean, collection: boolean,
@@ -247,6 +255,7 @@
             condition_used: boolean, 
             sort_by: 'listing-new' | 'listing-old' | 'rating-low' | 'rating-high' | 'price-low' | 'price-high'
         } { return {
+            media_all: true, paper: true, online: true,
             options_all: true, delivery: true, collection: true,
             returns_all: true, returns: true, no_returns: true,
             search_value: '',
@@ -317,6 +326,9 @@
             }
         },
         methods: {
+            check_media(): void {
+                this.media_all = this.online && this.paper
+            },
             check_options(): void {
                 this.options_all = this.delivery && this.collection
             },
@@ -679,6 +691,10 @@
                             || (this.returns && resource.allow_return)
                             || (this.no_returns && !resource.allow_return)
                         )
+                        && (this.media_all 
+                            || (this.paper && resource.media === 'Paper')
+                            || (this.online && resource.media === 'Online')
+                        )
                     ) {
                         return true
                     }  
@@ -687,6 +703,18 @@
             }
         },
         watch: {
+            paper(): void {
+                this.check_media()
+            },
+            online(): void {
+                this.check_media()
+            },
+            media_all(): void {
+                if (this.media_all) {
+                    this.paper = true
+                    this.delivery = true
+                }
+            },
             delivery(): void {
                 this.check_options()
             },
