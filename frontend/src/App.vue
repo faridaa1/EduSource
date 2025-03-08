@@ -20,7 +20,7 @@
           </transition>
         </div>
         <div id="search-div">
-          <input id="search" @input="semantic_search" type="text" placeholder="Search">
+          <input id="search" @input="semantic_search" @keydown.enter="conduct_search()" type="text" placeholder="Search">
           <div id="search-results" v-if="searching && search_results.length > 0">
             <div class="search-result" v-for="resource in search_results" @click="conduct_search(resource)">
               {{ resource.name }}
