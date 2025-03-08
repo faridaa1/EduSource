@@ -40,7 +40,7 @@
                     <div class="dimension">
                         <label for="">Height</label>
                         <div>
-                            <input required type="number" min="1" max="1000.00" step="0.01" v-model="height" :disabled="exists_resource">
+                            <input required type="number" min="0" max="1000.00" step="0.01" v-model="height" :disabled="exists_resource">
                             <select name="" id="height_dimension" v-model="dimension_unit" :disabled="exists_resource">
                                 <option value="cm">cm</option>
                                 <option value="m">m</option>
@@ -51,7 +51,7 @@
                     <div class="dimension">
                         <label for="">Width</label>
                         <div>
-                            <input required type="number" max="1000.00" min="1" step="0.01" v-model="width" :disabled="exists_resource">
+                            <input required type="number" max="1000.00" min="0" step="0.01" v-model="width" :disabled="exists_resource">
                             <select name="" id="width_dimension" v-model="dimension_unit" :disabled="exists_resource">
                                 <option value="cm">cm</option>
                                 <option value="m">m</option>
@@ -62,7 +62,7 @@
                     <div class="dimension">
                         <label for="">Weight</label>
                         <div>
-                            <input required type="number" min="1" max="1000.00" step="0.01" v-model="weight" :disabled="exists_resource">
+                            <input required type="number" min="0" max="1000.00" step="0.01" v-model="weight" :disabled="exists_resource">
                             <select name="" id="weight_dimension" v-model="weight_unit" :disabled="exists_resource">
                                 <option value="kg">kg</option>
                                 <option value="ml">ml</option>

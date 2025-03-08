@@ -45,7 +45,7 @@
                             </div>
                         </div>
                         <div v-if="Object.keys(user).length > 0" class="filter-row">
-                            <label>Price</label>
+                            <label>Price ({{ currency }})</label>
                             <div class="number-filter">
                                 <input type="number" min="0" step="0.01" v-model="min_price">
                                 <p>to</p>
@@ -58,6 +58,24 @@
                                 <input type="number" min="0" step="0.01" v-model="min_height">
                                 <p>to</p>
                                 <input type="number" :min="min_height" step="0.01" v-model="max_height">
+                                <select v-model="dimension_unit">
+                                    <option value="cm">cm</option>
+                                    <option value="m">m</option>
+                                    <option value="in">in</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="filter-row">
+                            <label>Width</label>
+                            <div class="number-filter">
+                                <input type="number" min="0" step="0.01" v-model="min_width">
+                                <p>to</p>
+                                <input type="number" :min="min_width" step="0.01" v-model="max_width">
+                                <select v-model="dimension_unit">
+                                    <option value="cm">cm</option>
+                                    <option value="m">m</option>
+                                    <option value="in">in</option>
+                                </select>
                             </div>
                         </div>
                         <!-- 
@@ -134,6 +152,8 @@
             four: boolean,
             five: boolean,
             min_price: number,
+            min_width: number,
+            max_width: number,
             max_price: number,
             min_height: number,
             max_height: number,
@@ -141,6 +161,7 @@
             type_all: boolean,
             textbook: boolean,
             notes: boolean,
+            dimension_unit: 'in' | 'm' | 'cm',
             stationery: boolean,
             filtering: boolean,
             condition_new: boolean,
@@ -149,11 +170,14 @@
         } { return {
             search_value: '',
             one: true,
+            dimension_unit: 'cm',
             two: true,
             min_price: 0,
             max_price: 100,
-            min_height: 1,
+            min_height: 0,
             max_height: 100,
+            min_width:0,
+            max_width: 100,
             three: true,
             four: true,
             five: true,
@@ -202,6 +226,34 @@
             }
         },
         methods: {
+            converted_dimension(resource: Resource, dimension: string): number {
+                // convert dimension 
+                if ((resource.height_unit === 'm' && this.dimension_unit === 'm') 
+                    || (resource.height_unit === 'cm' && this.dimension_unit === 'cm')
+                    || (resource.height_unit === 'in' && this.dimension_unit === 'in')) {
+                        return dimension === 'height' ? resource.height : resource.width
+                    }
+                if (this.dimension_unit === 'm') {
+                    if (resource.height_unit === 'in') {
+                        return (dimension === 'height' ? resource.height : resource.width)/39.37
+                    } else {
+                        return (dimension === 'height' ? resource.height : resource.width)/100
+                    }
+                } else if (this.dimension_unit === 'cm') {
+                    if (resource.height_unit === 'in') {
+                        return (dimension === 'height' ? resource.height : resource.width)*2.54
+                    } else {
+                        return (dimension === 'height' ? resource.height : resource.width)*100
+                    }
+                } else {
+                    if (resource.height_unit === 'm') {
+                        return (dimension === 'height' ? resource.height : resource.width)*39.37
+                    } else {
+                        return (dimension === 'height' ? resource.height : resource.width)/2.54
+                    }
+                }
+                return 1
+            },
             check_all(): void {
                 if (this.one && this.two && this.three && this.four && this.five) {
                     this.rating_all = true
@@ -283,7 +335,8 @@
                     if (
                         ((parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) >= this.min_price)
                         && (parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) <= this.max_price))
-                        && ((resource.height <= this.max_height) && (resource.height >= this.min_height))
+                        && ((this.converted_dimension(resource, 'height') <= this.max_height) && (this.converted_dimension(resource, 'height') >= this.min_height))
+                        && ((this.converted_dimension(resource, 'width') <= this.max_width) && (this.converted_dimension(resource, 'width') >= this.min_width))
                         && (this.condition_new && resource.condition === 'New'
                         || this.condition_used && resource.condition === 'Used'
                         || this.rating_all
@@ -297,10 +350,6 @@
                         || (this.stationery && resource.type === 'Stationery')
                         || (this.notes && resource.type === 'Notes'))
                     ) {
-                        console.log(
-                            (parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) >= this.min_price)
-                        && (parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) <= this.max_price)
-                        )
                         return true
                     }  
                     return false
@@ -335,15 +384,27 @@
                 }
             },
             min_height(): void {
-                if (this.min_height.toString() === '' || this.min_height < 1) this.min_height = 1
+                if (this.min_height.toString() === '' || this.min_height < 0) this.min_height = 0
                 if (this.min_height > this.max_height) {
                     this.max_height = this.min_height
                 } 
             },
             max_height(): void {
-                if (this.max_height.toString() === '' || this.max_height < 1) this.max_height = 1
+                if (this.max_height.toString() === '' || this.max_height < 0) this.max_height = 0
                 if (this.min_height > this.max_height) {
                     this.min_height = this.max_height
+                }
+            },
+            min_width(): void {
+                if (this.min_width.toString() === '' || this.min_width < 0) this.min_width = 0
+                if (this.min_width > this.max_width) {
+                    this.max_width = this.min_width
+                } 
+            },
+            max_width(): void {
+                if (this.max_width.toString() === '' || this.max_width < 0) this.max_width = 0
+                if (this.min_width > this.max_width) {
+                    this.min_width = this.max_width
                 }
             }
         },
@@ -399,7 +460,6 @@
 
     select {
         padding: 0.4rem;
-        font-size: 1.3rem;
         border-radius: 0.5rem;
         background-color: #d9d9d9;
         border: none;
