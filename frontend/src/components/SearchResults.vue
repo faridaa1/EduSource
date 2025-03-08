@@ -6,7 +6,7 @@
             </div>
             <div id="heading2">
                 <div id="sort_by" v-if="filtered_resources.length > 0">
-                    <label id="label">Sort by</label>
+                    <label id="label">Sort</label>
                     <select v-model="sort_by">
                         <option value="listing-new">Listing: New to Old</option>
                         <option value="listing-old">Listing: Old to New</option>
@@ -17,7 +17,8 @@
                     </select>
                 </div>
                 <div id="filter">
-                    <label id="label">Filter <i class="bi bi-sliders" @click="filtering=!filtering"></i></label>
+                    <label id="label">Filter</label>
+                    <i class="bi bi-sliders" @click="filtering=!filtering"></i>
                     <div id="filter-area-parent" v-if="filtering">
                         <div id="filter-area" >
                             <div id="condition">
@@ -1479,6 +1480,10 @@
         text-align: center;
     }
 
+    #heading2 label {
+        width: 2rem;
+    }
+
     .search-item {
         padding: 0.5rem;
     }
@@ -1683,6 +1688,11 @@
         padding: 0.5rem;
     }
 
+    #sort_by, #filter {
+        display: flex;
+        gap: 1.5rem;
+    }
+
     /* Responsive Design */
     @media (max-width: 1156px) {
         #col2 {
@@ -1724,10 +1734,56 @@
 
         .search-item img {
             height: 6rem;
+            width: 6rem;
         }
 
         #col1 {
             gap: 1rem;
+        }
+
+        #heading1 p {
+            font-size: 1.2rem !important;
+        }
+    }
+
+    @media (max-width: 542px) {
+        #heading2 {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        #sort_by, #filter {
+            font-size: 1rem;
+        }
+
+        #search-container {
+            margin-left: 1rem;
+            margin-right: 1rem;
+        }
+    }
+
+    @media (max-height: 1100px) {
+        #search-content {
+            height: 78vh;
+        }
+    }
+
+    @media (max-height: 995px) {
+        #search-content {
+            height: 77vh;
+        }
+    }
+
+    @media (max-height: 957px) {
+        #search-content {
+            height: 72vh;
+        }
+    }
+
+    @media (max-height: 889px) {
+        #search-content {
+            height: 73vh;
         }
     }
 
