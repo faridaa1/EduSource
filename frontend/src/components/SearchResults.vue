@@ -28,6 +28,7 @@
                             <label>Rating</label>
                             <div>
                                 <p :class="rating_all ? 'new' : 'not'" @click="() => { rating_all=!rating_all, one=true; two=true; three=true; four=true; five=true } ">All</p>
+                                <p :class="zero ? 'new' : 'not'" @click="() => {zero=!zero; check_all()}">0</p>
                                 <p :class="one ? 'new' : 'not'" @click="() => {one=!one; check_all()}">1</p>
                                 <p :class="two ? 'used' : 'not'" @click="() => {two=!two; check_all()}">2</p>
                                 <p :class="three ? 'used' : 'not'" @click="() => {three=!three; check_all()}">3</p>
@@ -47,6 +48,7 @@
                         <div v-if="Object.keys(user).length > 0" class="filter-row">
                             <label>Price ({{ currency }})</label>
                             <div class="number-filter">
+                                <button :class="all_price ? 'all' : 'not'" @click="all_price=!all_price">All</button>
                                 <input type="number" min="0" step="0.01" v-model="min_price">
                                 <p>to</p>
                                 <input type="number" :min="min_price" step="0.01" v-model="max_price">
@@ -94,14 +96,19 @@
                                 </select>
                             </div>
                         </div>
+                        <div v-if="notes || textbook" class="filter-row">
+                            <label>Pages</label>
+                            <div class="number-filter">
+                                <input type="number" min="01" step="1" v-model="min_pages">
+                                <p>to</p>
+                                <input type="number" :min="min_price" step="1" v-model="max_pages">
+                            </div>
+                        </div>
                         <!-- 
-            'weight': self.weight,
             'estimated_delivery_time': self.estimated_delivery_time,
             'subject': self.subject,
             'author': self.author,
             'self_made': self.self_made,
-            'page_start': self.page_start,
-            'page_end': self.page_end,
             'estimated_delivery_units': self.estimated_delivery_units,
             'colour': self.colour,
             'source': self.source,
@@ -147,7 +154,7 @@
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent, nextTick } from 'vue';
+    import { defineComponent } from 'vue';
     import type { Resource, User } from '@/types';
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
@@ -155,7 +162,10 @@
             resources: Resource[],
             search_value: string,
             sorting: boolean,
+            zero: boolean,
             one: boolean, 
+            min_pages: number,
+            max_pages: number,
             two: boolean,
             min_weight: number,
             max_weight: number,
@@ -167,9 +177,14 @@
             max_width: number,
             max_price: number,
             min_height: number,
+            all_price: boolean,
             max_height: number,
             rating_all: boolean,
             type_all: boolean,
+            all_height: boolean,
+            all_width: boolean,
+            all_weight: boolean,
+            all_pages: boolean,
             textbook: boolean,
             notes: boolean,
             dimension_unit: 'in' | 'm' | 'cm',
@@ -185,6 +200,7 @@
             dimension_unit: 'cm',
             two: true,
             min_price: 0,
+            zero: true,
             max_price: 100,
             min_height: 0,
             max_height: 100,
@@ -198,7 +214,14 @@
             textbook: true,
             stationery: true,
             notes: true,
+            min_pages: 1,
+            max_pages: 100,
             resources: [],
+            all_height: true,
+            all_price: true,
+            all_width: true,
+            all_weight: true,
+            all_pages: true,
             condition_new: true,
             condition_used: true,
             min_weight: 0,
@@ -350,7 +373,7 @@
                 }
             },
             check_all(): void {
-                if (this.one && this.two && this.three && this.four && this.five) {
+                if (this.zero && this.one && this.two && this.three && this.four && this.five) {
                     this.rating_all = true
                 } else {
                     this.rating_all = false
@@ -401,6 +424,24 @@
                     return a.price - b.price
                 })
             },
+            maximum_price(): void {
+                let max = 0
+                for (let resource of this.resources) {
+                    if ((parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€',''))) > max) {
+                        max = parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€',''))
+                    }
+                }
+                this.max_price = max
+            },
+            minimum_price(): void {
+                let min = 0
+                for (let resource of this.resources) {
+                    if ((parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€',''))) < min) {
+                        min = parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€',''))
+                    }
+                }
+                this.min_price = min
+            }
         },
         computed: {
             currency(): string {
@@ -428,23 +469,20 @@
                 }
                 return temp_resources.filter(resource => {
                     if (
-                        ((parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) >= this.min_price)
-                        && (parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) <= this.max_price))
+                        (this.all_price || ((parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) >= this.min_price)
+                        && (parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) <= this.max_price)))
                         && ((this.converted_dimension(resource, 'height') <= this.max_height) && (this.converted_dimension(resource, 'height') >= this.min_height))
                         && ((this.converted_dimension(resource, 'width') <= this.max_width) && (this.converted_dimension(resource, 'width') >= this.min_width))
                         && ((this.converted_weight(resource) <= this.max_weight) && (this.converted_weight(resource) >= this.min_weight))
-                        && (this.condition_new && resource.condition === 'New'
-                        || this.condition_used && resource.condition === 'Used'
-                        || this.rating_all
-                        || this.type_all
+                        && ((this.condition_new && resource.condition === 'New') || (this.condition_used && resource.condition === 'Used'))
+                        && ((this.textbook && resource.type === 'Textbook') || (this.stationery && resource.type === 'Stationery') || (this.notes && resource.type === 'Notes'))
+                        && (this.rating_all
+                        || (this.zero && resource.rating >= 0)
                         || (this.one && resource.rating >= 1)
                         || (this.two && resource.rating >= 2)
                         || (this.three && resource.rating >= 3)
                         || (this.four && resource.rating >= 4)
-                        || (this.five && resource.rating >= 5)
-                        || (this.textbook && resource.type === 'Textbook')
-                        || (this.stationery && resource.type === 'Stationery')
-                        || (this.notes && resource.type === 'Notes'))
+                        || (this.five && resource.rating >= 5))
                     ) {
                         return true
                     }  
@@ -453,6 +491,11 @@
             }
         },
         watch: {
+            all_price(): void {
+                this.maximum_price()
+                this.minimum_price()
+                this.all_price = true
+            },
             async user(new_user: User): Promise<void> {
                 for (const resource of this.user.listings) {
                     resource.price = await this.listedprice(resource)
@@ -463,6 +506,9 @@
                 for (const resource of resources) {
                     resource.price = await this.listedprice(resource)
                 }
+                this.maximum_price()
+                this.minimum_price()
+                this.all_price = true
             },
             sort_by(): void {
                 this.sort_resources()
@@ -472,12 +518,14 @@
                 if (this.min_price > this.max_price) {
                     this.max_price = this.min_price
                 } 
+                this.all_price = false
             },
             max_price(): void {
                 if (this.max_price.toString() === '' || this.max_price < 0) this.max_price = 0
                 if (this.min_price > this.max_price) {
                     this.min_price = this.max_price
                 }
+                this.all_price = false
             },
             min_height(): void {
                 if (this.min_height.toString() === '' || this.min_height < 0) this.min_height = 0
@@ -580,8 +628,12 @@
         cursor: pointer;
     }
 
-    #filter i:hover, .new:hover, .used:hover, .not:hover {
+    #filter i:hover, .new:hover, .all:hover, .used:hover, .not:hover {
         cursor: pointer;
+    }
+
+    .all, .new, .not {
+        border: none;
     }
 
     #filter-area {
@@ -609,22 +661,22 @@
         align-items: center;
     }
 
-    .new, .used {
+    .new, .used, .all {
         background-color: green;
         padding: 0.5rem;
         border-radius: 0.5rem;
     }
 
-    #dark .new, #dark .used {
+    #dark .new, #dark .used, #dark .all {
         background-color: #d9d9d9;
         color: black;
     }
 
-    .new:hover, .used:hover {
+    .new:hover, .used:hover, .all:hover, .all:hover {
         background-color: rgb(97, 205, 97);
     }
 
-    #dark .new:hover, #dark .used:hover{
+    #dark .new:hover, #dark .used:hover, #dark .all:hover {
         background-color: darkgray;
     }
 
