@@ -132,14 +132,19 @@
                                     </select>
                                 </div>
                             </div>
+                            <div id="type" v-if="(textbook || notes) && (some_unique())">
+                                <label>Source</label>
+                                <div>
+                                    <p :class="source_all ? 'new' : 'not'" @click="source_all=!source_all">All</p>
+                                    <p :class="source_self ? 'used' : 'not'" @click="source_self=!source_self">Self Made</p>
+                                    <p :class="source_ai ? 'used' : 'not'" @click="source_ai=!source_ai">AI</p>
+                                    <p :class="source_internet ? 'used' : 'not'" @click="source_internet=!source_internet">Internet</p>
+                                </div>
+                            </div>
                         <!-- 
-                'estimated_delivery_time': self.estimated_delivery_time,
-                'estimated_delivery_units': self.estimated_delivery_units,
-                'subject': self.subject,s
+                'subject': self.subjects
                 'author': self.author,
-                'self_made': self.self_made,
                 'colour': self.colour,
-                'source': self.source,
                 'media': self.media,
                 'allow_delivery': self.allow_delivery,
                 'allow_collection': self.allow_collection,
@@ -189,6 +194,10 @@
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
+            source_all: boolean,
+            source_self: boolean,
+            source_ai: boolean,
+            source_internet: boolean,
             all_delivery: boolean,
             max_delivery: number,
             min_delivery: number,
@@ -236,24 +245,18 @@
             two: true,
             min_price: 0,
             zero: true,
-            min_delivery_option: 'day',
-            max_delivery_option: 'day',
             max_price: 100,
             min_height: 0,
             max_height: 100,
             min_width:0,
-            all_delivery: true,
-            max_delivery: 1,
-            min_delivery: 1,
+            all_delivery: true, max_delivery: 1, min_delivery: 1, min_delivery_option: 'day', max_delivery_option: 'day',
+            source_all: true, source_self: true, source_ai: true, source_internet: true,
             max_width: 100,
             three: true,
             four: true,
             five: true,
             rating_all: true,
-            type_all: true,
-            textbook: true,
-            stationery: true,
-            notes: true,
+            type_all: true, textbook: true, stationery: true, notes: true,
             min_pages: 1,
             max_pages: 100,
             resources: [],
@@ -304,6 +307,15 @@
             }
         },
         methods: {
+            check_source(): void {
+                this.source_all = this.source_ai && this.source_internet && this.source_self
+            },
+            some_unique(): boolean {
+                for (let resource of this.resources) {
+                    if (resource.unique) return true
+                }
+                return false
+            },
             converted_weight(resource: Resource): number {
                 if (
                     (resource.weight_unit === 'L' && this.weight_dimension === 'L')
@@ -637,6 +649,12 @@
                             && (resource.page_start >= this.min_pages)
                         ))
                         && this.valid_date(resource)
+                        && (this.source_all || !resource.unique || (
+                            // assume resource is unqiue and check attributes
+                            (this.source_ai && resource.source === 'AI')  
+                            || (this.source_internet && resource.source === 'Internet')  
+                            || (this.source_self && resource.source === 'None')  
+                        ))
                     ) {
                         return true
                     }  
@@ -645,6 +663,15 @@
             }
         },
         watch: {
+            source_self(): void {
+                this.check_source()
+            },
+            source_ai(): void {
+                this.check_source()
+            },
+            source_internet(): void {
+                this.check_source()
+            },
             all_pages(): void {
                 this.maximum_pages()
                 this.minimum_pages()
