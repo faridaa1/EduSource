@@ -57,6 +57,7 @@
                         <div class="filter-row">
                             <label>Height</label>
                             <div class="number-filter">
+                                <button :class="all_height ? 'all' : 'not'" @click="all_height=!all_height">All</button>
                                 <input type="number" min="0" step="0.01" v-model="min_height">
                                 <p>to</p>
                                 <input type="number" :min="min_height" step="0.01" v-model="max_height">
@@ -70,6 +71,7 @@
                         <div class="filter-row">
                             <label>Width</label>
                             <div class="number-filter">
+                                <button :class="all_width ? 'all' : 'not'" @click="all_width=!all_width">All</button>
                                 <input type="number" min="0" step="0.01" v-model="min_width">
                                 <p>to</p>
                                 <input type="number" :min="min_width" step="0.01" v-model="max_width">
@@ -83,6 +85,7 @@
                         <div class="filter-row">
                             <label>Weight</label>
                             <div class="number-filter">
+                                <button :class="all_weight ? 'all' : 'not'" @click="all_weight=!all_weight">All</button>
                                 <input type="number" min="0" step="0.01" v-model="min_weight">
                                 <p>to</p>
                                 <input type="number" :min="min_width" step="0.01" v-model="max_weight">
@@ -441,6 +444,60 @@
                     }
                 }
                 this.min_price = min
+            },
+            maximum_height(): void {
+                let max = 0
+                for (let resource of this.resources) {
+                    if (resource.height > max) {
+                        max = resource.height
+                    }
+                }
+                this.max_height = max
+            },
+            minimum_height(): void {
+                let min = 0
+                for (let resource of this.resources) {
+                    if (resource.height < min) {
+                        min = resource.height
+                    }
+                }
+                this.min_height = min
+            },
+            maximum_width(): void {
+                let max = 0
+                for (let resource of this.resources) {
+                    if (resource.width > max) {
+                        max = resource.width
+                    }
+                }
+                this.max_width = max
+            },
+            minimum_width(): void {
+                let min = 0
+                for (let resource of this.resources) {
+                    if (resource.width < min) {
+                        min = resource.width
+                    }
+                }
+                this.min_width = min
+            },
+            maximum_weight(): void {
+                let max = 0
+                for (let resource of this.resources) {
+                    if (resource.weight > max) {
+                        max = resource.weight
+                    }
+                }
+                this.max_weight = max
+            },
+            minimum_weight(): void {
+                let min = 0
+                for (let resource of this.resources) {
+                    if (resource.weight < min) {
+                        min = resource.weight
+                    }
+                }
+                this.min_weight = min
             }
         },
         computed: {
@@ -496,6 +553,21 @@
                 this.minimum_price()
                 this.all_price = true
             },
+            all_height(): void {
+                this.maximum_height()
+                this.minimum_height()
+                this.all_height = true
+            },
+            all_width(): void {
+                this.maximum_width()
+                this.minimum_width()
+                this.all_width = true
+            },
+            all_weight(): void {
+                this.maximum_weight()
+                this.minimum_weight()
+                this.all_weight = true
+            },
             async user(new_user: User): Promise<void> {
                 for (const resource of this.user.listings) {
                     resource.price = await this.listedprice(resource)
@@ -508,7 +580,12 @@
                 }
                 this.maximum_price()
                 this.minimum_price()
-                this.all_price = true
+                this.maximum_height()
+                this.minimum_height()
+                this.maximum_width()
+                this.minimum_width()
+                this.maximum_weight()
+                this.minimum_weight()
             },
             sort_by(): void {
                 this.sort_resources()
