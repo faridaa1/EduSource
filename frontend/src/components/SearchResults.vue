@@ -46,6 +46,23 @@
                                     <p :class="stationery ? 'used' : 'not'" @click="() => {stationery=!stationery; check_type_all()}">Stationery</p>
                                 </div>
                             </div>
+                            <div id="type">
+                                <label>Colour</label>
+                                <div>
+                                    <p :class="colour_all ? 'new' : 'not'" @click="colour_all=!colour_all">All</p>
+                                    <p :class="black ? 'used' : 'not'" @click="black=!black">Black</p>
+                                    <p :class="red ? 'used' : 'not'" @click="red=!red">Red</p>
+                                    <p :class="yellow ? 'used' : 'not'" @click="yellow=!yellow">Yellow</p>
+                                    <p :class="pink ? 'used' : 'not'" @click="pink=!pink">Pink</p>
+                                    <p :class="purple ? 'used' : 'not'" @click="purple=!purple">Purple</p>
+                                    <p :class="green ? 'used' : 'not'" @click="green=!green">Green</p>
+                                    <p :class="blue ? 'used' : 'not'" @click="blue=!blue">Blue</p>
+                                    <p :class="white ? 'used' : 'not'" @click="white=!white">White</p>
+                                    <p :class="orange ? 'used' : 'not'" @click="orange=!orange">Orange</p>
+                                    <p :class="brown ? 'used' : 'not'" @click="brown=!brown">Brown</p>
+                                    <p :class="grey ? 'used' : 'not'" @click="grey=!grey">Grey</p>
+                                </div>
+                            </div>
                             <div v-if="Object.keys(user).length > 0" class="filter-row">
                                 <label>Price ({{ currency }})</label>
                                 <div class="number-filter">
@@ -129,7 +146,6 @@
                              <!-- 
                 'subject': self.subjects
                 'author': self.author,
-                'colour': self.colour,
                 -->
                             <div class="filter-row">
                                 <label>Estimated Delivery</label>
@@ -214,6 +230,7 @@
     import { useUsersStore } from '@/stores/users';
     export default defineComponent({
         data(): {
+            colour_all: boolean, black: boolean, red: boolean, yellow: boolean, pink: boolean, purple: boolean, green: boolean, blue: boolean, white: boolean, orange: boolean, brown: boolean, grey: boolean,
             media_all: boolean, paper: boolean, online: boolean,
             source_all: boolean, source_self: boolean, source_ai: boolean, source_internet: boolean,
             all_delivery: boolean, max_delivery: number, min_delivery: number, min_delivery_option: 'day' | 'minute' | 'hour' | 'week' | 'month', max_delivery_option: 'day' | 'minute' | 'hour' | 'week' | 'month',
@@ -255,6 +272,7 @@
             condition_used: boolean, 
             sort_by: 'listing-new' | 'listing-old' | 'rating-low' | 'rating-high' | 'price-low' | 'price-high'
         } { return {
+            colour_all: true, black: true, red: true, yellow: true, pink: true, purple: true, green: true, blue: true, white: true, orange: true, brown: true, grey: true,
             media_all: true, paper: true, online: true,
             options_all: true, delivery: true, collection: true,
             returns_all: true, returns: true, no_returns: true,
@@ -326,6 +344,9 @@
             }
         },
         methods: {
+            check_colours(): void {
+                this.colour_all = this.black && this.red && this.yellow && this.pink && this.purple && this.green && this.blue && this.white && this.orange && this.brown && this.grey
+            },
             check_media(): void {
                 this.media_all = this.online && this.paper
             },
@@ -695,6 +716,19 @@
                             || (this.paper && resource.media === 'Paper')
                             || (this.online && resource.media === 'Online')
                         )
+                        && (this.colour_all 
+                            || (this.black && resource.colour === 'Black')
+                            || (this.red && resource.colour === 'Red')
+                            || (this.yellow && resource.colour === 'Yellow')
+                            || (this.pink && resource.colour === 'Pink')
+                            || (this.purple && resource.colour === 'Purple')
+                            || (this.green && resource.colour === 'Green')
+                            || (this.blue && resource.colour === 'Blue')
+                            || (this.white && resource.colour === 'White')
+                            || (this.orange && resource.colour === 'Orange')
+                            || (this.brown && resource.colour === 'Brown')
+                            || (this.grey && resource.colour === 'Grey')
+                        )
                     ) {
                         return true
                     }  
@@ -703,6 +737,54 @@
             }
         },
         watch: {
+            red(): void {
+                this.check_colours()
+            },
+            yellow(): void {
+                this.check_colours()
+            },
+            pink(): void {
+                this.check_colours()
+            },
+            purple(): void {
+                this.check_colours()
+            },
+            green(): void {
+                this.check_colours()
+            },
+            blue(): void {
+                this.check_colours()
+            },
+            white(): void {
+                this.check_colours()
+            },
+            brown(): void {
+                this.check_colours()
+            },
+            orange(): void {
+                this.check_colours()
+            },
+            grey(): void {
+                this.check_colours()
+            },
+            black(): void {
+                this.check_colours()
+            },
+            colour_all(): void {
+                if (this.colour_all) {
+                    this.black = true
+                    this.red = true
+                    this.yellow = true
+                    this.pink = true
+                    this.purple = true
+                    this.green = true
+                    this.blue = true
+                    this.white = true
+                    this.orange = true
+                    this.brown = true
+                    this.grey = true
+                }
+            },
             paper(): void {
                 this.check_media()
             },
