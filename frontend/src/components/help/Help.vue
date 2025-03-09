@@ -89,7 +89,7 @@
         <div class="item">
             <p>Something else? Submit feedback below:</p>
             <textarea v-model="feedback" placeholder="Enter text here"></textarea>
-            <button id="submit" @click="submit_feedback">Submit</button>
+            <button @keydown.enter="submit_feedback" :disabled="!feedback_sent" id="submit" @click="submit_feedback">Submit</button>
         </div>
         <div v-if="error!==''">
             <Error :message="error" @close-error="error=''" />
@@ -107,12 +107,14 @@
         data(): {
             feedback: string,
             one: boolean,
+            feedback_sent: boolean,
             two: boolean,
             three: boolean,
             four: boolean,
             five: boolean,
             error: string,
         } { return {
+            feedback_sent: true,
             one: false,
             two: false,
             three: false,
@@ -123,6 +125,7 @@
         }},
         methods: {
             async submit_feedback(): Promise<void> {
+                this.feedback_sent = false
                 let send_feedback: Response = await fetch(`http://localhost:8000/api/feedback/`, {
                     method: 'POST',
                     credentials: 'include',
@@ -134,6 +137,9 @@
                 })
                 if (!send_feedback.ok) {
                     this.error = 'Error submitting feedback. Please try again.'
+                } else {
+                    this.feedback_sent = true
+                    this.feedback = ''
                 }
             },
         },
@@ -234,6 +240,11 @@
         display: flex;
         flex-direction: column;
         gap: 1rem;
+    }
+
+    button:disabled {
+        background-color: #d9d9d9;
+        cursor: not-allowed;
     }
 
     /* Responsive Design */
