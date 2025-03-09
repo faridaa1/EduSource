@@ -552,6 +552,8 @@
 
     img {
         width: 8rem;
+        height: 8rem;
+        object-fit: contain;
     }
 
     .resource {
@@ -1004,6 +1006,7 @@
     @media (max-width: 500px) {
         img {
             width: 7rem;
+            height: 7rem;
         }
 
         #number_of_items {

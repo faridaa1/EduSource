@@ -478,7 +478,8 @@
 
     img {
         height: 10rem;
-        width: fit-content;
+        width: 10rem;
+        object-fit: contain;
     }
 
     .listed {

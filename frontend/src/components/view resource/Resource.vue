@@ -1240,7 +1240,8 @@
 
     #resource img {
         height: 200px;
-        max-width: 200px;
+        width: 200px;
+        object-fit: contain;
         background-color: #D9D9D9;
         border-radius: 0.5rem;
         padding : 0.5rem;

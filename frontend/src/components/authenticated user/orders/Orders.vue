@@ -333,6 +333,8 @@
 
     img {
         width: 9rem;
+        height: 9rem;
+        object-fit: contain;
     }
 
     img:hover {
@@ -489,6 +491,7 @@
     @media (max-width: 500px) {
         img {
             width: 7rem;
+            height: 7rem;
         }
 
         #number_of_items {

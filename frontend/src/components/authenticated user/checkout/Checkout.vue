@@ -529,6 +529,8 @@
 
     img {
         width: 8rem;
+        height: 8rem;
+        object-fit: contain;
     }
 
     .resource {

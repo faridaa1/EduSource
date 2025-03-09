@@ -305,8 +305,9 @@
     }
 
     img {
-        max-height: 9rem;
+        height: 9rem;
         width: 9rem;
+        object-fit: contain;
     }
 
     img:hover {

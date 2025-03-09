@@ -5,11 +5,14 @@
                 <p>Recommended for you</p>
             </div>
             <div class="displays">
-                <div v-for="listing in textbooks">
+                <div v-for="listing in recommendations">
                     <div class="listed" v-if="listing.type === 'Textbook'" @click="showResourcePage(listing)">
                         <img :src="`http://localhost:8000${listing.image1}`" alt="Textbook">
                         {{ currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
+                </div>
+                <div class="no_resources" v-if="recommendations.length===0"> 
+                    <p>No recommendations to display</p>
                 </div>
             </div>
         </div>
@@ -24,6 +27,9 @@
                         {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
+                <div class="no_resources" v-if="recommendations.length===0"> 
+                    <p>No textbook listings to display</p>
+                </div>
             </div>
         </div>
         <div id="notes">
@@ -36,6 +42,9 @@
                         <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
                         {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
+                </div>
+                <div class="no_resources" v-if="recommendations.length===0"> 
+                    <p>No note listings to display</p>
                 </div>
             </div>
         </div>
@@ -50,6 +59,9 @@
                         </div>
                     </div>
                 </div>
+                <div class="no_resources" v-if="recommendations.length===0"> 
+                    <p>No stationery listings to display</p>
+                </div>
             </div>
         </div>
     </div>
@@ -62,17 +74,35 @@
     import { useResourcesStore } from '@/stores/resources';
     export default defineComponent({
         data(): {
+            recommendations: Resource[]
             editingDescription: boolean
             textbookMessage: 'All' | 'Sold' | 'Drafted',
             notesMessage: 'All' | 'Sold' | 'Drafted',
             stationeryMessage: 'All' | 'Sold' | 'Drafted',
         } { return {
+            recommendations: [],
             editingDescription: false,
             textbookMessage: 'All',
             notesMessage: 'All',
             stationeryMessage: 'All'
         }},
         methods: {
+            async get_recommendations(): Promise<void> {
+                this.recommendations = []
+                return
+                const personalised_recommendations: Response = await fetch(`http://localhost:8000/api/recommendations/${useUserStore().user.id}/`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf
+                    }
+                })
+                if (!personalised_recommendations.ok) {
+                    this.recommendations = this.resources
+                }
+                let recommendations: Resource[] = await personalised_recommendations.json()
+                this.recommendations = recommendations
+            },
             async listedprice(resource: Resource): Promise<number> {
                 if (Object.keys(this.user).length === 0) {
                     // if user is unauthenticated
@@ -102,6 +132,7 @@
                 return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
             },
             user(): User {
+                this.get_recommendations()
                 return useUserStore().user
             },
             resources(): Resource[] {
@@ -185,21 +216,24 @@
 
     img {
         height: 7rem;
+        width: 7rem;
+        object-fit: contain;
     }
 
     .listed {
         display: flex;
         flex-direction: column;
         align-items: center;
+        padding: 0.4rem;
     } 
 
     .displays {
         display: flex;
-        gap: 4rem;
+        gap: 3rem;
         overflow-x: scroll;
         margin-top: 1rem;
         padding-bottom: 1rem;
-        margin-left: 1rem;
+        height: 70%;
     }
 
     #notes {
@@ -230,8 +264,17 @@
         cursor: pointer;
     }
 
+    #dark .listed:hover {
+        color: black !important;
+    }
+
     #dark #buyer-home {
         color: white !important;
+    }
+
+    .no_resources {
+        width: 100%;
+        text-align: center;
     }
 
     /* Responsive Design */

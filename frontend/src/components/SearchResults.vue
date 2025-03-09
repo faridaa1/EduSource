@@ -1808,6 +1808,7 @@
         .search-item #row1 img {
             height: 6rem;
             width: 6rem;
+            object-fit: contain;
         }
 
         #col1 {

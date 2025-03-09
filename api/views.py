@@ -691,7 +691,7 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
         # determine embeddings
         embeddings = semantic_search_model.encode(dataset)
         search: str = json.loads(request.body)
-        user: User = User.objects.get(id=user)
+        user: User = get_object_or_404(User, id=user)
 
         # storing unique search history
         contains_search = False
@@ -704,7 +704,7 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
                 search=search,
                 search_history=user.search_history
             )
-            
+
         search_embeddings = semantic_search_model.encode(search)
 
         # generate similairty matrix
@@ -803,6 +803,50 @@ def semantic_search_orders(request: HttpRequest, id: int, search: str, mode: str
 
 def order_data(item: tuple):
     return item[1] # sort based on values
+
+
+def recommendations(request: HttpRequest, user: int) -> JsonResponse:
+    user: User = get_object_or_404(User, id=user)
+    if request.method == 'GET':
+        """Defining semantic search used to return personalised recommendations"""
+        # https://huggingface.co/sentence-transformers
+        dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
+
+        # data preprocessing
+        dataset: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('name', flat=True))
+        # ensuring values in lists are unique
+        values_included: list = []
+        new_dataset_resources: list = []
+        new_dataset: list = []
+        for i in range(len(dataset)):
+            if not dataset[i] in values_included:
+                new_dataset_resources.append(dataset_resources[i])
+                new_dataset.append(dataset[i])
+                values_included.append(dataset[i])
+
+        # determine embeddings
+        embeddings = semantic_search_model.encode(new_dataset)
+        search_history: list = list(SearchHistory.objects.get(user=user).search_item.all().order_by('id').values_list('search', flat=True))
+        search_embeddings = semantic_search_model.encode(search_history)
+
+        # generate similairty matrix
+        similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
+        
+        # convert tensor to dictionary sorted on values (similarity)
+        list_similarity_matrix = similarity_matrix.tolist()[0]
+        search_dict = dict(zip(new_dataset_resources, list_similarity_matrix))
+        sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
+
+        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.3]
+        resources: list = []
+
+        # using iteration to preserve order of resources
+        for key in keys:
+            resource = Resource.objects.get(id=key)
+            resources.append(resource.as_dict())
+        return JsonResponse(resources, safe=False)
+
+    return JsonResponse({})
 
 
 def order_return(request: HttpRequest, user: id, order: id, resource: id) -> JsonResponse:

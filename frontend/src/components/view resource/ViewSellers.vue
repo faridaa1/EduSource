@@ -409,6 +409,8 @@
 
     #large-media img {
         height: 25rem;
+        width: 25rem;
+        object-fit: contain;
     }
 
      #large-media video {
