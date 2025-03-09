@@ -5,7 +5,7 @@
             <p id="total">Total: {{ currency }}{{ parseFloat(total.toString()).toFixed(2) }}</p>
         </div>
         <div id="resources">
-            <div id="empty-message" v-if="user.cart.resources.length === 0">No items in cart</div>
+            <div id="empty-message" v-if="!user.cart.resources || (user.cart.resources.length === 0)">No items in cart</div>
             <div class="cart-item" v-for="resource in user.cart.resources">
                 <div class="item-one">
                     <div class="item-image">
@@ -43,7 +43,7 @@
                 <Confirm :message="confirm" @confirm-no="confirm_no" @confirm-yes="confirm_yes" />
             </div>
         </div>
-        <div id="buttons" v-if="user.cart.resources.length > 0">
+        <div id="buttons" v-if="user.cart.resources && user.cart.resources.length > 0">
             <button id="checkout" @click="checkout">Checkout</button>
             <button id="checkout" @click="move_all_wishlist">Move all to Wishlist</button>
             <button id="clear" @click="clear_cart">Clear</button>
@@ -88,7 +88,21 @@
                 this.confirm = ''
                 this.confirm_caller = ''
             },
-            checkout(): void {
+            async checkout(): Promise<void> {
+                const validate_cart: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/-1/resource/-1/`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf,
+                    },
+                })
+                if (!validate_cart.ok) {
+                    this.error = 'Error taking you to checkout. Please try again.'
+                    return
+                }
+                const data: Cart = await validate_cart.json()
+                useUserStore().updateCart(data)
+                useUsersStore().updateUser(this.user)
                 window.location.href = '/checkout'
             },
             move_all_wishlist(): void {
@@ -195,7 +209,10 @@
                 return returnedPrice.new_price
             },
             async update_total(): Promise<void> {
-                if (Object.keys(this.allResources).length === 0) return
+                if ((Object.keys(this.allResources).length === 0)|| (!this.user.cart.resources)) {
+                    this.total = 0 
+                    return
+                }
                 const cart_res = this.user.cart.resources.map(item => item.resource)
                 this.total = 0
                 for (const resource of this.allResources.filter(res => cart_res.includes(res.id))) {

@@ -356,7 +356,13 @@ def sentiment_analysis(request: HttpRequest, resource: str) -> JsonResponse:
 
 def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> JsonResponse:
     user: User = get_object_or_404(User, id=user)
-    if request.method == 'POST':
+    if request.method == 'GET':
+        for cart_resource in user.cart.cart_resource.all():
+            resource_to_check: Resource = cart_resource.resource
+            if resource_to_check.is_draft or (resource_to_check.stock < cart_resource.number):
+                cart_resource.delete()
+        return JsonResponse(user.cart.as_dict())
+    elif request.method == 'POST':
         resource: Resource = get_object_or_404(Resource, id=resource)
         cartResource: CartResource = CartResource.objects.create(
             resource=resource,
@@ -695,8 +701,7 @@ def semantic_search(request: HttpRequest) -> JsonResponse:
         sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
 
         # only keeping results at least 50% similar
-        # keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.5]
-        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0]
+        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.5]
         resources: list = []
         # using iteration to preserve order of resources
         for key in keys:
