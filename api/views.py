@@ -1,6 +1,7 @@
 import datetime
 from django.utils import timezone
 import json
+from django.core.mail import send_mail
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate
@@ -943,4 +944,11 @@ def exchange(request: HttpRequest, user: int, seller: int, resource: int) -> Jso
         exchange.delete()
         user = get_object_or_404(User, id=user)
         return JsonResponse(user.as_dict())
+    return JsonResponse({})
+
+def feedback(request: HttpRequest) -> JsonResponse:
+    if request.method == 'POST':
+        feedback = json.loads(request.body)
+        print(feedback)
+        send_mail('Feedback submitted', feedback, 'edusource9325@gmail.com', ['edusource9325@gmail.com'])
     return JsonResponse({})

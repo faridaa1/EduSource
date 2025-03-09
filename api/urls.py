@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
-from .views import order, order_return, signout, exchange, recommendations, submit_return, semantic_search_orders, semantic_search_subjects, semantic_search, message, messages, signup, login, users, edit_review, currency_conversion, cart_to_wishlist, user, review, resources, user_details, check_details, update_wishlist, new_listing, sentiment_analysis, update_cart, get_cart
+from .views import order, order_return, feedback, signout, exchange, recommendations, submit_return, semantic_search_orders, semantic_search_subjects, semantic_search, message, messages, signup, login, users, edit_review, currency_conversion, cart_to_wishlist, user, review, resources, user_details, check_details, update_wishlist, new_listing, sentiment_analysis, update_cart, get_cart
 
 urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [
     path('signout/', signout, name='signout'),
     path('signup/', signup, name='signup'),
     path('login/', login, name='login'),
+    path('api/feedback/', feedback, name='feedback'),
     path('api/exchange/user/<int:user>/seller/<int:seller>/resource/<int:resource>/', exchange, name='exchange'),
     path('api/semantic-search/<str:user>/', semantic_search, name='semantic search'),
     path('api/semantic-search-subjects/', semantic_search_subjects, name='semantic search subjects'),
