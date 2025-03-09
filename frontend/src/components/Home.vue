@@ -27,7 +27,7 @@
                         {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
-                <div class="no_resources" v-if="recommendations.length===0"> 
+                <div class="no_resources" v-if="textbooks.length===0"> 
                     <p>No textbook listings to display</p>
                 </div>
             </div>
@@ -43,23 +43,23 @@
                         {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
-                <div class="no_resources" v-if="recommendations.length===0"> 
+                <div class="no_resources" v-if="notes.length===0"> 
                     <p>No note listings to display</p>
                 </div>
             </div>
         </div>
         <div id="stationery">
-            <div>
-                <p> Stationery</p>
-                <div class="displays">
-                    <div v-for="listing in stationery">
-                        <div class="listed" @click="showResourcePage(listing)">
-                            <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
-                            {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
-                        </div>
+            <div class="header">
+                <p> Stationery </p>
+            </div>
+            <div class="displays">
+                <div v-for="listing in stationery">
+                    <div class="listed" @click="showResourcePage(listing)">
+                        <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
+                        {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
-                <div class="no_resources" v-if="recommendations.length===0"> 
+                <div class="no_resources" v-if="stationery.length===0"> 
                     <p>No stationery listings to display</p>
                 </div>
             </div>
@@ -88,8 +88,6 @@
         }},
         methods: {
             async get_recommendations(): Promise<void> {
-                this.recommendations = []
-                return
                 const personalised_recommendations: Response = await fetch(`http://localhost:8000/api/recommendations/${useUserStore().user.id}/`, {
                     method: 'GET',
                     credentials: 'include',
@@ -274,7 +272,10 @@
 
     .no_resources {
         width: 100%;
-        text-align: center;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     /* Responsive Design */
