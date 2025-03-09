@@ -383,7 +383,7 @@
             weight_dimension: 'kg',
             sorting: false,
             filtering: false,
-            sort_by: 'listing-new'
+            sort_by: 'rating-high'
         }},
         async mounted(): Promise<void> {
             const search: HTMLInputElement = document.getElementById('search') as HTMLInputElement
