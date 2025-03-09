@@ -32,7 +32,7 @@
         height: 100vh;
         width: 100vw;
         background-color: rgb(53, 53, 53, 50%);
-        z-index: 3;
+        z-index: 100;
         justify-content: center;
         align-items: center;
         display: flex;

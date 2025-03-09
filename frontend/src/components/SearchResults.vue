@@ -19,190 +19,199 @@
                 <div id="filter">
                     <label id="label">Filter</label>
                     <i class="bi bi-sliders" @click="filtering=!filtering"></i>
-                    <div id="filter-area-parent" v-if="filtering">
-                        <div id="filter-area" >
-                            <div id="condition">
-                                <label>Condition</label>
-                                <p :class="condition_new ? 'new' : 'not'" @click="condition_new=!condition_new">New</p>
-                                <p :class="condition_used ? 'used' : 'not'" @click="condition_used=!condition_used">Used</p>
-                            </div>
-                            <div id="rating">
-                                <label>Rating</label>
-                                <div>
-                                    <p :class="rating_all ? 'new' : 'not'" @click="() => { rating_all=!rating_all, one=true; two=true; three=true; four=true; five=true } ">All</p>
-                                    <p :class="zero ? 'new' : 'not'" @click="() => {zero=!zero; check_all()}">0</p>
-                                    <p :class="one ? 'new' : 'not'" @click="() => {one=!one; check_all()}">1</p>
-                                    <p :class="two ? 'used' : 'not'" @click="() => {two=!two; check_all()}">2</p>
-                                    <p :class="three ? 'used' : 'not'" @click="() => {three=!three; check_all()}">3</p>
-                                    <p :class="four ? 'used' : 'not'" @click="() => {four=!four; check_all()}">4</p>
-                                    <p :class="five ? 'used' : 'not'" @click="() => {five=!five; check_all()}">5</p>
+                    <div id="backdrop" v-if="filtering">
+                        <div id="filter-area-parent">
+                            <div id="filter-area">
+                                <i class="bi bi-x" id="x" @click="filtering=false"></i>
+                                <div class="item">
+                                    <label>Condition</label>
+                                    <div>
+                                        <p :class="condition_new ? 'new' : 'not'" @click="condition_new=!condition_new">New</p>
+                                        <p :class="condition_used ? 'used' : 'not'" @click="condition_used=!condition_used">Used</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div id="type">
-                                <label>Type</label>
-                                <div>
-                                    <p :class="type_all ? 'new' : 'not'" @click="() => { type_all=!type_all, textbook=true; notes=true; stationery=true } ">All</p>
-                                    <p :class="textbook ? 'new' : 'not'" @click="() => {textbook=!textbook; check_type_all()}">Textbook</p>
-                                    <p :class="notes ? 'used' : 'not'" @click="() => {notes=!notes; check_type_all()}">Notes</p>
-                                    <p :class="stationery ? 'used' : 'not'" @click="() => {stationery=!stationery; check_type_all()}">Stationery</p>
+                                <div class="item">
+                                    <label>Rating</label>
+                                    <div>
+                                        <p :class="rating_all ? 'new' : 'not'" @click="() => { rating_all=!rating_all, one=true; two=true; three=true; four=true; five=true } ">All</p>
+                                        <p :class="zero ? 'new' : 'not'" @click="() => {zero=!zero; check_all()}">0</p>
+                                        <p :class="one ? 'new' : 'not'" @click="() => {one=!one; check_all()}">1</p>
+                                        <p :class="two ? 'used' : 'not'" @click="() => {two=!two; check_all()}">2</p>
+                                        <p :class="three ? 'used' : 'not'" @click="() => {three=!three; check_all()}">3</p>
+                                        <p :class="four ? 'used' : 'not'" @click="() => {four=!four; check_all()}">4</p>
+                                        <p :class="five ? 'used' : 'not'" @click="() => {five=!five; check_all()}">5</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div id="type">
-                                <label>Subject</label>
-                                <div>
-                                    <p :class="subject_all ? 'new' : 'not'" @click="subject_all=!subject_all">All</p>
-                                    <p :class="subject_one ? 'used' : 'not'" @click="subject_one=!subject_one">{{ subjects[0] }}</p>
-                                    <p v-if="subjects[1]" :class="subject_two ? 'used' : 'not'" @click="subject_two=!subject_two">{{ subjects[1] }}</p>
-                                    <p v-if="subjects[2]" :class="subject_three ? 'used' : 'not'" @click="subject_three=!subject_three">{{ subjects[2] }}</p>
-                                    <p v-if="subjects[3]" :class="subject_four ? 'used' : 'not'" @click="subject_four=!subject_four">{{ subjects[3] }}</p>
-                                    <p v-if="subjects[4]" :class="subject_five ? 'used' : 'not'" @click="subject_five=!subject_five">{{ subjects[4] }}</p>
+                                <div class="item">
+                                    <label>Type</label>
+                                    <div>
+                                        <p :class="type_all ? 'new' : 'not'" @click="() => { type_all=!type_all, textbook=true; notes=true; stationery=true } ">All</p>
+                                        <p :class="textbook ? 'new' : 'not'" @click="() => {textbook=!textbook; check_type_all()}">Textbook</p>
+                                        <p :class="notes ? 'used' : 'not'" @click="() => {notes=!notes; check_type_all()}">Notes</p>
+                                        <p :class="stationery ? 'used' : 'not'" @click="() => {stationery=!stationery; check_type_all()}">Stationery</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div id="type">
-                                <label>Subject</label>
-                                <div>
-                                    <p :class="author_all ? 'new' : 'not'" @click="author_all=!author_all">All</p>
-                                    <p :class="author_one ? 'used' : 'not'" @click="author_one=!author_one">{{ authors[0] }}</p>
-                                    <p v-if="authors[1]" :class="author_two ? 'used' : 'not'" @click="author_two=!author_two">{{ authors[1] }}</p>
-                                    <p v-if="authors[2]" :class="author_three ? 'used' : 'not'" @click="author_three=!author_three">{{ authors[2] }}</p>
-                                    <p v-if="authors[3]" :class="author_four ? 'used' : 'not'" @click="author_four=!author_four">{{ authors[3] }}</p>
-                                    <p v-if="authors[4]" :class="author_five ? 'used' : 'not'" @click="author_five=!author_five">{{ authors[4] }}</p>
+                                <div class="item new-line-item">
+                                    <label>Subject</label>
+                                    <div>
+                                        <p :class="subject_all ? 'new' : 'not'" @click="subject_all=!subject_all">All</p>
+                                        <p :class="subject_one ? 'used' : 'not'" @click="subject_one=!subject_one">{{ subjects[0] }}</p>
+                                        <p v-if="subjects[1]" :class="subject_two ? 'used' : 'not'" @click="subject_two=!subject_two">{{ subjects[1] }}</p>
+                                        <p v-if="subjects[2]" :class="subject_three ? 'used' : 'not'" @click="subject_three=!subject_three">{{ subjects[2] }}</p>
+                                        <p v-if="subjects[3]" :class="subject_four ? 'used' : 'not'" @click="subject_four=!subject_four">{{ subjects[3] }}</p>
+                                        <p v-if="subjects[4]" :class="subject_five ? 'used' : 'not'" @click="subject_five=!subject_five">{{ subjects[4] }}</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div id="type">
-                                <label>Colour</label>
-                                <div>
-                                    <p :class="colour_all ? 'new' : 'not'" @click="colour_all=!colour_all">All</p>
-                                    <p :class="black ? 'used' : 'not'" @click="black=!black">Black</p>
-                                    <p :class="red ? 'used' : 'not'" @click="red=!red">Red</p>
-                                    <p :class="yellow ? 'used' : 'not'" @click="yellow=!yellow">Yellow</p>
-                                    <p :class="pink ? 'used' : 'not'" @click="pink=!pink">Pink</p>
-                                    <p :class="purple ? 'used' : 'not'" @click="purple=!purple">Purple</p>
-                                    <p :class="green ? 'used' : 'not'" @click="green=!green">Green</p>
-                                    <p :class="blue ? 'used' : 'not'" @click="blue=!blue">Blue</p>
-                                    <p :class="white ? 'used' : 'not'" @click="white=!white">White</p>
-                                    <p :class="orange ? 'used' : 'not'" @click="orange=!orange">Orange</p>
-                                    <p :class="brown ? 'used' : 'not'" @click="brown=!brown">Brown</p>
-                                    <p :class="grey ? 'used' : 'not'" @click="grey=!grey">Grey</p>
+                                <div class="item new-line-item">
+                                    <label>Author</label>
+                                    <div>
+                                        <p :class="author_all ? 'new' : 'not'" @click="author_all=!author_all">All</p>
+                                        <p :class="author_one ? 'used' : 'not'" @click="author_one=!author_one">{{ authors[0] }}</p>
+                                        <p v-if="authors[1]" :class="author_two ? 'used' : 'not'" @click="author_two=!author_two">{{ authors[1] }}</p>
+                                        <p v-if="authors[2]" :class="author_three ? 'used' : 'not'" @click="author_three=!author_three">{{ authors[2] }}</p>
+                                        <p v-if="authors[3]" :class="author_four ? 'used' : 'not'" @click="author_four=!author_four">{{ authors[3] }}</p>
+                                        <p v-if="authors[4]" :class="author_five ? 'used' : 'not'" @click="author_five=!author_five">{{ authors[4] }}</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div v-if="Object.keys(user).length > 0" class="filter-row">
-                                <label>Price ({{ currency }})</label>
-                                <div class="number-filter">
-                                    <button :class="all_price ? 'all' : 'not'" @click="all_price=!all_price">All</button>
-                                    <input type="number" min="0" step="0.01" v-model="min_price">
-                                    <p>to</p>
-                                    <input type="number" :min="min_price" step="0.01" v-model="max_price">
+                                <div class="item new-line-item">
+                                    <label>Colour</label>
+                                    <div>
+                                        <p :class="colour_all ? 'new' : 'not'" @click="colour_all=!colour_all">All</p>
+                                        <p :class="black ? 'used' : 'not'" @click="black=!black">Black</p>
+                                        <p :class="red ? 'used' : 'not'" @click="red=!red">Red</p>
+                                        <p :class="yellow ? 'used' : 'not'" @click="yellow=!yellow">Yellow</p>
+                                        <p :class="pink ? 'used' : 'not'" @click="pink=!pink">Pink</p>
+                                        <p :class="purple ? 'used' : 'not'" @click="purple=!purple">Purple</p>
+                                        <p :class="green ? 'used' : 'not'" @click="green=!green">Green</p>
+                                        <p :class="blue ? 'used' : 'not'" @click="blue=!blue">Blue</p>
+                                        <p :class="white ? 'used' : 'not'" @click="white=!white">White</p>
+                                        <p :class="orange ? 'used' : 'not'" @click="orange=!orange">Orange</p>
+                                        <p :class="brown ? 'used' : 'not'" @click="brown=!brown">Brown</p>
+                                        <p :class="grey ? 'used' : 'not'" @click="grey=!grey">Grey</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="filter-row">
-                                <label>Height</label>
-                                <div class="number-filter">
-                                    <button :class="all_height ? 'all' : 'not'" @click="all_height=!all_height">All</button>
-                                    <input type="number" min="0" step="0.01" v-model="min_height">
-                                    <p>to</p>
-                                    <input type="number" :min="min_height" step="0.01" v-model="max_height">
-                                    <select v-model="dimension_unit">
-                                        <option value="cm">cm</option>
-                                        <option value="m">m</option>
-                                        <option value="in">in</option>
-                                    </select>
+                                <div v-if="Object.keys(user).length > 0" id="price">
+                                    <label>Price ({{ currency }})</label>
+                                    <div class="number-filter">
+                                        <button :class="all_price ? 'all' : 'not'" @click="all_price=!all_price">All</button>
+                                        <input type="number" min="0" step="0.01" v-model="min_price">
+                                        <p>to</p>
+                                        <input type="number" :min="min_price" step="0.01" v-model="max_price">
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="filter-row">
-                                <label>Width</label>
-                                <div class="number-filter">
-                                    <button :class="all_width ? 'all' : 'not'" @click="all_width=!all_width">All</button>
-                                    <input type="number" min="0" step="0.01" v-model="min_width">
-                                    <p>to</p>
-                                    <input type="number" :min="min_width" step="0.01" v-model="max_width">
-                                    <select v-model="dimension_unit">
-                                        <option value="cm">cm</option>
-                                        <option value="m">m</option>
-                                        <option value="in">in</option>
-                                    </select>
+                                <div class="new-line-item dimension">
+                                    <label>Height</label>
+                                    <div class="number-filter">
+                                        <button :class="all_height ? 'all' : 'not'" @click="all_height=!all_height">All</button>
+                                        <input type="number" min="0" step="0.01" v-model="min_height">
+                                        <p>to</p>
+                                        <input type="number" :min="min_height" step="0.01" v-model="max_height">
+                                        <select v-model="dimension_unit">
+                                            <option value="cm">cm</option>
+                                            <option value="m">m</option>
+                                            <option value="in">in</option>
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="filter-row">
-                                <label>Weight</label>
-                                <div class="number-filter">
-                                    <button :class="all_weight ? 'all' : 'not'" @click="all_weight=!all_weight">All</button>
-                                    <input type="number" min="0" step="0.01" v-model="min_weight">
-                                    <p>to</p>
-                                    <input type="number" :min="min_width" step="0.01" v-model="max_weight">
-                                    <select v-model="weight_dimension">
-                                        <option value="lb">lb</option>
-                                        <option value="kg">kg</option>
-                                        <option value="ml">ml</option>
-                                        <option value="L">L</option>
-                                        <option value="mg">mg</option>
-                                        <option value="oz">oz</option>
-                                    </select>
+                                <div class="new-line-item dimension">
+                                    <label>Width</label>
+                                    <div class="number-filter">
+                                        <button :class="all_width ? 'all' : 'not'" @click="all_width=!all_width">All</button>
+                                        <input type="number" min="0" step="0.01" v-model="min_width">
+                                        <p>to</p>
+                                        <input type="number" :min="min_width" step="0.01" v-model="max_width">
+                                        <select v-model="dimension_unit">
+                                            <option value="cm">cm</option>
+                                            <option value="m">m</option>
+                                            <option value="in">in</option>
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
-                            <div v-if="notes || textbook" class="filter-row">
-                                <label>Pages</label>
-                                <div class="number-filter">
-                                    <button :class="all_pages ? 'all' : 'not'" @click="all_pages=!all_pages">All</button>
-                                    <input type="number" min="1" step="1" v-model="min_pages">
-                                    <p>to</p>
-                                    <input type="number" :min="min_price" step="1" v-model="max_pages">
+                                <div class="new-line-item dimension">
+                                    <label>Weight</label>
+                                    <div class="number-filter">
+                                        <button :class="all_weight ? 'all' : 'not'" @click="all_weight=!all_weight">All</button>
+                                        <input type="number" min="0" step="0.01" v-model="min_weight">
+                                        <p>to</p>
+                                        <input type="number" :min="min_width" step="0.01" v-model="max_weight">
+                                        <select v-model="weight_dimension">
+                                            <option value="lb">lb</option>
+                                            <option value="kg">kg</option>
+                                            <option value="ml">ml</option>
+                                            <option value="L">L</option>
+                                            <option value="mg">mg</option>
+                                            <option value="oz">oz</option>
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
-                            <div id="type" v-if="(textbook || notes) && (some_unique())">
-                                <label>Source</label>
-                                <div>
-                                    <p :class="source_all ? 'new' : 'not'" @click="source_all=!source_all">All</p>
-                                    <p :class="source_self ? 'used' : 'not'" @click="source_self=!source_self">Self Made</p>
-                                    <p :class="source_ai ? 'used' : 'not'" @click="source_ai=!source_ai">AI</p>
-                                    <p :class="source_internet ? 'used' : 'not'" @click="source_internet=!source_internet">Internet</p>
+                                <div v-if="notes || textbook" class="new-line-item item">
+                                    <label>Pages</label>
+                                    <div class="number-filter">
+                                        <button :class="all_pages ? 'all' : 'not'" @click="all_pages=!all_pages">All</button>
+                                        <input type="number" min="1" step="1" v-model="min_pages">
+                                        <p>to</p>
+                                        <input type="number" :min="min_price" step="1" v-model="max_pages">
+                                    </div>
                                 </div>
-                            </div>
-                            <div id="type" v-if="(textbook || notes)">
-                                <label>Media</label>
-                                <div>
-                                    <p :class="media_all ? 'new' : 'not'" @click="media_all=!media_all">All</p>
-                                    <p :class="paper ? 'used' : 'not'" @click="paper=!paper">Paper</p>
-                                    <p :class="online ? 'used' : 'not'" @click="online=!online">Online</p>
+                                <div class="item new-line-item" v-if="(textbook || notes) && (some_unique())">
+                                    <label>Source</label>
+                                    <div>
+                                        <p :class="source_all ? 'new' : 'not'" @click="source_all=!source_all">All</p>
+                                        <p :class="source_self ? 'used' : 'not'" @click="source_self=!source_self">Self Made</p>
+                                        <p :class="source_ai ? 'used' : 'not'" @click="source_ai=!source_ai">AI</p>
+                                        <p :class="source_internet ? 'used' : 'not'" @click="source_internet=!source_internet">Internet</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="filter-row">
-                                <label>Estimated Delivery</label>
-                                <div class="number-filter">
-                                    <button :class="all_delivery ? 'all' : 'not'" @click="all_delivery=!all_delivery">All</button>
-                                    <input type="number" min="1" max="9999" step="1" v-model="min_delivery">
-                                    <select v-model="min_delivery_option">
-                                        <option value="minute">{{ min_delivery === 1 ? 'minute' : 'minutes'}}</option>
-                                        <option value="hour">{{ min_delivery === 1 ? 'hour' : 'hours'}}</option>
-                                        <option value="day">{{ min_delivery === 1 ? 'day' : 'days'}}</option>
-                                        <option value="week">{{ min_delivery === 1 ? 'week' : 'weeks'}}</option>
-                                        <option value="month">{{ min_delivery === 1 ? 'month' : 'months'}}</option>
-                                    </select>
-                                    <p>to</p>
-                                    <input type="number" min="1" max="9999" step="1" v-model="max_delivery">
-                                    <select v-model="max_delivery_option">
-                                        <option v-if="min_delivery_option === 'minute'" value="minute">{{ max_delivery === 1 ? 'minute' : 'minutes'}}</option>
-                                        <option v-if="(min_delivery_option === 'minute') || (min_delivery_option === 'hour')" value="hour">{{ max_delivery === 1 ? 'hour' : 'hours'}}</option>
-                                        <option v-if="(min_delivery_option === 'minute') || (min_delivery_option === 'hour') || (min_delivery_option === 'day')" value="day">{{ max_delivery === 1 ? 'day' : 'days'}}</option>
-                                        <option v-if="(min_delivery_option === 'minute') || (min_delivery_option === 'day') || (min_delivery_option === 'hour') || (min_delivery_option === 'week')" value="week">{{ max_delivery === 1 ? 'week' : 'weeks'}}</option>
-                                        <option v-if="(min_delivery_option === 'minute') || (min_delivery_option === 'day') || (min_delivery_option === 'hour') || (min_delivery_option === 'week') || (min_delivery_option === 'month')" value="month">{{ max_delivery === 1 ? 'month' : 'months'}}</option>
-                                    </select>
+                                <div class="item new-line-item" v-if="(textbook || notes)">
+                                    <label>Media</label>
+                                    <div>
+                                        <p :class="media_all ? 'new' : 'not'" @click="media_all=!media_all">All</p>
+                                        <p :class="paper ? 'used' : 'not'" @click="paper=!paper">Paper</p>
+                                        <p :class="online ? 'used' : 'not'" @click="online=!online">Online</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div id="type">
-                                <label>Delivery Options</label>
-                                <div>
-                                    <p :class="options_all ? 'new' : 'not'" @click="options_all=!options_all">All</p>
-                                    <p :class="delivery ? 'used' : 'not'" @click="delivery=!delivery">Delivery</p>
-                                    <p :class="collection ? 'used' : 'not'" @click="collection=!collection">Collection</p>
+                                <div id="estimated_delivery" class="new-line-item item">
+                                    <label>Estimated Delivery</label>
+                                    <div class="number-filter">
+                                        <div>
+                                            <button :class="all_delivery ? 'all' : 'not'" @click="all_delivery=!all_delivery">All</button>
+                                        </div>
+                                        <div>
+                                            <input type="number" min="1" max="9999" step="1" v-model="min_delivery">
+                                            <select v-model="min_delivery_option">
+                                                <option value="minute">{{ min_delivery === 1 ? 'minute' : 'minutes'}}</option>
+                                                <option value="hour">{{ min_delivery === 1 ? 'hour' : 'hours'}}</option>
+                                                <option value="day">{{ min_delivery === 1 ? 'day' : 'days'}}</option>
+                                                <option value="week">{{ min_delivery === 1 ? 'week' : 'weeks'}}</option>
+                                                <option value="month">{{ min_delivery === 1 ? 'month' : 'months'}}</option>
+                                            </select>
+                                            <p>to</p>
+                                            <input type="number" min="1" max="9999" step="1" v-model="max_delivery">
+                                            <select v-model="max_delivery_option">
+                                                <option v-if="min_delivery_option === 'minute'" value="minute">{{ max_delivery === 1 ? 'minute' : 'minutes'}}</option>
+                                                <option v-if="(min_delivery_option === 'minute') || (min_delivery_option === 'hour')" value="hour">{{ max_delivery === 1 ? 'hour' : 'hours'}}</option>
+                                                <option v-if="(min_delivery_option === 'minute') || (min_delivery_option === 'hour') || (min_delivery_option === 'day')" value="day">{{ max_delivery === 1 ? 'day' : 'days'}}</option>
+                                                <option v-if="(min_delivery_option === 'minute') || (min_delivery_option === 'day') || (min_delivery_option === 'hour') || (min_delivery_option === 'week')" value="week">{{ max_delivery === 1 ? 'week' : 'weeks'}}</option>
+                                                <option v-if="(min_delivery_option === 'minute') || (min_delivery_option === 'day') || (min_delivery_option === 'hour') || (min_delivery_option === 'week') || (min_delivery_option === 'month')" value="month">{{ max_delivery === 1 ? 'month' : 'months'}}</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div id="type">
-                                <label>Return Options</label>
-                                <div>
-                                    <p :class="returns_all ? 'new' : 'not'" @click="returns_all=!returns_all">All</p>
-                                    <p :class="returns ? 'used' : 'not'" @click="returns=!returns">Returns</p>
-                                    <p :class="no_returns ? 'used' : 'not'" @click="no_returns=!no_returns">No Returns</p>
+                                <div class="item new-line-item">
+                                    <label>Delivery Options</label>
+                                    <div>
+                                        <p :class="options_all ? 'new' : 'not'" @click="options_all=!options_all">All</p>
+                                        <p :class="delivery ? 'used' : 'not'" @click="delivery=!delivery">Delivery</p>
+                                        <p :class="collection ? 'used' : 'not'" @click="collection=!collection">Collection</p>
+                                    </div>
+                                </div>
+                                <div class="item new-line-item">
+                                    <label>Return Options</label>
+                                    <div>
+                                        <p :class="returns_all ? 'new' : 'not'" @click="returns_all=!returns_all">All</p>
+                                        <p :class="returns ? 'used' : 'not'" @click="returns=!returns">Returns</p>
+                                        <p :class="no_returns ? 'used' : 'not'" @click="no_returns=!no_returns">No Returns</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -407,6 +416,14 @@
                 this.resources = searchResults.filter(resource => resource.stock > 0 && !resource.is_draft)
                 this.sort_resources()
             }
+            document.addEventListener('click', (event) => {
+                if (this.filtering) {
+                    // closing filtering panel when click occurs outside of it
+                    if (event.target && (((event.target as HTMLDivElement).id === 'backdrop')) || ((event.target as HTMLDivElement).id === 'profile-header') || ((event.target as HTMLDivElement).id === 'search')) {
+                        this.filtering = false
+                    }
+                }
+            })
         },
         methods: {
             update_page(new_page: number): void {
@@ -1304,19 +1321,26 @@
         gap: 0.3rem;
     }
 
+    #estimated_delivery div {
+        flex-direction: row;
+    }
+
+    #estimated_delivery input, #estimated_delivery select {
+        width: 3.8rem !important;
+        padding: 0rem;
+        padding-top: 0.4rem;
+        padding-bottom: 0.4rem;
+        padding-left: 0.1rem;
+    }
+
+
     #stars p {
         margin-left: 0.5rem;
     }
 
-    .number-filter {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-    }
-
     .number-filter input {
         text-align: center;
-        width: 5rem !important;
+        width: 4rem !important;
     }
 
     input {
@@ -1333,7 +1357,8 @@
         display: flex;
         flex-direction: column;
         gap: 2rem;
-        margin: 1.5rem;
+        padding: 1.5rem;
+        position: relative;
     }
 
     #dark #search-container {
@@ -1348,6 +1373,10 @@
 
     #heading1 p, #heading2 #label, #filter i {
         font-size: 1.2rem;
+    }
+
+    #label {
+        width: 2rem;
     }
 
     #heading2 {
@@ -1395,15 +1424,18 @@
         padding-right: 0.5rem;
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 1.5rem;
+        position: relative;
     }
 
     #filter-area-parent {
-        position: absolute;
+        width: 75vw;
+        margin-left: auto;
+        margin-right: 2rem;
+        margin-top: 1rem;
         border-radius: 0.8rem;
         border: 0.1rem solid black;
         right: 3rem;
-        background-color: white;
         padding: 0.7rem;
         height: 73vh;
     }
@@ -1412,12 +1444,6 @@
     #dark #filter-area-parent {
         background-color: rgb(41, 41, 41);
         border: 0.1rem solid white;
-    }
-
-    #condition {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
     }
 
     .new, .used, .all {
@@ -1464,24 +1490,26 @@
         text-align: center;
     }
 
-    #rating, #type {
+    .item, #price, .dimension {
         display: flex;
         flex-direction: column;
-        gap: 0.3rem;
+        gap: 0.5rem;
     }
 
-    #rating div, #type div {
+    .item div, .number-filter {
+        align-items: center;
         display: flex;
-        gap: 0.3rem;
+        gap: 0.8rem;
+    }
+
+    .new-line-item div {
+        flex-wrap: wrap;
+        width: 100%;
     }
 
     #rating div p {
         width: 1rem;
         text-align: center;
-    }
-
-    #heading2 label {
-        width: 2rem;
     }
 
     .search-item {
@@ -1583,6 +1611,17 @@
         align-items: center;
         gap: 2rem;
         justify-content: space-between;
+    }
+
+    #backdrop {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        z-index: 2;
+        background-color: rgba(0, 0, 0, 0.5);
+        margin: 0;
     }
 
     #col1, #col2 {
@@ -1693,6 +1732,26 @@
         gap: 1.5rem;
     }
 
+    #x {
+        color: red;
+        position: absolute;
+        right: 0;
+        top: -0.5rem;
+        font-size: 2rem !important;
+    }
+
+    #x:hover {
+        color: darkred;
+    }
+
+    #dark #x {
+        color: rgb(250, 141, 141);
+    }
+
+    #dark #x:hover {
+        color: rgb(245, 116, 116);
+    }
+
     /* Responsive Design */
     @media (max-width: 1156px) {
         #col2 {
@@ -1758,8 +1817,8 @@
         }
 
         #search-container {
-            margin-left: 1rem;
-            margin-right: 1rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
         }
     }
 

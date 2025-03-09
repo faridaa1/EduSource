@@ -285,6 +285,7 @@
     padding: 0.25rem;
     display: flex;
     flex-direction: column;
+    z-index: 3;
     width: 11.6rem;
     border: 0.1rem solid black;
   }
@@ -294,7 +295,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 0.25rem;
-    z-index: 2;
   }
 
   .search-result:hover {
@@ -439,7 +439,7 @@
   }
 
   #hamburger, #profile-nav {
-    z-index: 1;
+    z-index: 3;
   }
 
 
