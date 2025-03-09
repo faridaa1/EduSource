@@ -55,7 +55,6 @@
                                 <button class="clockwise" @click="cancel_edit(0)"><i class="bi bi-arrow-counterclockwise"></i></button>
                             </div>
                         </div>
-                        <!-- <div v-if="!changing_number" class="change_text" @click="changing_number = true">Change Phone Number</div> -->
                     </div>
                 </div>
             </div>
@@ -511,6 +510,15 @@
         font-size: 1.3rem;
     }
 
+    #dark #user_number input, #dark select, #dark textarea {
+        background-color: transparent !important;
+        color: white !important;
+    }
+
+    #dark textarea::placeholder {
+        color: lightgray !important;
+    }
+
     .edit-buttons {
         display: flex;
         gap: 0.5rem;
@@ -580,6 +588,10 @@
         background-color: white;
         margin-left: auto;
         border-radius: 0.2rem;
+    }
+
+    #dark #toggle {
+        color: black !important;
     }
 
     #controls div {
