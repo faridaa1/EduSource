@@ -934,6 +934,10 @@
         padding: 0.5rem;
     }
 
+    textarea {
+        resize: none;
+    }
+
     /* Responsive Design */
     @media (max-width: 1002px) {
         #content { 
