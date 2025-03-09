@@ -8,7 +8,7 @@ urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [
     path('signup/', signup, name='signup'),
     path('login/', login, name='login'),
     path('api/exchange/user/<int:user>/seller/<int:seller>/resource/<int:resource>/', exchange, name='exchange'),
-    path('api/semantic-search/<int:user>/', semantic_search, name='semantic search'),
+    path('api/semantic-search/<str:user>/', semantic_search, name='semantic search'),
     path('api/semantic-search-subjects/', semantic_search_subjects, name='semantic search subjects'),
     path('api/semantic-search-orders/<int:id>/<str:search>/<str:mode>/', semantic_search_orders, name='semantic search orders'),
     path('api/messages/<int:user1>/<int:user2>/', messages, name='messages'),

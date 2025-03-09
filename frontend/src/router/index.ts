@@ -12,11 +12,12 @@ import Order from '@/components/authenticated user/orders/Order.vue'
 import SellerProfile from '@/components/SellerProfile.vue'
 import Message from '@/components/authenticated user/messaging/Message.vue'
 import Messages from '@/components/authenticated user/messaging/Messages.vue'
-import SearchResults from '@/components/SearchResults.vue'
+import SearchResults from '@/components/search/SearchResults.vue'
 import Settings from '@/components/authenticated user/settings/Settings.vue'
 import Return from '@/components/authenticated user/orders/Return.vue'
 import Exchange from '@/components/authenticated user/exchange/Exchange.vue'
 import Exchanges from '@/components/authenticated user/exchange/Exchanges.vue'
+import CompareResources from '@/components/search/CompareResources.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -44,6 +45,7 @@ const router = createRouter({
     { path: '/messages', name: 'messages', component: Messages },
     { path: '/search/:name', name: 'search', component: SearchResults },
     { path: '/exchanges', name: 'exchanges', component: Exchanges },
+    { path: '/compare/:catchAll(.*)', name: 'compare', component: CompareResources },
     { path: '/exchange/:catchAll(.*)', name: 'exchange', component: Exchange }
   ],
 })

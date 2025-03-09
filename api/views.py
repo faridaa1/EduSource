@@ -691,19 +691,20 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
         # determine embeddings
         embeddings = semantic_search_model.encode(dataset)
         search: str = json.loads(request.body)
-        user: User = get_object_or_404(User, id=user)
 
         # storing unique search history
-        contains_search = False
-        for search_item in user.search_history.search_item.all():
-            if search_item.search.lower()==search.lower():
-                contains_search = True
-                break
-        if not contains_search:
-            SearchHistoryItem.objects.create(
-                search=search,
-                search_history=user.search_history
-            )
+        if user != '-1':
+            user: User = get_object_or_404(User, id=user)
+            contains_search = False
+            for search_item in user.search_history.search_item.all():
+                if search_item.search.lower()==search.lower():
+                    contains_search = True
+                    break
+            if not contains_search:
+                SearchHistoryItem.objects.create(
+                    search=search,
+                    search_history=user.search_history
+                )
 
         search_embeddings = semantic_search_model.encode(search)
 

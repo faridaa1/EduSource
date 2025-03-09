@@ -130,7 +130,9 @@
                 return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
             },
             user(): User {
-                this.get_recommendations()
+                if (Object.keys(useUserStore().user).length > 0) {
+                    this.get_recommendations()
+                }
                 return useUserStore().user
             },
             resources(): Resource[] {
