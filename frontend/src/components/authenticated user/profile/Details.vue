@@ -145,9 +145,13 @@
                     <button id="postcode-cancel" type="button" class="cancel" v-if="editingPostcode" @click="editingPostcode = false; postcode = user.postcode"><i class="bi bi-x"></i></button>
                 </div>
             </div>
+            <button id="delete" @click="confirm='Are you sure you want to delete your account?'">Delete Account</button>
         </form>
         <div v-if="error !== ''">
             <Error :message="error" @close-error="error=''" />
+        </div>
+        <div v-if="confirm !== ''">
+            <Confirm :message="confirm" @confirm-no="confirm=''" @confirm-yes="delete_account" />
         </div>
     </div>
 </template>
@@ -158,8 +162,9 @@
     import type { User } from '@/types';
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
+    import Confirm from '@/components/user experience/confirm/Confirm.vue';
     export default defineComponent({
-        components: { Error },
+        components: { Error, Confirm },
         data(): {
             show_subjects: boolean,
             subject: string,
@@ -181,6 +186,7 @@
             editingEmail: boolean,
             editingUsername: boolean,
             editingPassword: boolean,
+            confirm: string,
             editingFirstName: boolean,
             editingLastName: boolean,
             editingPhoneNumber: boolean,
@@ -207,6 +213,7 @@
             line1: '',
             line2: '',
             city: '',
+            confirm: '',
             postcode: '',
             editingEmail: false,
             editingUsername: false,
@@ -226,6 +233,22 @@
             show_re_pass: false
         }},
         methods: {
+            async delete_account(): Promise<void> {
+                this.confirm = ''
+                const delete_account_response: Response = await fetch(`http://localhost:8000/delete-account/${this.user.id}/`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf,
+                    },
+                })  
+                if (!delete_account_response.ok) {
+                    this.error = 'Error deleting account. Please try again.'
+                    return
+                } else {
+                    window.location.href = '/'
+                }
+            },
             reset(field: string): void {
                 if (field !== 'email') {
                     this.email = this.user.email
@@ -1085,7 +1108,22 @@
 
     #user-subjects #subject-item div:hover {
         background-color: red;
+        cursor: pointer;
+    }
+
+    #delete {
+        background-color: red;
+        border-radius: 0.5rem;
+        margin: auto;
+        padding: 0.5rem;
+        margin-top: 1rem;
         color: white;
+        border: none;
+    }
+
+    #delete:hover {
+        cursor: pointer;
+        background-color: darkred;
     }
 
     #semantic-search {

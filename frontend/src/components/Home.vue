@@ -69,7 +69,7 @@
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent } from 'vue';
+    import { defineComponent, nextTick } from 'vue';
     import type { Resource, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     export default defineComponent({
@@ -132,6 +132,13 @@
             user(): User {
                 if (Object.keys(useUserStore().user).length > 0) {
                     this.get_recommendations()
+                } else {
+                    nextTick(() => {
+                        let div: HTMLDivElement = document.getElementById('buyer-home') as HTMLDivElement
+                        if (div) {
+                            div.style.gridTemplateAreas = "'textbooks' 'notes' 'stationery'";
+                        } 
+                    })
                 }
                 return useUserStore().user
             },

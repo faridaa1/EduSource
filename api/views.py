@@ -38,8 +38,8 @@ def signup(request: HttpRequest) -> HttpResponse:
                 mode=signup_data['mode'],
                 description=signup_data['description'],
                 cart=Cart.objects.create(),
-                search_history=SearchHistory.objects.create()
             )
+            user.search_history=SearchHistory.objects.create(user=user)
             Address.objects.create(
                 first_line=address_data['first_line'],
                 second_line=address_data['second_line'],
@@ -47,6 +47,8 @@ def signup(request: HttpRequest) -> HttpResponse:
                 postcode=address_data['postcode'],
                 user=user
             )
+            send_mail('EduSource - Account Created',
+            f'Hi {user.first_name}, Welcome to EduSource!\n\nThanks for signing up.\n\nThis is to confirm we have the correct email registered to your account. There is no need to take action.\n\nEnjoy EduSource!', 'edusource9325@gmail.com', [user.email])
             # log in user
             authenticated_user: User | None = authenticate(request, username=signup_data['username'], password=signup_data['password'])
             if authenticated_user:
@@ -949,6 +951,12 @@ def exchange(request: HttpRequest, user: int, seller: int, resource: int) -> Jso
 def feedback(request: HttpRequest) -> JsonResponse:
     if request.method == 'POST':
         feedback = json.loads(request.body)
-        print(feedback)
         send_mail('Feedback submitted', feedback, 'edusource9325@gmail.com', ['edusource9325@gmail.com'])
+    return JsonResponse({})
+
+
+def delete_account(request: HttpRequest, user: int) -> JsonResponse:
+    if request.method == 'DELETE':
+        user: User = get_object_or_404(User, id=user)
+        user.delete()
     return JsonResponse({})
