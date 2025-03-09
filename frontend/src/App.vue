@@ -28,7 +28,7 @@
           </div>
           <button @click="conduct_search()"><i class="bi bi-search"></i></button>
         </div>
-        <RouterLink to="/" class="hide-on-mobile link">Help</RouterLink>
+        <RouterLink to="/help" class="hide-on-mobile link">Help</RouterLink>
         <RouterLink to="/settings" class="hide-on-mobile link" v-if="Object.keys(user).length > 0">Settings</RouterLink>
         <p v-if="authenticated" class="hide-on-mobile link sign" @click="sign_out"> Sign out </p>
         <p v-if="!authenticated" @click="sign_in" class="hide-on-mobile link sign"> Sign in</p>
@@ -52,7 +52,7 @@
             </div>
           </transition>
           </div>
-          <RouterLink to="/" id="item3" class="show-mobile">Help</RouterLink>
+          <RouterLink to="/help" id="item3" class="show-mobile">Help</RouterLink>
           <RouterLink v-if="authenticated" to="/settings" id="item4" class="show-mobile">Settings</RouterLink>
           <p id="item5" v-if="authenticated" class="link sign" @click="sign_out"> Sign out </p>
           <p id="item5" v-if="!authenticated" @click="sign_in" class="link sign"> Sign in</p>
