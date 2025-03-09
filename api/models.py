@@ -75,6 +75,7 @@ class User(AbstractUser):
         sold_orders = Order.objects.filter(seller=self)
         messages = Messages.objects.filter(Q(user1=self) | Q(user2=self))
         subjects = Subject.objects.filter(user=self)
+        search_history = SearchHistory.objects.get(user=self)
         exchanges = Exchange.objects.filter(Q(user1=self) | Q(user2=self))
         return {
             'id': self.id,
@@ -100,6 +101,7 @@ class User(AbstractUser):
             'cart': self.cart.as_dict(),
             'wishlist': self.wishlist.as_dict(),
             'exchanges': [exchange.as_dict() for exchange in exchanges],
+            'search_history': search_history.as_dict()
         }
 
 class Subject(models.Model):
@@ -404,4 +406,32 @@ class Exchange(models.Model):
             'resource2': self.resource2.id,
             'resource1_number': self.resource1_number,
             'resource2_number': self.resource2_number,
+        }
+    
+
+class SearchHistory(models.Model):
+    """Defining model to store search history, aiding personalised recommendation and chatbot"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='search_history')
+
+    def as_dict(self) -> str:
+        """Dictionary representation of SearchHistory"""
+        search_history = SearchHistoryItem.objects.filter(search_history=self)
+        return {
+            'id': self.id,
+            'user': self.user.id,
+            'search_history': [search_history_item.as_dict() for search_history_item in search_history]
+        }
+    
+
+class SearchHistoryItem(models.Model):
+    """Defining single search"""
+    search = models.TextField(null=False, blank=False)
+    search_history = models.ForeignKey(SearchHistory, on_delete=models.CASCADE, related_name='search_item')
+
+    def as_dict(self) -> str:
+        """Dictionary representation of SearchHistoryItem"""
+        return {
+            'id': self.id,
+            'search': self.search,
+            'search_history': self.search_history.id
         }

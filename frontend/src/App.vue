@@ -220,7 +220,7 @@
           return
         }
         this.searching = true
-        const searchResults: Response = await fetch(`http://localhost:8000/api/semantic-search/`, {
+        const searchResults: Response = await fetch(`http://localhost:8000/api/semantic-search/${this.user.id}/`, {
           method: 'POST',
           credentials: 'include',
           headers: {

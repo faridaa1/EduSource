@@ -66,7 +66,19 @@ export interface Resource {
     last_edited: string,
     reviews: Review[],
     upload: string,
-    unique: boolean
+    unique: boolean,
+    search_history: SearchHistory
+}
+
+export interface SearchHistory {
+    id: number,
+    user: number,
+    search_history: SearchHistoryItem[]
+}
+
+export interface SearchHistoryItem {
+    search: string,
+    search_history: number,
 }
 
 export interface Review {

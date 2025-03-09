@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cart, CartResource, Exchange, Messages, Order, OrderResource, Resource, Review, Subject, User, Address, Message
+from .models import Cart, CartResource, Exchange, Messages, Order, OrderResource, Resource, Review, SearchHistory, SearchHistoryItem, Subject, User, Address, Message
 from django.forms import BaseInlineFormSet, ValidationError
 
 
@@ -38,9 +38,22 @@ class SubjectInline(admin.StackedInline):
     model = Subject
     extra = 0
 
+
 class OrderResourceInline(admin.StackedInline):
     model = OrderResource
     extra = 0
+
+
+class SearchHistoryItemInline(admin.StackedInline):
+    model = SearchHistoryItem
+    extra = 0
+
+
+@admin.register(SearchHistory)
+class SearchHistoryAdmin(admin.ModelAdmin):
+    """Defining Exchange model appearance on django admin"""
+    list_display: tuple[str] = ('id', 'user')
+    inlines = [SearchHistoryItemInline]
 
 
 class MessageInline(admin.StackedInline):

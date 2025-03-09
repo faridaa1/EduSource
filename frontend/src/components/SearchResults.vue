@@ -222,46 +222,49 @@
         <div id="search-content">
             <div id="noresources" v-if="filtered_resources.length === 0">No resources found</div>
             <div class="search-item" v-for="resource in filtered_resources">
-                <div id="col1" @click="showResourcePage(resource.id)">
-                    <div id="search-picture">
-                        <img :src="`http://localhost:8000${resource.image1}`" alt="">
-                    </div>
-                    <div id="search-data">
-                        <p id="resource-name">{{ resource.name }}</p>
-                        <p>{{ Object.keys(user).length > 0 ? currency : unauth_currency(resource) }}{{ Object.keys(user).length > 0 ? parseFloat(resource.price.toString().replace('€','').replace('£','').replace('$','')).toFixed(2) : parseFloat(resource.price.toString()).toFixed(2) }}</p>
-                        <div id="stars">
-                            <i v-if="resource.rating > 0" class="bi bi-star-fill" style="color: orange;"></i>
-                            <i v-if="resource.rating < 1" class="bi bi-star-fill"></i>
-                            <i v-if="resource.rating > 1" class="bi bi-star-fill" style="color: orange;"></i>
-                            <i v-if="resource.rating < 2" class="bi bi-star-fill"></i>
-                            <i v-if="resource.rating > 2" class="bi bi-star-fill" style="color: orange;"></i>
-                            <i v-if="resource.rating < 3" class="bi bi-star-fill"></i>
-                            <i v-if="resource.rating > 3" class="bi bi-star-fill" style="color: orange;"></i>
-                            <i v-if="resource.rating < 4" class="bi bi-star-fill"></i>
-                            <i v-if="resource.rating > 4" class="bi bi-star-fill" style="color: orange;"></i>
-                            <i v-if="resource.rating < 5" class="bi bi-star-fill"></i>
-                            <p>{{ resource.rating }}</p>
+                <div id="row1">
+                    <div id="col1" @click="showResourcePage(resource.id)">
+                        <div id="search-picture">
+                            <img :src="`http://localhost:8000${resource.image1}`" alt="">
                         </div>
-                        <p id="view-details" @click="showResourcePage(resource.id)">View Details</p>
-                    </div>
-                </div>
-                <div id="col2">
-                    <div v-if="Object.keys(user).length > 0" id="cart-filter">
-                        <div id="toggle">
-                            <div id="resnum">{{ Object.keys(cart_resource(resource)).length > 0 ? cart_resource(resource).number : 0 }}</div>
-                            <div id=controls>
-                                <div id="plus" :class="(Object.keys(cart_resource(resource)).length > 0) ? '' : 'round-hover'" v-if="(Object.keys(cart_resource(resource)).length === 0) || (cart_resource(resource).number < resource.stock)" @click="add_to_cart(resource)">+</div>
-                                <hr v-if="((Object.keys(cart_resource(resource)).length > 0) && (cart_resource(resource).number > 0)) && (cart_resource(resource).number < resource.stock)">
-                                <div v-if="(Object.keys(cart_resource(resource)).length > 0) && (cart_resource(resource).number > 0)" id="minus" :class="(cart_resource(resource).number < resource.stock) ? '' : 'round-border'" @click="remove_from_cart(resource)">-</div>
+                        <div id="search-data">
+                            <p id="resource-name">{{ resource.name }}</p>
+                            <p>{{ Object.keys(user).length > 0 ? currency : unauth_currency(resource) }}{{ Object.keys(user).length > 0 ? parseFloat(resource.price.toString().replace('€','').replace('£','').replace('$','')).toFixed(2) : parseFloat(resource.price.toString()).toFixed(2) }}</p>
+                            <div id="stars">
+                                <i v-if="resource.rating > 0" class="bi bi-star-fill" style="color: orange;"></i>
+                                <i v-if="resource.rating < 1" class="bi bi-star-fill"></i>
+                                <i v-if="resource.rating > 1" class="bi bi-star-fill" style="color: orange;"></i>
+                                <i v-if="resource.rating < 2" class="bi bi-star-fill"></i>
+                                <i v-if="resource.rating > 2" class="bi bi-star-fill" style="color: orange;"></i>
+                                <i v-if="resource.rating < 3" class="bi bi-star-fill"></i>
+                                <i v-if="resource.rating > 3" class="bi bi-star-fill" style="color: orange;"></i>
+                                <i v-if="resource.rating < 4" class="bi bi-star-fill"></i>
+                                <i v-if="resource.rating > 4" class="bi bi-star-fill" style="color: orange;"></i>
+                                <i v-if="resource.rating < 5" class="bi bi-star-fill"></i>
+                                <p>{{ resource.rating }}</p>
                             </div>
+                            <p id="view-details" @click="showResourcePage(resource.id)">View Details</p>
                         </div>
-                        <div>{{ currency }}{{ (Object.keys(cart_resource(resource)).length === 0) ? parseInt((0).toString()).toFixed(2) : (cart_resource(resource).number*parseFloat(get_resource(cart_resource(resource).resource).price.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
                     </div>
-                    <div v-if="Object.keys(user).length > 0">
-                        <button v-if="!in_wishlist(resource)" @click="add_to_wishlist(resource)">Add to Wishlist</button>
-                        <button v-if="in_wishlist(resource)" @click="remove_from_wishlist(resource)">Remove from Wishlist</button>
-                    </div>      
+                    <div id="col2">
+                        <div v-if="Object.keys(user).length > 0" id="cart-filter">
+                            <div id="toggle">
+                                <div id="resnum">{{ Object.keys(cart_resource(resource)).length > 0 ? cart_resource(resource).number : 0 }}</div>
+                                <div id=controls>
+                                    <div id="plus" :class="(Object.keys(cart_resource(resource)).length > 0) ? '' : 'round-hover'" v-if="(Object.keys(cart_resource(resource)).length === 0) || (cart_resource(resource).number < resource.stock)" @click="add_to_cart(resource)">+</div>
+                                    <hr v-if="((Object.keys(cart_resource(resource)).length > 0) && (cart_resource(resource).number > 0)) && (cart_resource(resource).number < resource.stock)">
+                                    <div v-if="(Object.keys(cart_resource(resource)).length > 0) && (cart_resource(resource).number > 0)" id="minus" :class="(cart_resource(resource).number < resource.stock) ? '' : 'round-border'" @click="remove_from_cart(resource)">-</div>
+                                </div>
+                            </div>
+                            <div>{{ currency }}{{ (Object.keys(cart_resource(resource)).length === 0) ? parseInt((0).toString()).toFixed(2) : (cart_resource(resource).number*parseFloat(get_resource(cart_resource(resource).resource).price.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
+                        </div>
+                        <div v-if="Object.keys(user).length > 0">
+                            <button v-if="!in_wishlist(resource)" @click="add_to_wishlist(resource)">Add to Wishlist</button>
+                            <button v-if="in_wishlist(resource)" @click="remove_from_wishlist(resource)">Remove from Wishlist</button>
+                        </div>      
+                    </div>
                 </div>
+                <hr id="search-separator" v-if="resource!==filtered_resources[filtered_resources.length-1]">
             </div>
         </div>
         <div id="pagination" v-if="filtered_resources.length > 0">
@@ -402,7 +405,7 @@
                     }
                 }
             }
-            const searchResponse = await fetch(`http://localhost:8000/api/semantic-search/`, {
+            const searchResponse = await fetch(`http://localhost:8000/api/semantic-search/${this.user.id}/`, {
                 method: 'PUT',
                 credentials: 'include',
                 headers: {
@@ -1434,6 +1437,7 @@
         margin-right: 2rem;
         margin-top: 1rem;
         border-radius: 0.8rem;
+        background-color: white;
         border: 0.1rem solid black;
         right: 3rem;
         padding: 0.7rem;
@@ -1510,10 +1514,6 @@
     #rating div p {
         width: 1rem;
         text-align: center;
-    }
-
-    .search-item {
-        padding: 0.5rem;
     }
 
     #col1:hover {
@@ -1608,9 +1608,23 @@
 
     .search-item {
         display: flex;
+        flex-direction: column;
+    }
+
+    .search-item #row1 {
+        display: flex;
         align-items: center;
         gap: 2rem;
         justify-content: space-between;
+        padding: 0.5rem;
+    }
+
+    #search-separator {
+        height: 0.01rem;
+        background-color: #d9d9d9;
+        border-radius: 0.5rem;
+        width: 100%;
+        margin-top: 0.8rem;
     }
 
     #backdrop {
@@ -1620,7 +1634,7 @@
         top: 0;
         left: 0;
         z-index: 2;
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(140, 140, 140, 0.5);
         margin: 0;
     }
 
@@ -1721,7 +1735,7 @@
         gap: 1rem;
     }
 
-    .search-item img {
+    .search-item #row1 img {
         background-color: #d9d9d9;
         border-radius: 0.5rem;
         padding: 0.5rem;
@@ -1766,7 +1780,7 @@
     }
 
     @media (max-width: 852px) {
-        .search-item {
+        .search-item #row1 {
             flex-direction: column;
             gap: 0.5rem;
             align-items: flex-start;
@@ -1787,11 +1801,11 @@
     }
 
     @media (max-width: 559px) {
-        .search-item p, button, .search-item div, p {
+        .search-item #row1 p, button, .search-item #row1 div, p {
             font-size: 1rem !important;
         }
 
-        .search-item img {
+        .search-item #row1 img {
             height: 6rem;
             width: 6rem;
         }

@@ -8,7 +8,7 @@ from django.db.models import Avg
 from django.contrib import auth
 import torch
 from .forms import SignupForm, AddressForm, LoginForm
-from .models import Cart, CartResource, Exchange, Messages, Order, OrderResource, Resource, Review, Subject, User, Address, WishlistResource, Message
+from .models import Cart, CartResource, Exchange, Messages, Order, OrderResource, Resource, Review, SearchHistory, SearchHistoryItem, Subject, User, Address, WishlistResource, Message
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 from transformers import pipeline
@@ -36,7 +36,8 @@ def signup(request: HttpRequest) -> HttpResponse:
                 theme_preference=signup_data['theme_preference'],
                 mode=signup_data['mode'],
                 description=signup_data['description'],
-                cart=Cart.objects.create()
+                cart=Cart.objects.create(),
+                search_history=SearchHistory.objects.create()
             )
             Address.objects.create(
                 first_line=address_data['first_line'],
@@ -644,7 +645,7 @@ def message(request: HttpRequest, id: int, sender: int) -> JsonResponse:
     return JsonResponse({})
 
 
-def semantic_search(request: HttpRequest) -> JsonResponse:
+def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
     """Defining semantic search used to return relevant search results to user"""
     # https://huggingface.co/sentence-transformers
     dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
@@ -678,7 +679,7 @@ def semantic_search(request: HttpRequest) -> JsonResponse:
 
         # use first 8 search results
         reduced_search_dict = sorted_search_dict[0:min(8,len(sorted_search_dict))]
-        keys: list = [pair[0] for pair in reduced_search_dict if pair[1] > 0.45]
+        keys: list = [pair[0] for pair in reduced_search_dict if pair[1] >= 0.45]
         resources: list = []
 
         # using iteration to preserve order of resources
@@ -690,6 +691,20 @@ def semantic_search(request: HttpRequest) -> JsonResponse:
         # determine embeddings
         embeddings = semantic_search_model.encode(dataset)
         search: str = json.loads(request.body)
+        user: User = User.objects.get(id=user)
+
+        # storing unique search history
+        contains_search = False
+        for search_item in user.search_history.search_item.all():
+            if search_item.search.lower()==search.lower():
+                contains_search = True
+                break
+        if not contains_search:
+            SearchHistoryItem.objects.create(
+                search=search,
+                search_history=user.search_history
+            )
+            
         search_embeddings = semantic_search_model.encode(search)
 
         # generate similairty matrix
@@ -814,7 +829,6 @@ def submit_return(request: HttpRequest, user: id, order: id) -> JsonResponse:
         data = json.loads(request.body)
         order.status = 'Complete' if data['cancel'] == 'true' else 'Requested Return'
         order.save()
-        print(data, data['cancel'] == 'true')
         if data['cancel'] == 'true':
             for order_resource in order.order_resource.all():
                 order_resource.for_return = False
