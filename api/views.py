@@ -1056,7 +1056,7 @@ def chatbot(request: HttpRequest, user: int) -> JsonResponse:
                 return JsonResponse('You must be signed in for this to be available.', safe=False)
             user: User = get_object_or_404(User, id=user)
             returned_recommendations = json.loads(recommendations(request, user.id).content)
-            response_string = f'Below are {min(len(returned_recommendations),10)} recommendations:'
+            response_string = f'Below are some recommendations:'
             added_recommendations = {}
             for recommendation in returned_recommendations[:10]:
                 if not added_recommendations.get(recommendation['name']) == recommendation['author']:
@@ -1066,9 +1066,53 @@ def chatbot(request: HttpRequest, user: int) -> JsonResponse:
                 return JsonResponse('Sorry, I cannot do that as you do not have any personalised recommendations yet.\nAs you search through the app and add subjects preferences to your profile, this will update.', safe=False)
             return JsonResponse(response_string, safe=False)
         elif sorted_search_dict[0][0] == 'Can you provide resource recommendations for':
-            recommendation_query: str = (user_input.lower().split('Can you provide resource recommendations for')[1])
-            print(recommendation_query)
-            return JsonResponse('Youure good', safe=False)
+            recommendation_query_list: list = (user_input.lower().split('can you provide resource recommendations for'))
+            if len(recommendation_query_list) == 1 or recommendation_query_list[1].strip() == '':
+                return JsonResponse('Please repeat the statement with a recommendation.', safe=False)
+            recommendation_query = recommendation_query_list[1]
+
+            dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
+            # data preprocessing
+            resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('description', 'name', 'subject', 'type'))
+            dataset = [ " ".join(resource) for resource in resources ]
+            # ensuring values in lists are unique
+            values_included: list = []
+            new_dataset_resources: list = []
+            new_dataset: list = []
+            for i in range(len(dataset)):
+                if not dataset[i] in values_included:
+                    new_dataset_resources.append(dataset_resources[i])
+                    new_dataset.append(dataset[i])
+                    values_included.append(dataset[i])
+
+            # determine embeddings
+            embeddings = semantic_search_model.encode(new_dataset)
+            search_embeddings = semantic_search_model.encode(recommendation_query)
+
+            # generate similairty matrix
+            similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
+            
+            # convert tensor to dictionary sorted on values (similarity)
+            list_similarity_matrix = similarity_matrix.tolist()[0]
+            search_dict = dict(zip(new_dataset_resources, list_similarity_matrix))
+            sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
+
+            # use first 10 results
+            reduced_search_dict = sorted_search_dict[0:min(10,len(sorted_search_dict))]
+            keys: list = [pair[0] for pair in reduced_search_dict if pair[1] >= 0.45]
+            resources: list = []
+
+            added_recommendations = {}
+            response_string = f'Below are some recommendations:'
+            # using iteration to preserve order of resources
+            for key in keys:
+                resource = Resource.objects.get(id=key)
+                if not added_recommendations.get(resource.name) == resource.author:
+                    response_string += '\n' + resource.name + ' by ' + resource.author
+                    added_recommendations[resource.name] = resource.author
+            if len(added_recommendations) == 0:
+                return JsonResponse('Sorry. We were unable to find resources matching your query.', safe=False)
+            return JsonResponse(response_string, safe=False)
         return JsonResponse(known_questions_and_answers[sorted_search_dict[0][0]], safe=False)
 
     try:
