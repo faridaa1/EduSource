@@ -20,7 +20,7 @@
         </div>
         <div id="messages">
             <div class="message-area">
-                <i class="bi bi-robot icon"></i>
+                <i class="bi bi-chat-left-text icon"></i>
                 <p class="value">Hi! I am EduBot. How can I help?</p>
             </div>
             <div class="message-area" :class="message.user === 'user' ? 'right end' : 'left'" v-for="message in messages.sort((a,b) => b.id - a.id)">
@@ -29,7 +29,7 @@
                 <i v-if="message.user === 'user'" class="bi bi-person-circle icon2"></i>
             </div>
             <div class="message-area left" v-if="chatbot_responding">
-                <i class="bi bi-robot icon"></i>
+                <i class="bi bi-chat-left-text icon"></i>
                 <p class="value"><i class="bi bi-three-dots"></i></p>
             </div>
         </div>
