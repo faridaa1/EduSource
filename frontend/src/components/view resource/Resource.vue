@@ -39,7 +39,7 @@
                 </div>
                 <div id="total" v-if="cart_resource.number > 0"> Total: {{ user.currency === 'GBP' ? '£' : user.currency === 'USD' ? '$' : '€' }}{{ (cart_resource.number * cart_price).toFixed(2) }} </div>
             </div>
-            <div v-if="Object.keys(user).length > 0 && cart_resource.number === 0" @click="edit_wishlist()">{{ in_wishlist ? 'Remove from Wishlist' : 'Add to Wishlist' }}</div>
+            <div v-if="Object.keys(user).length > 0" @click="edit_wishlist()">{{ in_wishlist ? 'Remove from Wishlist' : 'Add to Wishlist' }}</div>
         </div>
         <div id="view-sellers">
             <p @click="show_sellers">View Sellers</p>
@@ -386,7 +386,7 @@
                 if (Object.keys(this.resource).length > 0) {
                     const resource: Resource | undefined = this.allResources.find(resource => resource.id === this.seller)
                     if (!resource) {
-                        console.log('errr')
+                        this.error = 'Error finding resource. Please try again.'
                         return
                     }
                     const exchangeResponse: Response = await fetch(`http://localhost:8000/api/exchange/user/${this.user.id}/seller/${resource.user}/resource/${this.seller}/`, {
@@ -397,7 +397,7 @@
                             'Content-Type' : 'application/json',
                         },
                     })
-                    if (!exchangeResponse.ok) { console.error('Error editing wishlist') }
+                    if (!exchangeResponse.ok) { this.error = 'Error editing wishlist. Please try again.' }
                     else { 
                         const data: {user: User, exchange: Exchange} = await exchangeResponse.json()
                         useUserStore().saveUser(data.user)
@@ -405,7 +405,7 @@
                         window.location.href = `/exchange/${data.exchange.id}`
                     }
                 } else {
-                    console.log('error')
+                    this.error = 'Error finding resource. Please try again.'
                 }
             },
             buy_now(): void {
@@ -456,6 +456,9 @@
                 return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
             },
             async edit_wishlist(): Promise<void> {
+                if (this.cart_resource.number !== 0) {
+                    await this.update_cart_db('DELETE', this.cart_resource.id, -1)
+                }
                 const editWishlistResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/wishlist/`, {
                     method: this.in_wishlist ? 'DELETE' : 'POST',
                     credentials: 'include',
@@ -465,7 +468,7 @@
                     },
                     body: JSON.stringify(this.allResources[0].id)
                 })
-                if (!editWishlistResponse.ok) { console.error('Error editing wishlist') }
+                if (!editWishlistResponse.ok) { this.error = 'Error editing wishlist. Please try again.' }
                 else { 
                     const data: { wishlist: Wishlist } = await editWishlistResponse.json()
                     this.in_wishlist = !this.in_wishlist
@@ -511,6 +514,13 @@
                         } 
                     })
                 })
+                if (!(data.resources.find(cart_resoure => cart_resoure.resource === this.seller))) {
+                    this.cart_resource = {
+                        id: -1,
+                        resource: -1,
+                        number: 0
+                    }
+                }
                 this.style_nav()
                 useUserStore().updateCart(data)
             },
@@ -525,7 +535,7 @@
                     body: JSON.stringify(this.cart_resource.number)
                 })
                 if (!updateCart.ok) {
-                    console.error('Error updating cart')
+                    this.error = 'Error updating cart. Please try again.'
                     return
                 }
                 const data: {resource: CartResource, cart: Cart, wishlist: Wishlist} = await updateCart.json()
@@ -610,7 +620,7 @@
                     },
                 })
                 if (!response.ok) {
-                    console.error('Error deleting review')
+                    this.error = 'Error deleting review. Please try again.'
                     return
                 }
                 const resource: {resource: Resource, users: User[]} = await response.json()
@@ -745,7 +755,7 @@
                     body: data
                 })
                 if(!savedReview.ok) {
-                    console.error('Error editing review')
+                    this.error = 'Error editing review. Please try again.'
                     return
                 }
                 let reviewData: {old_resource: Resource, new_resource : Resource, users: User[]} = await savedReview.json()
@@ -1160,7 +1170,7 @@
 <style scoped>
     #resource-view {
         display: grid;
-        grid-template-columns: 2fr 2fr 1fr 1fr;
+        grid-template-columns: 1fr 2fr 0.5fr 0.5fr;
         grid-template-areas: "header header header header"
                              "resource resource-description view-sellers resource-cart"
                              "resource-details resource-details resource-details resource-details"
@@ -1171,8 +1181,8 @@
         padding-top: 1rem;
         padding-bottom: 1rem;
         padding-left: 1rem;
-        gap: 2rem;
-        max-height: 92vh;
+        gap: 3rem;
+        max-height: 100vh;
         overflow-y: auto;
         padding-right: 1rem;
         position: relative;
@@ -1283,6 +1293,7 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
+        justify-self: center;
         gap: 1.4rem;
     }
 
@@ -1312,6 +1323,7 @@
         display: flex;
         flex-direction: column;
         gap: 1rem;
+        justify-self: center !important;
     }
 
     #view-sellers p {

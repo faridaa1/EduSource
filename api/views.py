@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate
-from django.db.models import Avg
+from django.db.models import Avg, Sum
 from django.contrib import auth
 import torch
 from .forms import SignupForm, AddressForm, LoginForm
@@ -393,14 +393,14 @@ def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> Js
         else:
             cartResource.number = json.loads(request.body)
         cartResource.save()
-        user.cart.items += json.loads(request.body)
+        user.cart.items = user.cart.cart_resource.all().aggregate(Sum('number'))['number__sum'] if user.cart.cart_resource.all().aggregate(Sum('number'))['number__sum'] else 0
         user.cart.save()
         return JsonResponse({'resource': cartResource.as_dict(), 'cart': user.cart.as_dict(), 'wishlist': user.wishlist.as_dict()})
     elif request.method == 'DELETE':
         resource: CartResource = get_object_or_404(CartResource, id=cart)
-        user.cart.items -= 1
-        user.cart.save()
         resource.delete()
+        user.cart.items = user.cart.cart_resource.all().aggregate(Sum('number'))['number__sum'] if user.cart.cart_resource.all().aggregate(Sum('number'))['number__sum'] else 0
+        user.cart.save()
         return JsonResponse({'resource': [], 'cart': user.cart.as_dict(), 'wishlist': user.wishlist.as_dict()})
     return JsonResponse({})
 
