@@ -725,7 +725,6 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
         sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
 
         # only keeping results at least 45% similar
-        print(sorted_search_dict)
         keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.4]
         resources: list = []
         # using iteration to preserve order of resources
@@ -1058,13 +1057,17 @@ def chatbot(request: HttpRequest, user: int) -> JsonResponse:
             user: User = get_object_or_404(User, id=user)
             returned_recommendations = json.loads(recommendations(request, user.id).content)
             response_string = f'Below are {min(len(returned_recommendations),10)} recommendations:'
+            added_recommendations = {}
             for recommendation in returned_recommendations[:10]:
-                response_string += '\n' + recommendation['name'] + ' by ' + recommendation['author']
+                if not added_recommendations.get(recommendation['name']) == recommendation['author']:
+                    response_string += '\n' + recommendation['name'] + ' by ' + recommendation['author']
+                    added_recommendations[recommendation['name']] = recommendation['author']
             if len(returned_recommendations) == 0:
                 return JsonResponse('Sorry, I cannot do that as you do not have any personalised recommendations yet.\nAs you search through the app and add subjects preferences to your profile, this will update.', safe=False)
             return JsonResponse(response_string, safe=False)
         elif sorted_search_dict[0][0] == 'Can you provide resource recommendations for':
-            print(user_input.lower().split('Can you provide resource recommendations for'))
+            recommendation_query: str = (user_input.lower().split('Can you provide resource recommendations for')[1])
+            print(recommendation_query)
             return JsonResponse('Youure good', safe=False)
         return JsonResponse(known_questions_and_answers[sorted_search_dict[0][0]], safe=False)
 
