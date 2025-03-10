@@ -658,7 +658,8 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
     dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
 
     # data preprocessing
-    dataset: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('name', flat=True))
+    resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('description', 'name', 'subject'))
+    dataset = [ " ".join(resource) for resource in resources ]
     if request.method == 'POST':
         # ensuring values in lists are unique
         values_included: list = []
