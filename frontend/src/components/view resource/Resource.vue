@@ -20,7 +20,7 @@
                 <span v-if="total_ratings === 0">0 ratings</span>
                 <div id="add-review" v-if="!written_review && total_ratings === 0" @click="add_review">Be the first to write a review</div>
                 <div id="add-review" v-if="Object.keys(user).length > 0 && total_ratings > 0 && possible_sellers(false).length > 0" @click="add_review">Add Review</div>
-                <div id="est-del">Estimated: {{ parseFloat((resource as Resource).estimated_delivery_time.toString()) }} {{ (resource as Resource).estimated_delivery_units }}{{ (resource as Resource).estimated_delivery_time !== 1 ? 's' : '' }}</div>
+                <div id="est-del">Estimated: {{ parseFloat((resource as Resource).estimated_delivery_time.toString()) }} {{ (resource as Resource).estimated_delivery_units }}{{ parseFloat((resource as Resource).estimated_delivery_time.toString()) !== 1 ? 's' : '' }}</div>
             </div>
         </div>
         <div id="resource-description">
@@ -32,9 +32,9 @@
                 <div id="cart">
                     <p id="cart-total">{{ cart_resource.number }}</p>
                     <div id="cart-toggle">
-                        <p v-if="(Object.keys(currentResource).length === 0) || cart_resource.number < currentResource.stock" id="plus" @click="update_cart(1)">+</p>
-                        <hr id="separator">
-                        <p v-if="cart_resource.number > 0" id="minus" @click="update_cart(-1)">-</p>
+                        <p v-if="(Object.keys(currentResource).length === 0) || cart_resource.number < currentResource.stock" id="plus" :class="(Object.keys(currentResource).length === 0) ? 'round-plus' : ''" @click="update_cart(1)">+</p>
+                        <hr v-if="cart_resource.number > 0 && (Object.keys(currentResource).length === 0) || (cart_resource.number < currentResource.stock)">
+                        <p v-if="cart_resource.number > 0" id="minus" :class="(Object.keys(currentResource).length === 0) || (cart_resource.number < currentResource.stock) ? '' : 'round-border'" @click="update_cart(-1)"><i :class="cart_resource.number === 1 ? 'bi bi-trash3-fill' : ''"></i>{{ cart_resource.number === 1 ? '' : '-' }}</p>
                     </div>
                 </div>
                 <div id="total" v-if="cart_resource.number > 0"> Total: {{ user.currency === 'GBP' ? '£' : user.currency === 'USD' ? '$' : '€' }}{{ (cart_resource.number * cart_price).toFixed(2) }} </div>
@@ -109,41 +109,34 @@
                                     <i id="clickable" v-if="toggle_filter" class="bi bi-chevron-up"></i>
                                 </div>
                                 <div id="filter-options" v-if="toggle_filter">
-                                    <div class="filter-item border-top" @click="my_reviews=!my_reviews">
-                                        <label>My Reviews</label>
-                                        <input v-model="my_reviews" :checked="my_reviews" type="checkbox">
+                                    <div class="filter-item border-top">
+                                        <label>Review Type</label>
+                                        <div class="row">
+                                            <div :class="both_reviews ? '' : 'not'" class="datum" v-if="allResources.map(resource => resource.user).includes(user.id)" @click="both_reviews=!both_reviews">All</div>
+                                            <div :class="my_reviews ? '' : 'not'" class="datum" @click="my_reviews=!my_reviews">My Reviews</div>
+                                            <div :class="me_reviews ? '' : 'not'" class="datum" v-if="allResources.map(resource => resource.user).includes(user.id)" @click="me_reviews=!me_reviews">Reviews for Me</div>
+                                        </div>
                                     </div>
-                                    <div v-if="allResources.map(resource => resource.user).includes(user.id)" class="filter-item" @click="me_reviews=!me_reviews">
-                                        <label>Reviews for Me</label>
-                                        <input v-model="me_reviews" :checked="me_reviews" type="checkbox">
+                                    <div class="filter-item">
+                                        <label>Stars</label>
+                                        <div class="row">
+                                            <div :class="all_stars ? '' : 'not'" class="datum" @click="all_stars=!all_stars">All</div>
+                                            <div :class="filter_zero ? '' : 'not'" class="datum" @click="filter_zero=!filter_zero">0</div>
+                                            <div :class="filter_one ? '' : 'not'" class="datum" @click="filter_one=!filter_one">1</div>
+                                            <div :class="filter_two ? '' : 'not'" class="datum" @click="filter_two=!filter_two">2</div>
+                                            <div :class="filter_three ? '' : 'not'" class="datum" @click="filter_three=!filter_three">3</div>
+                                            <div :class="filter_four ? '' : 'not'" class="datum" @click="filter_four=!filter_four">4</div>
+                                            <div :class="filter_five ? '' : 'not'" class="datum" @click="filter_five=!filter_five">5</div>
+                                        </div>
                                     </div>
-                                    <div class="filter-item" @click="filter_one=!filter_one">
-                                        <label>Stars: 1</label>
-                                        <input v-model="filter_one" :checked="filter_one" type="checkbox">
-                                    </div>
-                                    <div class="filter-item" @click="filter_two=!filter_two">
-                                        <label>Stars: 2</label>
-                                        <input v-model="filter_two" :checked="filter_two" type="checkbox">
-                                    </div>
-                                    <div class="filter-item" @click="filter_three=!filter_three">
-                                        <label>Stars: 3</label>
-                                        <input v-model="filter_three" :checked="filter_three" type="checkbox">
-                                    </div>
-                                    <div class="filter-item" @click="filter_four=!filter_four">
-                                        <label>Stars: 4</label>
-                                        <input v-model="filter_four" :checked="filter_four" type="checkbox">
-                                    </div>
-                                    <div class="filter-item" @click="filter_five=!filter_five">
-                                        <label>Stars: 5</label>
-                                        <input v-model="filter_five" :checked="filter_five" type="checkbox">
-                                    </div>
-                                    <div class="filter-item" @click="filter_images=!filter_images">
-                                        <label>Images</label>
-                                        <input v-model="filter_images" :checked="filter_images" type="checkbox">
-                                    </div>
-                                    <div class="filter-item border-bottom" @click="filter_video=!filter_video">
-                                        <label>Video</label>
-                                        <input v-model="filter_video" :checked="filter_video" type="checkbox">
+                                    <div class="filter-item">
+                                        <label>Media</label>
+                                        <div class="row">
+                                            <div :class="all_media ? '' : 'not'" class="datum" @click="all_media=!all_media">All</div>
+                                            <div :class="filter_images ? '' : 'not'" class="datum" @click="filter_images=!filter_images">Images</div>
+                                            <div :class="filter_video ? '' : 'not'" class="datum" @click="filter_video=!filter_video">Video</div>
+                                            <div :class="no_reviews ? '' : 'not'" class="datum" @click="no_reviews=!no_reviews">None</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -306,6 +299,10 @@
     export default defineComponent({
         components: { Stars, ViewSellers, Error },
         data(): {
+            no_reviews: boolean,
+            filter_zero: boolean,
+            all_stars: boolean,
+            all_media: boolean,
             error: string,
             exchanging: boolean,
             seen_review: boolean,
@@ -334,11 +331,16 @@
             filter_four: boolean,
             filter_five: boolean,
             filter_images: boolean,
+            both_reviews: boolean,
             filter_video: boolean,
             cart_price: number,
         } { return {
+            all_stars: true,
+            all_media: true,
             exchanging: false,
             seen_review: false,
+            filter_zero: true,
+            no_reviews: true,
             in_wishlist: false,
             currentResource: {} as Resource,
             cart_price: 0,
@@ -356,8 +358,8 @@
             filter_five: true,
             filter_four: true,
             filter_images: true,
-            my_reviews: false,
-            me_reviews: false,
+            my_reviews: true,
+            me_reviews: true,
             filter_three: true,
             filter_two: true,
             filter_video: true,
@@ -367,12 +369,22 @@
             rating: 0,
             review: -1,
             viewing_sellers: false,
+            both_reviews: true,
             editing: false,
             rating_error: false,
             video: new File([''], ''),
             image: new File([''], ''),
         }},
         methods: {
+            check_all_reviews(): void {
+                this.both_reviews = this.me_reviews && this.my_reviews 
+            },
+            check_all_stars(): void {
+                this.all_stars = this.filter_zero && this.filter_three && this.filter_one && this.filter_two && this.filter_five && this.filter_four 
+            },
+            check_all_media(): void {
+                this.all_media = this.filter_images && this.filter_video && this.no_reviews
+            },
             async exchange(): Promise<void> {
                 if (this.seller === -1) {
                     this.viewing_sellers = true
@@ -419,36 +431,6 @@
                         return
                     } else {
                         window.location.href = `/fast-checkout/${this.cart_resource.resource}`
-                    }
-                })
-            },
-            style_nav(): void {
-                nextTick(() => {
-                    let line: HTMLHRElement = document.getElementById('separator') as HTMLHRElement
-                    let plus: HTMLParagraphElement = document.getElementById('plus') as HTMLParagraphElement
-                    let minus: HTMLParagraphElement = document.getElementById('minus') as HTMLParagraphElement
-                    if (!line) return
-                    if (this.cart_resource.number === 0) {
-                        if (!plus) return
-                        line.style.display = 'none'
-                        plus.style.borderTopRightRadius = '0.4rem'
-                        plus.style.borderBottomRightRadius = '0.4rem'
-                    } else {
-                        const resource = this.allResources.find(resource => resource.id === this.cart_resource.resource)
-                        if (!resource || !minus) return
-                        if (parseFloat(resource.stock.toString()) !== this.cart_resource.number) {
-                            if (!plus) return
-                            line.style.display = 'block'
-                            line.style.width = '0.1rem'
-                            plus.style.borderTopRightRadius = '0rem'
-                            plus.style.borderBottomRightRadius = '0rem'
-                            minus.style.borderTopLeftRadius = '0rem'
-                            minus.style.borderBottomLeftRadius = '0rem'
-                        } else {
-                            line.style.display = 'none'
-                            minus.style.borderTopLeftRadius = '0.4rem'
-                            minus.style.borderBottomLeftRadius = '0.4rem'
-                        }
                     }
                 })
             },
@@ -509,7 +491,6 @@
                         if (cartResource.resource === resource.id) {
                             this.cart_resource = cartResource
                             this.seller = cartResource.resource
-                            this.style_nav()
                             return
                         } 
                     })
@@ -521,7 +502,6 @@
                         number: 0
                     }
                 }
-                this.style_nav()
                 useUserStore().updateCart(data)
             },
             async update_cart_db(method: string, cart_number: number, resource: number): Promise<void> {
@@ -893,25 +873,34 @@
                     reviews.push(...resource.reviews)
                 )
                 reviews = reviews.filter(review => {
-                    if (this.filter_one && parseFloat(review.rating.toString()) === 1 
-                        || this.filter_two && parseFloat(review.rating.toString()) === 2
-                        || this.filter_three && parseFloat(review.rating.toString()) === 3
-                        || this.filter_four && parseFloat(review.rating.toString()) === 4
-                        || this.filter_five && parseFloat(review.rating.toString()) === 5
-                        || (this.filter_images && review.image !== null)
-                        || (this.filter_video && review.video !== null)
+                    if (
+                        (   this.all_stars || 
+                            (   (this.filter_one && parseFloat(review.rating.toString()) === 1)
+                            || (this.filter_zero && parseFloat(review.rating.toString()) === 0)
+                            || (this.filter_two && parseFloat(review.rating.toString()) === 2)
+                            || (this.filter_three && parseFloat(review.rating.toString()) === 3)
+                            || (this.filter_four && parseFloat(review.rating.toString()) === 4)
+                            || (this.filter_five && parseFloat(review.rating.toString()) === 5)
+                            )
+                        )
+                        && (
+                            this.all_media || 
+                            (   (this.filter_images && (review.image !== null))
+                                || (this.filter_video && (review.video !== null))
+                                || (this.no_reviews && ((review.image === null) && review.video === null))
+                            )
+                        )
+                        && (
+                            this.both_reviews || 
+                            (   (this.me_reviews && (this.allResources.find(resource => resource.id === review.resource)))
+                                || (this.my_reviews && (review.user === this.user.id))
+                            )
+                        )
                     ) {
                         return true
                     }
                     return false
                 })
-                if (this.my_reviews) {
-                    reviews = reviews.filter(review => review.user === this.user.id)
-                }
-                if (this.me_reviews) {
-                    const my_resources = this.allResources.filter(resource => resource.user === this.user.id).map(resource => resource.id)
-                    reviews = reviews.filter(review => my_resources.includes(review.resource))
-                }
                 if (this.sort_by === 'positive' || this.sort_by === 'negative') {
                     reviews = reviews.sort((review1, review2) => review1.id - review2.id)
                         return this.reviews_ordered(reviews)
@@ -1000,11 +989,33 @@
                 if (this.seller !== -1) {
                     return this.allResources.find(resource => resource.id === this.seller) as Resource
                 }
-                const window_location: string[] = window.location.href.split('/')
                 return this.allResources[0]
             },
         },
         watch: {
+            both_reviews(): void {
+                if (this.both_reviews) {
+                    this.me_reviews = true
+                    this.my_reviews = true
+                }
+            },
+            all_stars(): void {
+                if (this.all_stars) {
+                    this.filter_one = true
+                    this.filter_zero = true
+                    this.filter_two = true
+                    this.filter_three = true
+                    this.filter_four = true
+                    this.filter_five = true
+                }
+            },
+            all_media(): void {
+                if (this.all_media) {
+                    this.filter_images = true
+                    this.filter_video = true
+                    this.no_reviews = true
+                }
+            },
             async seller(new_seller: number): Promise<void> {
                 if (new_seller !== -1 && this.buying_now) {
                     this.buy_now()
@@ -1092,7 +1103,6 @@
                 this.get_all_reviews()
             },
             allResources(): void {
-                this.get_all_reviews()
                 if (Object.keys(this.user).length > 0) {
                     this.updateWishlist(this.user.wishlist)
                     this.get_cart()
@@ -1103,6 +1113,7 @@
                         }
                     }
                 }
+                this.get_all_reviews()
             },
             all_reviews(): void {
                 this.scrollReviewsIntoView()
@@ -1122,46 +1133,65 @@
                     
                 }
             },
+            filter_zero(): void {
+                this.get_all_reviews()
+                this.scrollReviewsIntoView()
+                this.check_all_stars()
+            },
             filter_one(): void {
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()
+                this.check_all_stars()
             },
             filter_two(): void {
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()
+                this.check_all_stars()
             },
             filter_three(): void {
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()
+                this.check_all_stars()
             },
             filter_four(): void {
                 this.get_all_reviews()
+                this.check_all_stars()
                 this.scrollReviewsIntoView()
             },
             filter_five(): void {
                 this.get_all_reviews()
+                this.check_all_stars()
                 this.scrollReviewsIntoView()
             },
             filter_images(): void {
                 this.get_all_reviews()
+                this.check_all_media()
                 this.scrollReviewsIntoView()
             },
             filter_video(): void {
+                this.check_all_media()
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()
             },
             my_reviews(): void {
+                this.check_all_reviews()
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()
             },
             me_reviews(): void {
+                this.check_all_reviews()
+                this.get_all_reviews()
+                this.scrollReviewsIntoView()
+            },
+            no_reviews(): void {
+                this.check_all_media()
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()
             }
         },
         mounted(): void {
-            this.style_nav()
             this.fill_stars()
+            this.get_all_reviews()
             this.buying_now = false
         },
     })
@@ -1182,10 +1212,14 @@
         padding-bottom: 1rem;
         padding-left: 1rem;
         gap: 3rem;
-        max-height: 100vh;
+        height: 85.7vh;
         overflow-y: auto;
         padding-right: 1rem;
         position: relative;
+    }
+
+    #dark #resource-view {
+        color: white;
     }
 
     #reviews {
@@ -1253,6 +1287,10 @@
     #est-del {
         color: rgb(40, 39, 39);
     }
+    
+    #dark #est-del {
+        color: rgb(233, 233, 233);
+    }
 
     #add-review, #save-review {
         font-size: 1rem !important;
@@ -1286,6 +1324,14 @@
         padding: 0.4rem;
         height: 100%;
         overflow-y: auto;
+    }
+
+    #dark #desc, #dark #resource-cart div {
+        color: black;
+    }
+
+    #dark #total {
+        color: white !important;
     }
 
     #resource-cart {
@@ -1745,20 +1791,56 @@
     #filter-options {
         display: flex;
         flex-direction: column;
-        align-items: center;
         background-color: white;
         border-radius: 0.4rem;
         position: absolute;
         top: 2.5rem;
-        left: 0.1rem;
+        left: -11.8rem;
+        border: 0.01rem solid #d9d9d9;
+        gap: 0.5rem;
+        width: 19.2rem;
+        z-index: 2;
     }
 
     .filter-item {
         display: flex;
-        align-items: center;
+        flex-direction: column;
         padding: 0.5rem;
         padding-left: 0.7rem;
         padding-right: 0.7rem;
+        gap: 0.5rem;
+    }
+
+    .row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .datum {
+        background-color: #0DCAF0;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        min-width: 1rem;
+        text-align: center;
+    }
+
+    .datum:hover {
+        background-color: #177183;
+        cursor: pointer;
+    }
+
+    .not {
+        background-color: darkgray !important;
+    }
+
+    #dark .datum {
+        background-color: black;
+        color: white;
+    }
+
+    #dark .datum:hover {
+        background-color: darkgray;
     }
 
     .border-top {
@@ -1771,11 +1853,6 @@
         border-bottom-left-radius: 0.4rem;
     }
 
-    .filter-item:hover {
-        background-color: rgb(0, 120, 215);
-        color: white;
-    }
-
     #filter-right {
         display: flex;
         gap: 2rem;
@@ -1785,23 +1862,34 @@
         color: black;
     }
 
-    #cart {
-        background-color: #D9D9D9 !important;
+    #cart-total-section {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        border-radius: 0.8rem !important;
-        height: 1.4rem;
-        padding-right: 0.3rem !important;
+        gap: 0.5rem;
+        background: transparent !important;
+    }
+    
+    #cart {
+        display: flex;
+        background-color: #D9D9D9 !important;
+        padding-left: 0.4rem !important;
+        padding-right: 0.4rem !important;
+        padding-top: 0.3rem !important;
+        padding-bottom: 0.3rem !important; 
+    }
+
+    #cart-total {
+        margin: auto;
+        width: 100%;
     }
 
     #cart-toggle {
         display: flex;
         padding: 0 !important;
-        margin-left: auto;
-        background-color: transparent !important;
-        width: 3.4rem !important;
         justify-content: center;
-        align-items: center;
+        /* width: 3rem !important; */
+        background-color: transparent !important;
     }
 
     #cart-toggle p {
@@ -1809,48 +1897,60 @@
     }
 
     #cart-toggle #plus {
-        padding-right: 0.4rem;
-        padding-left: 0.4rem;
-        background-color: white !important;
+        width: 50%;
         border-top-left-radius: 0.4rem;
         border-bottom-left-radius: 0.4rem;
+        background-color: white !important;
+        /* width: 1.5rem !important; */
     }
+
+     #cart-toggle #minus {
+        width: 50%;
+        border-top-right-radius: 0.4rem;
+        border-bottom-right-radius: 0.4rem;
+        background-color: white !important;
+    }
+
+    #cart-toggle #plus:hover, #cart-toggle #minus:hover {
+        background-color: darkgray !important;
+    } 
 
     hr {
         border: none;
         height: 1.7rem;
         width: 0.01rem;
-        background-color: black;
+        background-color: black !important;
     }
 
-    #cart-toggle #minus {
-        padding-right: 0.4rem;
-        background-color: white !important;
-        padding-left: 0.4rem;
-        border-top-right-radius: 0.4rem;
-        border-bottom-right-radius: 0.4rem;
+    #minus i {
+        color: red !important;
     }
 
-    #cart-toggle #plus:hover, #cart-toggle #minus:hover {
-        background-color: darkgray !important;
-    }
-
-    #cart-total {
-        margin: auto;
-    }
 
     #total {
         background-color: transparent !important;
         padding: 0 !important;
     }
 
-    #cart-total-section {
-        background-color: transparent !important;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
+    .round-border {
+        border-top-left-radius: 0.3rem;
+        border-bottom-left-radius: 0.3rem;
     }
+
+    .round-plus {
+        border-top-right-radius: 0.3rem;
+        border-bottom-right-radius: 0.3rem;
+    }
+
+    #minus {
+        border-top-right-radius: 0.3rem;
+        border-bottom-right-radius: 0.3rem;
+    }
+
+    #plus {
+        border-top-left-radius: 0.3rem;
+        border-bottom-left-radius: 0.3rem;
+    } 
 
     #buynow {
         background-color: gold !important;
@@ -1858,5 +1958,9 @@
 
     #buynow:hover {
         background-color: rgb(185, 160, 22) !important;
+    }
+
+    #dark #view-sellers, #dark #details .data, #dark #filtering-section {
+        color: black;
     }
 </style>
