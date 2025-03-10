@@ -18,6 +18,7 @@ from transformers import BlenderbotTokenizer, BlenderbotForConditionalGeneration
 
 sentiment_analysis_bert = pipeline("text-classification", model="nlptown/bert-base-multilingual-uncased-sentiment")
 semantic_search_model = SentenceTransformer("all-MiniLM-L6-v2") # loading model
+bert = pipeline("text-classification", model="nlptown/bert-base-multilingual-uncased-sentiment", max_length=512, truncation=True)
 
 # https://huggingface.co/docs/transformers/en/model_doc/blenderbot
 chatbot_tokeniser = BlenderbotTokenizer.from_pretrained("facebook/blenderbot-400M-distill") 
@@ -119,7 +120,6 @@ def update_seller_rating(user: User) -> None:
     """Ensuring seller rating is defined based on sentiment of reviews"""
     reviews = list(Review.objects.filter(resource__user__id=user.id).values_list('review', flat=True))
     # https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment
-    bert = pipeline("text-classification", model="nlptown/bert-base-multilingual-uncased-sentiment")
     stars = list(int(review['label'][0]) for review in bert(reviews))
     if len(stars) == 0:
         user.rating = 0

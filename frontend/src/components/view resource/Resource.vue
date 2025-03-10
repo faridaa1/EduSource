@@ -175,26 +175,26 @@
             <div id="media" v-if="addingReview">
                 <div id="image">
                     <p>Image</p>
-                    <input id="image1" type="file" accept=".png" @change="show_image">
+                    <input :disabled="api" id="image1" type="file" accept=".png" @change="show_image">
                     <label for="image1" class="media-square">
                         <i v-if="image.name === ''" class="bi bi-plus-lg"></i>
                         <img id="img" alt="image1">
-                        <button v-if="!(image.name === '')" @click="remove_image"><i class="bi bi-x-lg delete"></i></button>
+                        <button :disabled="api" v-if="!(image.name === '')" @click="remove_image"><i class="bi bi-x-lg delete"></i></button>
                     </label>
                 </div>
                 <div id="video">
                     <p>Video</p>
-                    <input id="video1" type="file" accept=".mp4" @change="(event: Event) => show_video(event, 0)">
+                    <input :disabled="api" id="video1" type="file" accept=".mp4" @change="(event: Event) => show_video(event, 0)">
                     <label for="video1" class="media-square">
                         <i v-if="video.name === ''" class="bi bi-plus-lg"></i>
                         <video controls id="vid"></video>
-                        <button v-if="!(video.name === '')" @click="(event: Event) => remove_video(event,0)"><i class="bi bi-x-lg delete"></i></button>
+                        <button :disabled="api" v-if="!(video.name === '')" @click="(event: Event) => remove_video(event,0)"><i class="bi bi-x-lg delete"></i></button>
                     </label>
                 </div>
             </div>
             <div id="buttons" v-if="addingReview">
-                <button id="save-review" @click="save_review">Save Review</button>
-                <button id="delete-review" @click="addingReview = false">Cancel</button>
+                <button :disabled="api" id="save-review" @click="save_review">Save Review</button>
+                <button :disabled="api" id="delete-review" @click="addingReview = false">Cancel</button>
             </div>
         </div>
         <div id="reviews">
@@ -256,33 +256,33 @@
                 <div id="media" v-if="editing && editing_review === review.id">
                     <div id="image">
                         <p>Image</p>
-                        <input id="image1" type="file" accept=".png" @change="show_image">
+                        <input :disabled="api" id="image1" type="file" accept=".png" @change="show_image">
                         <label for="image1" class="media-square">
                             <i v-if="image.name === ''" class="bi bi-plus-lg"></i>
                             <img id="img" alt="image1" :src="`http://localhost:8000${review.image}`">
-                            <button v-if="!(image.name === '')" @click="remove_image"><i class="bi bi-x-lg delete"></i></button>
+                            <button :disabled="api" v-if="!(image.name === '')" @click="remove_image"><i class="bi bi-x-lg delete"></i></button>
                         </label>
                     </div>
                     <div id="video">
                         <p>Video</p>
-                        <input id="video1" type="file" accept=".mp4" @change="(event: Event) => show_video(event,1)">
+                        <input :disabled="api" id="video1" type="file" accept=".mp4" @change="(event: Event) => show_video(event,1)">
                         <label for="video1" class="media-square">
                             <i v-if="video.name === ''" class="bi bi-plus-lg"></i>
                             <video controls id="vid1" :src="`http://localhost:8000${review.video}`"></video>
-                            <button v-if="!(video.name === '')" @click="(event: Event) => remove_video(event,1)"><i class="bi bi-x-lg delete"></i></button>
+                            <button :disabled="api" v-if="!(video.name === '')" @click="(event: Event) => remove_video(event,1)"><i class="bi bi-x-lg delete"></i></button>
                         </label>
                     </div>
                 </div>
                 <div v-if="review.user === user.id" id="edit-review">
-                    <button v-if="!editing || editing && editing_review !== review.id" class="edit" @click="edit_review(review)"><i class="bi bi-pencil-fill"></i></button>
-                    <button v-if="editing && editing_review === review.id" class="save" @click="save_edited_review(review)"><i class="bi bi-floppy-fill"></i></button>
-                    <button v-if="editing && editing_review === review.id" class="rewind" @click="close_review(review)"><i class="bi bi-arrow-counterclockwise"></i></button>
-                    <button class="trash" @click="delete_review(review)"><i class="bi bi-trash3-fill"></i></button>
+                    <button :disabled="api" v-if="!editing || editing && editing_review !== review.id" class="edit" @click="edit_review(review)"><i class="bi bi-pencil-fill"></i></button>
+                    <button :disabled="api" v-if="editing && editing_review === review.id" class="save" @click="save_edited_review(review)"><i class="bi bi-floppy-fill"></i></button>
+                    <button :disabled="api" v-if="editing && editing_review === review.id" class="rewind" @click="close_review(review)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                    <button :disabled="api" class="trash" @click="delete_review(review)"><i class="bi bi-trash3-fill"></i></button>
                 </div>
             </div>
-        </div>
-        <div v-if="error!==''">
-            <Error :message="error" @close-error="error=''" />
+            <div v-if="error!==''">
+                <Error :message="error" @close-error="error=''" />
+            </div>
         </div>
     </div>
 </template>
@@ -299,6 +299,7 @@
     export default defineComponent({
         components: { Stars, ViewSellers, Error },
         data(): {
+            api: boolean,
             no_reviews: boolean,
             filter_zero: boolean,
             all_stars: boolean,
@@ -344,6 +345,7 @@
             in_wishlist: false,
             currentResource: {} as Resource,
             cart_price: 0,
+            api: false,
             seller: -1,
             cart_resource: {
                 id: -1,
@@ -592,6 +594,7 @@
                 })
             },
             async delete_review(review: Review) {
+                this.api = true
                 const response: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/review/${review.id}/`, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -607,6 +610,7 @@
                 useResourcesStore().updateResource(resource.resource)
                 useUsersStore().updateUsers(resource.users)
                 this.fill_stars()
+                this.api = false
             },
             to_date(date: string): string {
                 const full_date: Date = new Date(date) 
@@ -726,6 +730,7 @@
                 data.append('image', this.image)
                 data.append('video', this.video)
                 data.append('old_resource', review.resource.toString())
+                this.api = true
                 let savedReview: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/edit-review/${review.id}/${seller}/`, {
                     method: 'POST',
                     credentials: 'include',
@@ -742,6 +747,7 @@
                 useResourcesStore().editResource(reviewData.old_resource, reviewData.new_resource)
                 useUsersStore().updateUsers(reviewData.users)
                 this.close_review(review)
+                this.api = false
             },
             async save_review(): Promise<void> {
                 const title: HTMLInputElement = document.getElementById('review-title') as HTMLInputElement
@@ -785,6 +791,7 @@
                 data.append('description', description.value)
                 data.append('image', this.image)
                 data.append('video', this.video)
+                this.api = true
                 let savedReview: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/review/${seller}/`, {
                     method: 'POST',
                     credentials: 'include',
@@ -797,6 +804,7 @@
                 useResourcesStore().updateResource(resource.resource)
                 useUsersStore().updateUsers(resource.users)
                 this.addingReview = false
+                this.api = false
             },
             show_potential_rating(event: Event): void {
                 let star: HTMLElement = event.target as HTMLElement
@@ -1627,6 +1635,8 @@
         background-color: #D9D9D9;
         padding: 0.5rem;
         border-radius: 0.5rem;
+        height: 6rem;
+        overflow-y: auto;
     }
 
     .review-rating {
@@ -1716,6 +1726,10 @@
 
     #reviews #media {
         margin-top: 1rem;
+    }
+
+    textarea {
+        resize: none;
     }
 
     .review-review-desc {
@@ -1890,6 +1904,11 @@
         justify-content: center;
         /* width: 3rem !important; */
         background-color: transparent !important;
+    }
+
+    button:disabled, button:disabled:hover {
+        cursor: not-allowed !important;
+        background-color: darkgray !important;
     }
 
     #cart-toggle p {
