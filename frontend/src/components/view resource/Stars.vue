@@ -64,9 +64,6 @@
     import type { Resource, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     export default defineComponent({
-        data(): {
-        } { return {
-        }},
         methods: {
             percent(rating: number): number {
                 let sum_of_rating: number = 0
@@ -78,6 +75,7 @@
                             sum_of_rating +=1
                         }
                 })})
+                console.log(number_of_reviews)
                 if (number_of_reviews === 0) return 0
                 return (sum_of_rating/number_of_reviews) * 100
             },
@@ -107,14 +105,14 @@
             },
             allResources(): Resource[] {
                 const window_location: string[] = window.location.href.split('/')
-                const name: string = window_location[window_location.length-1]
-                return useResourcesStore().resources.filter(resource => resource.name === name)
+                const id: number = parseInt(window_location[window_location.length-1])
+                const resource = useResourcesStore().resources.filter(resource => resource.id === id)
+                if (!resource) return []
+                if (resource[0].unique) return resource
+                return useResourcesStore().resources.filter(res => resource[0].name === resource[0].name && resource[0].author && res.author && !res.unique)
             },
         },
         watch: {
-            user(new_user: User): void {
-                // this.user = new_user
-            },
             async resource(resource: Resource): Promise<void> {
                 this.fill_stars()
             }
