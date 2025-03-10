@@ -819,8 +819,10 @@ def recommendations(request: HttpRequest, user: int) -> JsonResponse:
     # https://huggingface.co/sentence-transformers
     dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
 
-    # data preprocessing
-    dataset: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('name', flat=True))
+    # data preprocessing - consider resource, name, subject and description
+    resources = Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('description', 'name', 'subject')
+    dataset: list = [ " ".join(resource) for resource in resources ]
+
     # ensuring values in lists are unique
     values_included: list = []
     new_dataset_resources: list = []
