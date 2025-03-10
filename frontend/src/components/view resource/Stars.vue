@@ -75,7 +75,6 @@
                             sum_of_rating +=1
                         }
                 })})
-                console.log(number_of_reviews)
                 if (number_of_reviews === 0) return 0
                 return (sum_of_rating/number_of_reviews) * 100
             },

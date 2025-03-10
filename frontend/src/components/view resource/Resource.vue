@@ -7,7 +7,7 @@
             <img id="resource-image" :src="`http://localhost:8000/${(resource as Resource).image1}`" :alt="`${(resource as Resource).type}`">
             <div id="resource-price-and-rating">
                 <div>{{ Object.keys(user).length === 0 ? unauth_currency(resource as Resource) : '' }}{{ (resource as Resource).price }}</div>
-                <div id="rating">
+                <div id="rating" @click="scrollReviewsIntoView()">
                     <i id="one" class="bi bi-star-fill"></i>
                     <i id="two" class="bi bi-star-fill"></i>
                     <i id="three" class="bi bi-star-fill"></i>
@@ -20,7 +20,7 @@
                 <span v-if="total_ratings === 0">0 ratings</span>
                 <div id="add-review" v-if="!written_review && total_ratings === 0" @click="add_review">Be the first to write a review</div>
                 <div id="add-review" v-if="Object.keys(user).length > 0 && total_ratings > 0 && possible_sellers(false).length > 0" @click="add_review">Add Review</div>
-                <div id="est-del">Estimated: {{ parseFloat((resource as Resource).estimated_delivery_time.toString()) }} {{ (resource as Resource).estimated_delivery_units }}</div>
+                <div id="est-del">Estimated: {{ parseFloat((resource as Resource).estimated_delivery_time.toString()) }} {{ (resource as Resource).estimated_delivery_units }}{{ (resource as Resource).estimated_delivery_time !== 1 ? 's' : '' }}</div>
             </div>
         </div>
         <div id="resource-description">
@@ -288,6 +288,9 @@
                 </div>
             </div>
         </div>
+        <div v-if="error!==''">
+            <Error :message="error" @close-error="error=''" />
+        </div>
     </div>
 </template>
 
@@ -299,9 +302,11 @@
     import { useResourcesStore } from '@/stores/resources';
     import Stars from './Stars.vue';
     import { useUsersStore } from '@/stores/users';
+    import Error from '../user experience/error/Error.vue';
     export default defineComponent({
-        components: { Stars, ViewSellers },
+        components: { Stars, ViewSellers, Error },
         data(): {
+            error: string,
             exchanging: boolean,
             seen_review: boolean,
             buying_now: boolean,
@@ -343,6 +348,7 @@
                 resource: -1,
                 number: 0
             },
+            error: '',
             all_reviews: [],
             buying_now: true,
             toggle_filter: false,
@@ -371,6 +377,10 @@
                 if (this.seller === -1) {
                     this.viewing_sellers = true
                     this.exchanging = true
+                    return
+                }
+                if ((this.allResources.find(resource => resource.id === this.seller) as Resource).user === this.user.id) {
+                    this.error = 'You cannot exchange resources with yourself. Change the seller if you can.'
                     return
                 }
                 if (Object.keys(this.resource).length > 0) {
@@ -1213,12 +1223,17 @@
         margin-left: 0.3rem;
     }
 
+    #rating:hover {
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
     #add-review {
         color: #789ECA;
     }
 
     #dark #add-review {
-        color: white;
+        color: rgb(206, 206, 206);
     }
 
     #est-del, #add-review {
