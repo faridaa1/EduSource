@@ -19,11 +19,13 @@ import Exchange from '@/components/authenticated user/exchange/Exchange.vue'
 import Exchanges from '@/components/authenticated user/exchange/Exchanges.vue'
 import CompareResources from '@/components/search/CompareResources.vue'
 import Help from '@/components/help/Help.vue'
+import ChatBot from '@/components/help/ChatBot.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/', name: 'home', component: Home },
+    { path: '/chatbot', name: 'chatbot', component: ChatBot },
     { path: '/settings', name: 'settings', component: Settings },
     { path: '/help', name: 'help', component: Help },
     { path: '/details', name: 'details', component: Details },

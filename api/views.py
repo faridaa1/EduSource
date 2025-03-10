@@ -14,10 +14,13 @@ from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 sentiment_analysis_bert = pipeline("text-classification", model="nlptown/bert-base-multilingual-uncased-sentiment")
 semantic_search_model = SentenceTransformer("all-MiniLM-L6-v2") # loading model
-
+# https://huggingface.co/distilbert/distilgpt2?library=transformers
+chatbot_tokeniser = AutoTokenizer.from_pretrained("microsoft/DialoGPT-medium") 
+chatbot_model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-medium")
 
 def signup(request: HttpRequest) -> HttpResponse:
     """Handling user sign up"""
@@ -961,4 +964,21 @@ def delete_account(request: HttpRequest, user: int) -> JsonResponse:
     if request.method == 'DELETE':
         user: User = get_object_or_404(User, id=user)
         user.delete()
+    return JsonResponse({})
+
+history = []
+def chatbot(request: HttpRequest, user: int) -> JsonResponse:
+    if user == '-1':
+        # deal with unauthenticated user
+        i =0
+    else: 
+        user: User = get_object_or_404(User, id=user)
+    user_input = json.loads(request.body)
+    history.append(user_input)
+    tokeniser_output = chatbot_tokeniser(user_input,return_tensors='pt')
+    model_generated_ouput = chatbot_model.generate(**tokeniser_output)
+    response = chatbot_tokeniser.decode(model_generated_ouput[0], temperature=0.8, max_length=1000, skip_special_tokens=True)
+    history.append(response)
+    print(history)
+    print('response=',response)
     return JsonResponse({})

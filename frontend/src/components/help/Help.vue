@@ -2,7 +2,7 @@
     <div id="help-container">
         <div class="item">
             <p id="line">Need live support? Need product recommendations? Speak to our ChatBot below:</p>
-            <button>Start Chatting Now</button>
+            <button @click="chatbot">Start Chatting Now</button>
         </div>
         <div id="faqs">
             <div>Frequently Asked Questions</div>
@@ -124,6 +124,9 @@
             error: ''
         }},
         methods: {
+            chatbot(): void {
+                window.location.href = '/chatbot'
+            },
             async submit_feedback(): Promise<void> {
                 this.feedback_sent = false
                 let send_feedback: Response = await fetch(`http://localhost:8000/api/feedback/`, {

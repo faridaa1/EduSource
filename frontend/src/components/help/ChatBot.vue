@@ -1,11 +1,11 @@
 <template>
-    <div id="message-container" v-if="user && other_user">
+    <div id="message-container">
         <div id="heading">
-            <div id="back" @click="back">
+            <div id="back" @click="back" v-if="Object.keys(user).length > 0">
                 <i class="bi bi-arrow-left-circle-fill"></i>
                 <p id="back-msg">Messages</p>
             </div>
-            <p id="header" @click="view_profile(false)">{{ other_user.username }}</p>
+            <p id="header">ChatBot</p>
         </div>
         <div id="messages" v-if="messages_set && messages && messages.messages && Object.keys(messages.messages).length > 0">
             <div id="message-area" :class="message.user === user.id ? 'right end' : 'left'" v-for="message in messages.messages.sort((a,b) => {return new Date(a.sent).getTime() - new Date(b.sent).getTime() })">
@@ -28,9 +28,6 @@
             <Error :message="error" @close-error="error = ''" />
         </div>
     </div>
-    <div v-else>
-        <Loading />
-    </div>
 </template>
 
 <script lang="ts">
@@ -50,7 +47,7 @@
         } { return {
             error: '',
             unread_index: -1,
-            messages_set: false,
+            messages_set: true,
             messages: {} as Messages
         }},
         methods: {
@@ -95,33 +92,12 @@
             view_profile(my_profile: boolean): void {
                 window.location.href = my_profile ? '/listings' : `/seller/${this.other_user.username}`
             },
-            async update_last_seen(): Promise<void> {
-                this.get_unread_message_index()
-                let messageResponse: Response = await fetch(`http://localhost:8000/api/message/${this.messages.id}/${this.user.id}/`, {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRFToken' : useUserStore().csrf
-                    },
-                })
-                if (!messageResponse.ok) {
-                    return
-                } 
-                let data: User[] = await messageResponse.json()
-                useUsersStore().updateUsers(data)
-                useUserStore().saveUser(this.users.find(u => u.id === this.user.id) as User)
-                const messages: Messages | undefined = this.user.messages.find(message => message.id === this.messages.id)
-                if (messages) {
-                    this.messages = messages
-                } 
-                this.scroll()
-            },
             clear(): void {
                 const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
                 if (!message) return
                 // validation 
                 message.setCustomValidity('')
-                message.reportValidity()
+                // message.reportValidity()
             },
             async send_message(): Promise<void> {
                 const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
@@ -135,13 +111,12 @@
                 }
                 this.clear()
                 if (!this.messages_set) {
-                    this.get_messages()
                     this.messages_set = true
                     return
                 }
                 const message_value = message.value
                 message.value = ''
-                let messageResponse: Response = await fetch(`http://localhost:8000/api/message/${this.messages.id}/${this.user.id}/`, {
+                let messageResponse: Response = await fetch(`http://localhost:8000/api/chatbot/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
@@ -162,39 +137,6 @@
                 if (messages) {
                     this.messages = messages
                 } 
-                this.update_last_seen()
-            },
-            async create_messages(): Promise<void> {
-                if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
-                let messagesResponse: Response = await fetch(`http://localhost:8000/api/messages/${this.user.id}/${this.other_user.id}/`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRFToken' : useUserStore().csrf,
-                        'Content-Type' : 'application/json'
-                    },
-                })
-                if (!messagesResponse.ok) {
-                    this.error = 'Error creating message. Please refresh page.'
-                    return
-                } 
-                this.error = ''
-                let data: User[] = await messagesResponse.json()
-                useUsersStore().updateUsers(data)
-                useUserStore().saveUser(this.users.find(u => u.id === this.user.id) as User)
-                const messages: Messages | undefined = this.user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id))
-                if (messages) {
-                    this.messages = messages
-                } 
-                this.messages_set = true
-                this.send_message()
-            },
-            get_messages(): void {
-                if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
-                if (Object.keys(this.user.messages).length === 0 || !(this.user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id)))) {
-                    this.create_messages()
-                    return
-                }
             },
             get_unread_message_index(): void {
                 for (let message of this.messages.messages) {
@@ -238,7 +180,6 @@
                     if (message) {
                         this.messages = message
                         this.messages_set = true
-                        this.update_last_seen()
                         return
                     }
                 }
@@ -249,7 +190,6 @@
                     if (message) {
                         this.messages = message
                         this.messages_set = true
-                        this.update_last_seen()
                         return
                     }
                 }
@@ -264,7 +204,6 @@
                 if (message) {
                     this.messages = message
                     this.messages_set = true
-                    this.update_last_seen()
                     return
                 }
             }
