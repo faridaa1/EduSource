@@ -834,9 +834,11 @@ def recommendations(request: HttpRequest, user: int) -> JsonResponse:
     # determine embeddings
     embeddings = semantic_search_model.encode(new_dataset)
     search_history: list = list(SearchHistory.objects.get(user=user).search_item.all().order_by('id').values_list('search', flat=True))
-    if len(search_history) == 0:
+    subject_preferences: list = list(user.subject.all().order_by('id').values_list('name', flat=True))
+    history = search_history + subject_preferences
+    if len(history) == 0:
         return JsonResponse([], safe=False)
-    search_embeddings = semantic_search_model.encode(search_history)
+    search_embeddings = semantic_search_model.encode(history)
 
     # generate similairty matrix
     similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
