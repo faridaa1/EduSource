@@ -70,7 +70,7 @@
             </div>
             <div class="item">
                 <div class="heading" @click="five=!five">
-                    <p>How do I do a return?</p>
+                    <p>How do I start a return?</p>
                     <i v-if="five" class="bi bi-arrow-down-circle-fill"></i>
                     <i v-if="!five" class="bi bi-arrow-up-circle-fill"></i>
                 </div>

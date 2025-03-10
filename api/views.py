@@ -14,13 +14,14 @@ from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import BlenderbotTokenizer, BlenderbotForConditionalGeneration
 
 sentiment_analysis_bert = pipeline("text-classification", model="nlptown/bert-base-multilingual-uncased-sentiment")
 semantic_search_model = SentenceTransformer("all-MiniLM-L6-v2") # loading model
-# https://huggingface.co/distilbert/distilgpt2?library=transformers
-chatbot_tokeniser = AutoTokenizer.from_pretrained("microsoft/DialoGPT-medium") 
-chatbot_model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-medium")
+
+# https://huggingface.co/docs/transformers/en/model_doc/blenderbot
+chatbot_tokeniser = BlenderbotTokenizer.from_pretrained("facebook/blenderbot-400M-distill") 
+chatbot_model = BlenderbotForConditionalGeneration.from_pretrained("facebook/blenderbot-400M-distill")
 
 def signup(request: HttpRequest) -> HttpResponse:
     """Handling user sign up"""
@@ -966,7 +967,54 @@ def delete_account(request: HttpRequest, user: int) -> JsonResponse:
         user.delete()
     return JsonResponse({})
 
-history = []
+known_questions_and_answers = {
+    'How do I place an order?' : '''There are two ways to do this:\n
+    The first way is as follows:\n
+    \n1. Search for the item
+    \n2. Select the item
+    \n3. Select Buy Now
+    \n4. Select Place Order
+    \nThe second way is as follows\n
+    \n1. Search for the item
+    \n2. Select the item
+    \n3. Add item to Cart
+    \n4. Select Profile
+    \n5. Select Cart
+    \n6. Select Checkout
+    \n7. Select Place Order\n
+    \nI hope that helps.''',
+    'How do I exchange resources?' : '''1. Search for the Item
+    \n2. Select the item
+    \n3. Select Exchange
+    \n4. Select a resource you want to exchange
+    \nI hope that helps.''',
+    'How do I list items' : '''
+    1. Select Profile
+    \n2. Select Listings
+    \n3. Select the + within the listing container
+    \nI hope that helps''',
+    'How do I track an order?' : '''
+    1. Select Profile
+    \n2. Select Orders
+    \n3. Select Order
+    \n4. View Order Status
+    \nI hope that helps''',
+    'How do I start a return?' : '''    
+    1. Select Profile
+    \n2. Select Orders
+    \n3. Select Order
+    \n4. Select Start Return
+    \n5. Select number of items for return
+    \n6. Select Return Method
+    \n7. (Optional) Add Return Reason
+    \n8. Click Submit
+    \nI hope that helps.''',
+    'Do you provide resource recommendations?': "Of course! Start you next sentence with 'Can you provide resource recommendations for...'",
+    'Can you provide resource recommendations for': '',
+    'What is the status of order': '',
+    'Provide me with personalised recommendations': '',
+}
+
 def chatbot(request: HttpRequest, user: int) -> JsonResponse:
     if user == '-1':
         # deal with unauthenticated user
@@ -974,11 +1022,30 @@ def chatbot(request: HttpRequest, user: int) -> JsonResponse:
     else: 
         user: User = get_object_or_404(User, id=user)
     user_input = json.loads(request.body)
-    history.append(user_input)
-    tokeniser_output = chatbot_tokeniser(user_input,return_tensors='pt')
-    model_generated_ouput = chatbot_model.generate(**tokeniser_output)
-    response = chatbot_tokeniser.decode(model_generated_ouput[0], temperature=0.8, max_length=1000, skip_special_tokens=True)
-    history.append(response)
-    print(history)
-    print('response=',response)
-    return JsonResponse({})
+
+    
+    # providing responses to known questions
+    dataset: list = list(known_question for known_question in known_questions_and_answers)
+
+    # determine embeddings
+    embeddings = semantic_search_model.encode(dataset)
+    search_embeddings = semantic_search_model.encode(user_input)
+
+    # generate similairty matrix
+    similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
+    
+    # convert tensor to dictionary sorted on values (similarity)
+    list_similarity_matrix = similarity_matrix.tolist()[0]
+    search_dict = dict(zip(dataset, list_similarity_matrix))
+    sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
+    if sorted_search_dict[0][1] > 0.6:
+        print(sorted_search_dict[0][0])
+        return JsonResponse(known_questions_and_answers[sorted_search_dict[0][0]], safe=False)
+
+    try:
+        tokenised_input = chatbot_tokeniser([user_input], return_tensors='pt')
+        model_output = chatbot_model.generate(**tokenised_input)
+        response = chatbot_tokeniser.decode(model_output[0], temperature=0.8, max_length=1000, skip_special_tokens=True)
+        return JsonResponse(response, safe=False)
+    except:
+        return JsonResponse("I'm having trouble processing this. Could you make your request shorter?", safe=False)

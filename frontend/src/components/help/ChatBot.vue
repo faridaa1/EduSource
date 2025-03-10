@@ -1,28 +1,41 @@
 <template>
     <div id="message-container">
         <div id="heading">
-            <div id="back" @click="back" v-if="Object.keys(user).length > 0">
-                <i class="bi bi-arrow-left-circle-fill"></i>
-                <p id="back-msg">Messages</p>
+            <p id="header">EduBot</p>
+            <div id="front" @click="show_info=!show_info">
+                <i class="bi bi-info-circle-fill"></i>
             </div>
-            <p id="header">ChatBot</p>
         </div>
-        <div id="messages" v-if="messages_set && messages && messages.messages && Object.keys(messages.messages).length > 0">
-            <div id="message-area" :class="message.user === user.id ? 'right end' : 'left'" v-for="message in messages.messages.sort((a,b) => {return new Date(a.sent).getTime() - new Date(b.sent).getTime() })">
-                <p id="unread" v-if="message.id === unread_index"><hr>Unread Messages<hr></p>
-                <p id="unread1" v-if="new_date(message.id)">{{ convert_date(message.sent) }}</p>
-                <i @click="view_profile(false)" v-if="message.user !== user.id" class="bi bi-person-circle icon"></i>
-                <div>
-                    <p v-if="message.user === user.id" id="time">{{ String(new Date(message.sent).getHours()).padStart(2, '0') }}:{{ String(new Date(message.sent).getMinutes()).padStart(2, '0') }}</p>                    
-                    <p v-if="message.user !== user.id" id="time1">{{ String(new Date(message.sent).getHours()).padStart(2, '0') }}:{{ String(new Date(message.sent).getMinutes()).padStart(2, '0') }}</p>                    
-                    <p id="value" :class="message.user === user.id ? 'push' : ''" >{{ message.message }}</p>
-                </div>
-                <i @click="view_profile(true)" v-if="message.user === user.id" class="bi bi-person-circle icon2"></i>
+        <div id="background" v-if="show_info">
+            <div id="shown-info">
+                <p id="x" @click="show_info=false"><i class="bi bi-x-lg"></i></p>
+                <p>Hi! I am EduBot - a ChatBot designed for your assistance.</p>
+                <p>Before we get started, there are certain ways to communicate with me to get the best results.</p>
+                <p v-if="Object.keys(user).length > 0">Message 'Provide me with personalised recommendations' for personalised recommendations.</p>
+                <p>Start your message with 'Can you provide resource recommendations for...' for resource recommendations.</p>
+                <p>Start your message with 'What is the status of order...' for order tracking.</p>
+                <p>Remember: You can always come back to this message by clicking the 𝒊 next to my name.</p>
+                <p>Happy chatting!</p>
+            </div>
+        </div>
+        <div id="messages">
+            <div class="message-area">
+                <i class="bi bi-robot icon"></i>
+                <p class="value">Hi! I am EduBot. How can I help?</p>
+            </div>
+            <div class="message-area" :class="message.user === 'user' ? 'right end' : 'left'" v-for="message in messages.sort((a,b) => b.id - a.id)">
+                <i v-if="message.user !== 'user'" class="bi bi-robot icon"></i>
+                <p class="value" :class="message.user === 'user' ? 'push' : ''" >{{ message.message }}</p>
+                <i v-if="message.user === 'user'" class="bi bi-person-circle icon2"></i>
+            </div>
+            <div class="message-area left" v-if="chatbot_responding">
+                <i class="bi bi-robot icon"></i>
+                <p class="value"><i class="bi bi-three-dots"></i></p>
             </div>
         </div>
         <div id="message-box">
             <textarea @input="clear" id="message-content" placeholder="Write a message here"></textarea>
-            <button @keydown.enter="send_message" @click="send_message"><i class="bi bi-send"></i></button>
+            <button @click="send_message"><i class="bi bi-send"></i></button>
         </div>
         <div v-if="error !== ''">
             <Error :message="error" @close-error="error = ''" />
@@ -33,76 +46,38 @@
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
     import { defineComponent, nextTick } from 'vue';
-    import type { Messages, User } from '@/types';
+    import type { User } from '@/types';
     import { useUsersStore } from '@/stores/users';
-    import Loading from '@/components/user experience/loading/Loading.vue';
     import Error from '@/components/user experience/error/Error.vue';
     export default defineComponent({
-        components: { Loading, Error },
+        components: { Error },
         data(): {
+            show_info: boolean,
+            chatbot_responding: boolean,
             error: string,
-            messages: Messages,
+            messages: { id: number, user: 'user' | 'ai', message: string }[],
             messages_set: boolean,
-            unread_index: number,
+            current_id: number,
         } { return {
+            show_info: true,
             error: '',
-            unread_index: -1,
             messages_set: true,
-            messages: {} as Messages
+            chatbot_responding: false,
+            messages: [],
+            current_id: -1
         }},
         methods: {
-            to_month(month_number: number): string {
-                return month_number === 1 ? 'Jan' 
-                : month_number === 2 ? 'Feb'
-                : month_number === 3 ? 'Mar'
-                : month_number === 4 ? 'Apr'
-                : month_number === 5 ? 'May'
-                : month_number === 6 ? 'Jun'
-                : month_number === 7 ? 'Jul'
-                : month_number === 8 ? 'Aug'
-                : month_number === 9 ? 'Sep'
-                : month_number === 10 ? 'Oct'
-                : month_number === 11 ? 'Nov'
-                : 'Dec'
-            },
-            convert_date(message: string): string {
-                return `${new Date(message).getDate() } ${this.to_month(new Date(message).getMonth()+1)} ${String(new Date(message).getFullYear())}`
-            },
-            new_date(id: number): boolean {
-                let previous_id: number = -1
-                for (let message of this.messages.messages) {
-                    if (message.id === id) break
-                    previous_id += 1 
-                }
-                if (previous_id === -1) return true
-                const previous_message = this.messages.messages[previous_id]
-                const current_message = this.messages.messages[previous_id+1]
-                if (previous_message) {
-                    const current_time = new Date(current_message.sent)
-                    let date_format = new Date(previous_message.sent)
-                    if (current_time.getDate() === date_format.getDate() && current_time.getMonth() === date_format.getMonth() && current_time.getFullYear() === date_format.getFullYear()) {
-                        return false
-                    }
-                } 
-                return true
-            },
-            back(): void {
-                window.location.href = '/messages'
-            },
-            view_profile(my_profile: boolean): void {
-                window.location.href = my_profile ? '/listings' : `/seller/${this.other_user.username}`
-            },
             clear(): void {
                 const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
                 if (!message) return
                 // validation 
                 message.setCustomValidity('')
-                // message.reportValidity()
+                message.reportValidity()
             },
             async send_message(): Promise<void> {
                 const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
                 if (!message) return
-                
+
                 // validation 
                 if (message.value.trim() === '') {
                     message.setCustomValidity('Enter a message')
@@ -115,7 +90,10 @@
                     return
                 }
                 const message_value = message.value
+                this.messages.push({id: this.current_id+1, user: 'user', message: message_value})
+                this.scroll()
                 message.value = ''
+                this.chatbot_responding = true
                 let messageResponse: Response = await fetch(`http://localhost:8000/api/chatbot/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
                     method: 'POST',
                     credentials: 'include',
@@ -128,32 +106,20 @@
                 if (!messageResponse.ok) {
                     this.error = 'Error sending message. Please try again.'
                     return
-                } 
-                this.error = ''
-                let data: User[] = await messageResponse.json()
-                useUsersStore().updateUsers(data)
-                useUserStore().saveUser(this.users.find(u => u.id === this.user.id) as User)
-                const messages: Messages | undefined = this.user.messages.find(message => message.id === this.messages.id)
-                if (messages) {
-                    this.messages = messages
-                } 
-            },
-            get_unread_message_index(): void {
-                for (let message of this.messages.messages) {
-                    if (message.user === this.user.id) continue
-                    if ((this.messages.user2 === this.user.id && (new Date(message.sent).getTime() >= new Date(this.messages.user2_seen).getTime())) || (this.messages.user1 === this.user.id && (new Date(message.sent).getTime() >= new Date(this.messages.user1_seen).getTime()))) {
-                        this.unread_index = message.id
-                        return
-                    }
+                } else {
+                    this.error = ''
+                    let data: string = await messageResponse.json()
+                    this.chatbot_responding = false
+                    this.messages.push({id: this.current_id+1, user: 'ai', message: data})
+                    this.scroll()
                 }
-                this.unread_index = -1
             },
             scroll(): void {
                 nextTick(() => {
                     const messagesDiv: HTMLDivElement = document.getElementById('messages') as HTMLDivElement
                     if (messagesDiv) {
                         messagesDiv.scrollTo({ top: messagesDiv.scrollHeight })
-                    }
+                    } 
                 })
                 
             }
@@ -173,101 +139,71 @@
                 return user
             },
         },
-        watch: {
-            user(new_user: User): void {
-                if (!this.messages_set && Object.keys(this.user.messages).length > 0) {
-                    const message = this.user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id) || (message.user2 === this.user.id && message.user1 === this.other_user.id))
-                    if (message) {
-                        this.messages = message
-                        this.messages_set = true
-                        return
-                    }
-                }
-            },
-            other_user(new_user: User): void {
-                if (!this.messages_set && Object.keys(this.other_user.messages).length > 0) {
-                    const message = this.other_user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id) || (message.user2 === this.user.id && message.user1 === this.other_user.id))
-                    if (message) {
-                        this.messages = message
-                        this.messages_set = true
-                        return
-                    }
-                }
-            },
-            messages(new_messages: Messages): void {
-                this.scroll()
-            }
-        },
-        mounted(): void {
-            if (!this.messages_set && Object.keys(this.user.messages).length > 0) {
-                const message = this.user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id) || (message.user2 === this.user.id && message.user1 === this.other_user.id))
-                if (message) {
-                    this.messages = message
-                    this.messages_set = true
-                    return
-                }
-            }
-        }
     })
 </script>
 
 <style scoped>
-    #time {
-        text-align: right;
-        color: rgb(81, 80, 80);
-    }
-
-    #time1 {
-        text-align: left;
-        color: rgb(81, 80, 80);
-    }
-
     #heading {
         display: flex;
         align-items: center;
+        padding-top: 2rem;
         width: 100%;
         justify-content: space-between;
     }
 
-    #back {
+    #front {
         display: flex;
         gap: 1rem;
         font-size: 2rem;
         align-items: center;
         position: absolute;
-        margin-left: 2rem;
+        right: 0;
+        padding-right: 20rem;
     }
 
-    #back:hover {
+    #front:hover {
         cursor: pointer;
         text-decoration: underline;
     }
 
-    #back-msg {
-        font-size: 1.5rem;
-    }
-
-    #back i:hover {
+    #front i:hover {
         cursor: pointer;
         color: rgb(86, 85, 85);
     }
 
-    #dark #back i:hover {
+    #dark #front i:hover {
         color: rgb(206, 206, 206);
     }
 
-    #back i {
+    #front i {
         font-size: 1.5rem;
     }
 
     #message-container {
-        margin-top: 2rem;
+        position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
-        height: 86vh;
+        height: 89vh;
+        gap: 2rem;
     }
 
+    #background {
+        position: absolute;
+        background-color: rgb(86, 85, 85, 0.2);
+        z-index: 2;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #dark #shown-info {
+        background-color: black;
+        color: white;
+    }
+    
     #dark #message-container {
         color: white;
     }
@@ -277,13 +213,8 @@
         margin: auto;
    }
 
-   #header:hover {
-        text-decoration: underline;
-        cursor: pointer;
-   }
-
    #message-box {
-        margin-top: auto;
+        padding-top: auto;
         display: flex;
         gap: 1rem;
         align-items: center;
@@ -312,9 +243,8 @@
         padding: 1rem;
    }
 
-   #message-area {
+   .message-area {
         display: flex;
-        flex-wrap: wrap;
         width: 29rem;
         align-items: flex-end;
    }
@@ -323,7 +253,7 @@
         justify-content: end;
    }
 
-   #message-area i {
+   .message-area i {
         font-size: 2rem;
    }
 
@@ -343,7 +273,6 @@
    #messages {
         padding-right: 2rem;
         overflow-y: auto;
-        margin-top: 2rem;
         height: 38rem;
         display: flex;
         flex-direction: column;
@@ -359,33 +288,14 @@
         margin-right: auto;
    }
 
-   #messages #value {
+   #messages .value {
         align-self: center;
         max-width: 20rem;
+        word-wrap: break-word;
    }
 
    #messages .push {
         text-align: right;
-   }
-
-   #unread {
-        font-weight: bold;
-        text-align: center;
-        flex: 0 0 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1rem;
-        text-align: center;
-        gap: 1rem;
-   }
-
-   #unread1 {
-        text-align: center;
-        flex: 0 0 100%;
-        color: rgb(86, 85, 85);
-        justify-content: center;
-        margin-bottom: 1rem;
    }
 
    hr {
@@ -395,7 +305,7 @@
         width: 7rem;
    }
 
-   #dark #time, #dark #time, #dark #time1, #dark #unread, #dark #unread1 {
+   #dark #time, #dark #time, #dark #time1 {
         color: rgb(206, 206, 206);
    }
 
@@ -403,19 +313,53 @@
         background-color: rgb(206, 206, 206);
     }
 
+    #shown-info {
+        background-color: #0DCAF0;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        width: 32rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        position: relative;
+    }
+
+    #shown-info p {
+        font-size: 1.1rem;
+    }
+
+    #x {
+        color: red;
+        position: absolute;
+        right: 1rem;
+        top: 0.6rem;
+    }
+
+    #x i {
+        font-size: 1.4rem !important;
+    }
+
+    #x:hover {
+        cursor: pointer;
+        color: darkred;
+    }
+
     /* Responsive design */
     @media (max-width: 734px) {
         #messages {
             width: 20rem;
-            margin-top: 1rem;
         }
 
-        #messages #value {
+        #shown-info {
+            width: 23rem;
+        }
+
+        #messages .value {
             max-width: 10rem;
         }
 
-        #message-area {
-            width: 19rem;
+        .message-area {
+            width: 18rem;
         }
 
         #message-box textarea {
@@ -426,7 +370,7 @@
             margin-top: 1rem;
         }
 
-        #back i, #back-msg {
+        #front i, #back-msg {
             font-size: 1rem;
         }
 

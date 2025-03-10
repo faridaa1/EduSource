@@ -423,6 +423,7 @@
    #messages #value {
         align-self: center;
         max-width: 20rem;
+        word-wrap: break-word;
    }
 
    #messages .push {
