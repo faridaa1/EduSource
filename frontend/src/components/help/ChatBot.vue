@@ -6,14 +6,14 @@
                 <i class="bi bi-info-circle-fill"></i>
             </div>
         </div>
-        <div id="background" v-if="show_info">
+        <div id="background" v-if="show_info" @click="show_info=false">
             <div id="shown-info">
                 <p id="x" @click="show_info=false"><i class="bi bi-x-lg"></i></p>
                 <p>Hi! I am EduBot - a ChatBot designed for your assistance.</p>
                 <p>Before we get started, there are certain ways to communicate with me to get the best results.</p>
                 <p v-if="Object.keys(user).length > 0">Message 'Provide me with personalised recommendations' for personalised recommendations.</p>
                 <p>Start your message with 'Can you provide resource recommendations for...' for resource recommendations.</p>
-                <p>Start your message with 'What is the status of order...' for order tracking.</p>
+                <p>Start your message with 'What is the status of order [number]' for order tracking.</p>
                 <p>Remember: You can always come back to this message by clicking the 𝒊 next to my name.</p>
                 <p>Happy chatting!</p>
             </div>
@@ -25,7 +25,7 @@
             </div>
             <div class="message-area" :class="message.user === 'user' ? 'right end' : 'left'" v-for="message in messages.sort((a,b) => b.id - a.id)">
                 <i v-if="message.user !== 'user'" class="bi bi-robot icon"></i>
-                <p class="value" :class="message.user === 'user' ? 'push' : ''" >{{ message.message }}</p>
+                <p v-html="format(message.message)" class="value" :class="message.user === 'user' ? 'push' : ''" ></p>
                 <i v-if="message.user === 'user'" class="bi bi-person-circle icon2"></i>
             </div>
             <div class="message-area left" v-if="chatbot_responding">
@@ -67,6 +67,9 @@
             current_id: -1
         }},
         methods: {
+            format(data: string): string {
+                return data.replaceAll('\n','<br>')
+            },
             clear(): void {
                 const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
                 if (!message) return
@@ -263,11 +266,6 @@
 
    .icon2 {
         margin-left: 2rem;
-   }
-
-   .icon:hover, .icon2:hover {
-        color: darkgray;
-        cursor: pointer;
    }
 
    #messages {

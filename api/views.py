@@ -815,48 +815,45 @@ def order_data(item: tuple):
 
 def recommendations(request: HttpRequest, user: int) -> JsonResponse:
     user: User = get_object_or_404(User, id=user)
-    if request.method == 'GET':
-        """Defining semantic search used to return personalised recommendations"""
-        # https://huggingface.co/sentence-transformers
-        dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
+    """Defining semantic search used to return personalised recommendations"""
+    # https://huggingface.co/sentence-transformers
+    dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
 
-        # data preprocessing
-        dataset: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('name', flat=True))
-        # ensuring values in lists are unique
-        values_included: list = []
-        new_dataset_resources: list = []
-        new_dataset: list = []
-        for i in range(len(dataset)):
-            if not dataset[i] in values_included:
-                new_dataset_resources.append(dataset_resources[i])
-                new_dataset.append(dataset[i])
-                values_included.append(dataset[i])
+    # data preprocessing
+    dataset: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('name', flat=True))
+    # ensuring values in lists are unique
+    values_included: list = []
+    new_dataset_resources: list = []
+    new_dataset: list = []
+    for i in range(len(dataset)):
+        if not dataset[i] in values_included:
+            new_dataset_resources.append(dataset_resources[i])
+            new_dataset.append(dataset[i])
+            values_included.append(dataset[i])
 
-        # determine embeddings
-        embeddings = semantic_search_model.encode(new_dataset)
-        search_history: list = list(SearchHistory.objects.get(user=user).search_item.all().order_by('id').values_list('search', flat=True))
-        if len(search_history) == 0:
-            return JsonResponse([], safe=False)
-        search_embeddings = semantic_search_model.encode(search_history)
+    # determine embeddings
+    embeddings = semantic_search_model.encode(new_dataset)
+    search_history: list = list(SearchHistory.objects.get(user=user).search_item.all().order_by('id').values_list('search', flat=True))
+    if len(search_history) == 0:
+        return JsonResponse([], safe=False)
+    search_embeddings = semantic_search_model.encode(search_history)
 
-        # generate similairty matrix
-        similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
-        
-        # convert tensor to dictionary sorted on values (similarity)
-        list_similarity_matrix = similarity_matrix.tolist()[0]
-        search_dict = dict(zip(new_dataset_resources, list_similarity_matrix))
-        sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
+    # generate similairty matrix
+    similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
+    
+    # convert tensor to dictionary sorted on values (similarity)
+    list_similarity_matrix = similarity_matrix.tolist()[0]
+    search_dict = dict(zip(new_dataset_resources, list_similarity_matrix))
+    sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
 
-        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.3]
-        resources: list = []
+    keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.3]
+    resources: list = []
 
-        # using iteration to preserve order of resources
-        for key in keys:
-            resource = Resource.objects.get(id=key)
-            resources.append(resource.as_dict())
-        return JsonResponse(resources, safe=False)
-
-    return JsonResponse({})
+    # using iteration to preserve order of resources
+    for key in keys:
+        resource = Resource.objects.get(id=key)
+        resources.append(resource.as_dict())
+    return JsonResponse(resources, safe=False)
 
 
 def order_return(request: HttpRequest, user: id, order: id, resource: id) -> JsonResponse:
@@ -954,6 +951,7 @@ def exchange(request: HttpRequest, user: int, seller: int, resource: int) -> Jso
         return JsonResponse(user.as_dict())
     return JsonResponse({})
 
+
 def feedback(request: HttpRequest) -> JsonResponse:
     if request.method == 'POST':
         feedback = json.loads(request.body)
@@ -967,21 +965,22 @@ def delete_account(request: HttpRequest, user: int) -> JsonResponse:
         user.delete()
     return JsonResponse({})
 
+
 known_questions_and_answers = {
     'How do I place an order?' : '''There are two ways to do this:\n
-    The first way is as follows:\n
+    The first way is as follows:
     \n1. Search for the item
     \n2. Select the item
     \n3. Select Buy Now
     \n4. Select Place Order
-    \nThe second way is as follows\n
+    \nThe second way is as follows
     \n1. Search for the item
     \n2. Select the item
     \n3. Add item to Cart
     \n4. Select Profile
     \n5. Select Cart
     \n6. Select Checkout
-    \n7. Select Place Order\n
+    \n7. Select Place Order
     \nI hope that helps.''',
     'How do I exchange resources?' : '''1. Search for the Item
     \n2. Select the item
@@ -1009,20 +1008,14 @@ known_questions_and_answers = {
     \n7. (Optional) Add Return Reason
     \n8. Click Submit
     \nI hope that helps.''',
-    'Do you provide resource recommendations?': "Of course! Start you next sentence with 'Can you provide resource recommendations for...'",
+    'Do you provide resource recommendations?': "Of course! Start your next sentence with 'Can you provide resource recommendations for...'",
     'Can you provide resource recommendations for': '',
     'What is the status of order': '',
     'Provide me with personalised recommendations': '',
 }
 
 def chatbot(request: HttpRequest, user: int) -> JsonResponse:
-    if user == '-1':
-        # deal with unauthenticated user
-        i =0
-    else: 
-        user: User = get_object_or_404(User, id=user)
-    user_input = json.loads(request.body)
-
+    user_input: str = json.loads(request.body)
     
     # providing responses to known questions
     dataset: list = list(known_question for known_question in known_questions_and_answers)
@@ -1038,8 +1031,35 @@ def chatbot(request: HttpRequest, user: int) -> JsonResponse:
     list_similarity_matrix = similarity_matrix.tolist()[0]
     search_dict = dict(zip(dataset, list_similarity_matrix))
     sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
-    if sorted_search_dict[0][1] > 0.6:
-        print(sorted_search_dict[0][0])
+    if sorted_search_dict[0][1] > 0.44:
+        if sorted_search_dict[0][0] == 'What is the status of order':
+            # returning order status
+            if user == '-1':
+                return JsonResponse('You must be signed in to verify this.', safe=False)
+            user: User = get_object_or_404(User, id=user)
+            try:
+                order_number: int = int((user_input.lower().replace('number','').replace('.','').replace('?','').split('what is the status of order')[1]).replace(' ',''))
+                order: Order = get_object_or_404(Order, id=order_number)
+                if (order.seller != user) and (order.buyer != user):
+                    return JsonResponse('This order does not belong to you, so I cannot provide details.', safe=False)
+                return JsonResponse(order.status, safe=False)
+            except:
+                return JsonResponse('Sorry, I do not recogise that order number.\nEnter a whole integer which you can see in Profile -> Orders', safe=False)
+        elif sorted_search_dict[0][0] == 'Provide me with personalised recommendations':
+            # returning personalised recommendations
+            if user == '-1':
+                return JsonResponse('You must be signed in for this to be available.', safe=False)
+            user: User = get_object_or_404(User, id=user)
+            returned_recommendations = json.loads(recommendations(request, user.id).content)
+            response_string = f'Below are {min(len(returned_recommendations),10)} recommendations:'
+            for recommendation in returned_recommendations[:10]:
+                response_string += '\n' + recommendation['name'] + ' by ' + recommendation['author']
+            if len(returned_recommendations) == 0:
+                return JsonResponse('Sorry, I cannot do that as you do not have any personalised recommendations yet.\nAs you search through the app and add subjects preferences to your profile, this will update.', safe=False)
+            return JsonResponse(response_string, safe=False)
+        elif sorted_search_dict[0][0] == 'Can you provide resource recommendations for':
+            print(user_input.lower().split('Can you provide resource recommendations for'))
+            return JsonResponse('Youure good', safe=False)
         return JsonResponse(known_questions_and_answers[sorted_search_dict[0][0]], safe=False)
 
     try:
