@@ -214,6 +214,7 @@
         margin-left: 1.5rem;
         margin-right: 1.5rem;
         padding: 0.5rem;
+        padding-bottom: 0rem;
     }
 
     .header {
@@ -237,7 +238,7 @@
     .displays {
         display: flex;
         gap: 3rem;
-        overflow-x: scroll;
+        overflow-x: auto;
         margin-top: 1rem;
         padding-bottom: 1rem;
         height: 70%;

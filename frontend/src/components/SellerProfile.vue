@@ -18,31 +18,39 @@
             </div>
         </div>
         <div id="about-me" v-if="!viewing_profile || (user.id !== seller?.id && seller?.description)">
-            <p>Description</p>
+            <p>About Me</p>
             <div>
-                <textarea @input="clear" name="" id="desc" :v-model="user.description" :disabled="!editingDescription">{{ viewing_profile ? seller?.description : user.description }}</textarea>
-                <button v-if="!viewing_profile && !editingDescription" @click="editingDescription=true"><i class="bi bi-pencil-fill"></i></button>
-                <button id="save" class="save" @click="saveDescription" v-if="editingDescription"><i class="bi bi-floppy-fill"></i></button>
-                <button id="revert" class="revert" v-if="editingDescription" @click="revert"><i class="bi bi-x-lg"></i></button>
+                <textarea @input="clear" id="desc" :v-model="user.description" :disabled="!editingDescription">{{ viewing_profile ? seller?.description : user.description }}</textarea>
+                <div id="buttons">
+                    <button id="edit" v-if="!viewing_profile && !editingDescription" @click="editingDescription=true"><i class="bi bi-pencil-fill"></i></button>
+                    <button :disabled="making_change" id="save" class="save" @click="saveDescription" v-if="editingDescription"><i class="bi bi-floppy-fill"></i></button>
+                    <button :disabled="making_change" id="revert" class="revert" v-if="editingDescription" @click="revert"><i class="bi bi-x-lg"></i></button>
+                </div>
             </div>
         </div>
         <div id="textbooks">
             <div class="header">
                 <div class="viewing">
                     <p> {{ viewing_profile ? '' : textbookMessage }} Textbooks</p>
-                    <button v-if="!viewing_profile && all_textbooks.length > 0" @click="updateTextbookMessage(true)" class="drafted">View {{ textbookMessage === 'All' ? 'Sold' : 'All'}}</button>
-                    <button v-if="!viewing_profile && all_textbooks.length > 0" @click="updateTextbookMessage(false)" class="all">View {{ textbookMessage === 'All' ? 'Drafted' : textbookMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
-                    <select class="filter" v-if="all_textbooks.length > 0" v-model="textbook_filter">
-                        <option value="listing-new">Listing: New to Old</option>
-                        <option value="listing-old">Listing: Old to New</option>
-                        <option v-if="!viewing_profile" value="edit-new">Edited: New to Old</option>
-                        <option v-if="!viewing_profile" value="edit-old">Edited: Old to New</option>
-                    </select>
+                    <div class="viewing-buttons">
+                        <button v-if="!viewing_profile && all_textbooks.length > 0" @click="updateTextbookMessage(true)" class="drafted">View {{ textbookMessage === 'All' ? 'Sold' : 'All'}}</button>
+                        <button v-if="!viewing_profile && all_textbooks.length > 0" @click="updateTextbookMessage(false)" class="all">View {{ textbookMessage === 'All' ? 'Drafted' : textbookMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
+                    </div>
                 </div>
-                <button v-if="!viewing_profile" @click="new_listing('textbook')"><i class="bi bi-plus-circle"></i></button>
+                <div id="absolute">
+                    <select class="filter" v-if="all_textbooks.length > 0" v-model="textbook_filter">
+                            <option value="listing-new">Listing: New to Old</option>
+                            <option value="listing-old">Listing: Old to New</option>
+                            <option v-if="!viewing_profile" value="edit-new">Edited: New to Old</option>
+                            <option v-if="!viewing_profile" value="edit-old">Edited: Old to New</option>
+                        </select>
+                    <button v-if="!viewing_profile" @click="new_listing('textbook')"><i class="bi bi-plus-circle"></i></button>
+                </div>
             </div>
             <div class="displays">
-                <p v-if="textbooks.length === 0">No textbook listings to display</p>
+                <div class="no_resources" v-if="textbooks.length===0"> 
+                    <p>No textbook listings to display</p>
+                </div>
                 <div v-for="listing in textbooks">
                     <div class="listed" @click="showResourcePage(listing.id)">
                         <img :src="`http://localhost:8000${listing.image1}`" alt="Textbook">
@@ -55,19 +63,25 @@
             <div class="header">
                 <div class="viewing">
                     <p>{{ viewing_profile ? '' :  notesMessage }} Notes</p>
-                    <button v-if="!viewing_profile && all_notes.length > 0" @click="updateNotesMessage(true)" class="drafted">View {{ notesMessage === 'All' ? 'Sold' : 'All'}}</button>
-                    <button v-if="!viewing_profile && all_notes.length > 0" @click="updateNotesMessage(false)" class="all">View {{ notesMessage === 'All' ? 'Drafted' : notesMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
+                    <div class="viewing-buttons">
+                            <button v-if="!viewing_profile && all_notes.length > 0" @click="updateNotesMessage(true)" class="drafted">View {{ notesMessage === 'All' ? 'Sold' : 'All'}}</button>
+                        <button v-if="!viewing_profile && all_notes.length > 0" @click="updateNotesMessage(false)" class="all">View {{ notesMessage === 'All' ? 'Drafted' : notesMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
+                    </div>
+                </div>
+                <div id="absolute">
                     <select class="filter" v-if="all_notes.length > 0" v-model="notes_filter">
                         <option value="listing-new">Listing: New to Old</option>
                         <option value="listing-old">Listing: Old to New</option>
                         <option v-if="!viewing_profile" value="edit-new">Edited: New to Old</option>
                         <option v-if="!viewing_profile" value="edit-old">Edited: Old to New</option>
                     </select>
+                    <button v-if="!viewing_profile" @click="new_listing('notes')"><i class="bi bi-plus-circle"></i></button>
                 </div>
-                <button v-if="!viewing_profile" @click="new_listing('notes')"><i class="bi bi-plus-circle"></i></button>
             </div>
             <div class="displays">
-                <p v-if="notes.length === 0">No note listings to display</p>
+                <div class="no_resources" v-if="notes.length===0"> 
+                    <p>No note listings to display</p>
+                </div>
                 <div v-for="listing in notes">
                     <div class="listed" @click="showResourcePage(listing.id)">
                         <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
@@ -77,28 +91,32 @@
             </div>
         </div>
         <div id="stationery">
-            <div>
-                <div class="header">
-                    <div class="viewing">
-                        <p>{{ viewing_profile ? '' : stationeryMessage }} Stationery</p>
+            <div class="header">
+                <div class="viewing">
+                    <p>{{ viewing_profile ? '' : stationeryMessage }} Stationery</p>
+                    <div class="viewing-buttons">
                         <button v-if="!viewing_profile && all_stationery.length > 0" @click="updateStationeryMessage(true)" class="drafted">View {{ stationeryMessage === 'All' ? 'Sold' : 'All'}}</button>
                         <button v-if="!viewing_profile && all_stationery.length > 0" @click="updateStationeryMessage(false)" class="all">View {{ stationeryMessage === 'All' ? 'Drafted' : stationeryMessage === 'Sold' ? 'Drafted' : 'Sold' }}</button>
-                        <select class="filter" v-if="all_stationery.length > 0" v-model="stat_filter">
-                            <option value="listing-new">Listing: New to Old</option>
-                            <option value="listing-old">Listing: Old to New</option>
-                            <option v-if="!viewing_profile" value="edit-new">Edited: New to Old</option>
-                            <option v-if="!viewing_profile" value="edit-old">Edited: Old to New</option>
-                        </select>
                     </div>
+                </div>
+                <div id="absolute">
+                    <select class="filter" v-if="all_stationery.length > 0" v-model="stat_filter">
+                        <option value="listing-new">Listing: New to Old</option>
+                        <option value="listing-old">Listing: Old to New</option>
+                        <option v-if="!viewing_profile" value="edit-new">Edited: New to Old</option>
+                        <option v-if="!viewing_profile" value="edit-old">Edited: Old to New</option>
+                    </select>
                     <button v-if="!viewing_profile" @click="new_listing('stationery')"><i class="bi bi-plus-circle"></i></button>
                 </div>
-                <div class="displays">
-                    <p v-if="stationery.length === 0">No stationery listings to display</p>
-                    <div v-for="listing in stationery">
-                        <div class="listed" @click="showResourcePage(listing.id)">
-                            <img :src="`http://localhost:8000${listing.image1}`" alt="Stationery">
-                            {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
-                        </div>
+            </div>
+            <div class="displays">
+                <div class="no_resources" v-if="stationery.length===0"> 
+                    <p>No stationery listings to display</p>
+                </div>
+                <div v-for="listing in stationery">
+                    <div class="listed" @click="showResourcePage(listing.id)">
+                        <img :src="`http://localhost:8000${listing.image1}`" alt="Stationery">
+                        {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
             </div>
@@ -121,6 +139,7 @@
             this.fill_stars()
         },
         data(): {
+            making_change: boolean,
             textbook_filter: 'listing-new' | 'listing-old' | 'edit-new' | 'edit-old',
             notes_filter: 'listing-new' | 'listing-old' | 'edit-new' | 'edit-old',
             stat_filter: 'listing-new' | 'listing-old' | 'edit-new' | 'edit-old',
@@ -130,6 +149,7 @@
             notesMessage: 'All' | 'Sold' | 'Drafted',
             stationeryMessage: 'All' | 'Sold' | 'Drafted',
         } { return {
+            making_change: false,
             textbook_filter: 'listing-new',
             notes_filter: 'listing-new',
             stat_filter: 'listing-new',
@@ -227,6 +247,7 @@
                 saveButton.disabled = true
                 const revertButton: HTMLButtonElement = document.getElementById('revert') as HTMLButtonElement
                 revertButton.disabled = true
+                this.making_change = true
                 let updateDecriptionResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/description/`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -237,13 +258,16 @@
                     body: JSON.stringify(textarea.value)
                 })
                 if (!updateDecriptionResponse.ok) {
+                    this.making_change = false
                     console.error('Error updating description')
                     return
+                } else {
+                    this.making_change = false
+                    const updatedUser: User = await updateDecriptionResponse.json()
+                    useUserStore().saveUser(updatedUser)
+                    useUsersStore().updateUser(this.user)
+                    this.editingDescription = false
                 }
-                const updatedUser: User = await updateDecriptionResponse.json()
-                useUserStore().saveUser(updatedUser)
-                useUsersStore().updateUser(this.user)
-                this.editingDescription = false
             },
             revert(): void {
                 const textarea: HTMLTextAreaElement = document.getElementById('desc') as HTMLTextAreaElement
@@ -375,8 +399,12 @@
             }
         },
         watch: {
+            viewing_profile(): void {
+                if (this.viewing_profile) {
+                    
+                }
+            },
             async user(new_user: User): Promise<void> {
-                // this.user = new_user
                 this.fill_stars()
                 for (const resource of this.user.listings) {
                     resource.price = await this.listedprice(resource)
@@ -402,8 +430,28 @@
         display: grid;
         grid-template-areas: "user about-me"
                              "textbooks textbooks"
-                             "notes stationery";
-        padding-right: 30rem;
+                             "notes notes"
+                             "stationery stationery";
+        height: 89vh;
+        width: 98vw;
+        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
+        overflow-y: auto;
+        gap: 1.5rem;
+    }
+
+   #textbooks, #notes, #stationery {
+        border: 0.1rem solid #D9D9D9;
+        border-radius: 0.5rem;
+        height: 12.5rem;
+        margin-left: 1.5rem;
+        margin-right: 1.5rem;
+        padding: 0.5rem;
+        padding-bottom: 0rem;
+    }
+
+    #user {
+        margin-left: 1.5rem;
     }
 
     #user {
@@ -442,19 +490,24 @@
     }
 
     #about-me {
-        width: 30vw;
-        margin: 0 !important;
+        width: 100%;
         grid-area: about-me;
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
         padding-top: 0.3rem;
+        margin-right: 1.5rem;
+    }
+
+    #dark #edit {
+        background-color: black;
     }
 
     #about-me textarea {
         background-color: #D9D9D9;
         border-radius: 0.5rem;
         max-height: 5rem;
+        resize: none;
         padding: 0.3rem;
     }
 
@@ -464,60 +517,68 @@
 
     #textbooks {
         grid-area: textbooks;
-        border: 0.1rem solid #D9D9D9;
-        border-radius: 0.5rem;
-        padding: 0.5rem;
-        margin-top: 2rem;
-        width: 98vw;
     }
 
     .header {
         display: flex;
         justify-content: space-between;
+        position: relative;
+    }
+
+    #absolute {
+        position: absolute;
+        top: 0;
+        right: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 
     img {
-        height: 10rem;
-        width: 10rem;
+        height: 7rem;
+        width: 7rem;
         object-fit: contain;
+    }
+
+    .no_resources {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .listed {
         display: flex;
         flex-direction: column;
         align-items: center;
+        padding: 0.3rem;
+        margin-top: 0.3rem;
     } 
 
     .displays {
         display: flex;
-        gap: 4rem;
+        gap: 3rem;
         overflow-x: scroll;
-        margin-top: 1rem;
         padding-bottom: 1rem;
+        height: 70%;
     }
 
     #notes {
         grid-area: notes;
-        border: 0.1rem solid #D9D9D9;
-        border-radius: 0.5rem;
-        padding: 0.5rem;
-        margin-top: 2rem;
-        margin-right: 1rem;
-        width: 96.5%;
     }
 
     #stationery {
         grid-area: stationery;
-        border: 0.1rem solid #D9D9D9;
-        border-radius: 0.5rem;
-        padding: 0.5rem;
-        margin-top: 2rem;
-        width: 90.5%;
     }
 
     .header button {
         background: none;
         border: none;
+    }
+
+    #buttons {
+        align-self: flex-end;
     }
 
     .header button i {
@@ -526,6 +587,10 @@
 
     .header button:hover { 
         color: #0DCAF0;
+        cursor: pointer;
+    }
+
+    button:hover {
         cursor: pointer;
     }
 
@@ -572,23 +637,38 @@
         cursor: pointer;
     }
 
-    .viewing {
+    #dark .listed:hover {
+        color: black;
+    }
+
+    .viewing-buttons {
         display: flex;
         align-items: center;
         gap: 1rem;
     }
 
-    .viewing p {
-        margin-right: 1rem;
+    .viewing {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
     }
 
-    .viewing button, .filter {
+    .viewing-buttons button, .filter {
         border-radius: 0.5rem;
         padding: 0.5rem;
     }
 
     option {
         background-color: white !important;
+    }
+
+    #desc {
+        height: 5rem;
+        width: 90%;
+    }
+
+    #dark #seller-home, #dark i {
+        color: white;
     }
 
     .drafted, .all, .filter {
@@ -633,5 +713,82 @@
 
     #dark #message_seller:hover { 
         background-color: darkgray;
+    }
+
+    button:disabled, button:disabled:hover {
+        background-color: darkgray !important;
+        cursor: not-allowed;
+    }
+
+    /* Responsive Design */
+
+    @media (max-width: 658px) {
+        .viewing {
+            flex-direction: column;
+            gap: 1rem;
+            margin-left: 0.5rem;
+            align-items: start;
+        }
+
+        #textbooks, #notes, #stationery {
+            height: 15rem;
+        }
+
+        .displays {
+            height: 57%;
+        }
+
+        #seller-home {
+            display: grid;
+            grid-template-areas: "user"
+                                "about-me"
+                                "textbooks"
+                                "notes"
+                                "stationery";
+            width: 98vw;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        #about-me {
+            width: 92%;
+            margin-left: 1.5rem;
+            padding-top: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        #desc {
+            width: 100%;
+        }
+
+        .viewing p {
+            margin-top: 0.5rem;
+        }
+    }
+
+    @media (max-width: 546px) {
+        .viewing-buttons {
+            margin-top: 0.5rem;
+        }
+
+        #textbooks, #notes, #stationery {
+            height: 15.5rem;
+        }
+
+        .displays {
+            height: 55%;
+        }
+    }
+
+    @media (max-width: 510px) {
+        #textbooks, #notes, #stationery {
+            width: 83vw;
+        }
+    }
+
+    @media (max-width: 491px) {
+        #textbooks, #notes, #stationery {
+            width: 80vw;
+        }
     }
 </style>
