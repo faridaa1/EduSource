@@ -3,9 +3,9 @@
         <div id="header">
             <h1>{{ isPriorListing ? '' : 'New' }} Resource Listing</h1>
             <div id="buttons">
-                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft : false)">{{ isPriorListing ? 'Update Details' : 'List Item' }}</button>
-                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft ? false : true : true)">{{ resource && resource.is_draft ? 'List Item' : 'Save as Draft'}}</button>
-                <button class="delete_listing" @click="delete_listing">Delete Listing</button>
+                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft : false)">{{ isPriorListing ? 'Update' : 'List' }}</button>
+                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft ? false : true : true)">{{ resource && resource.is_draft ? 'List' : 'Draft'}}</button>
+                <button class="delete_listing" @click="delete_listing">Delete</button>
             </div>
         </div>
         <div id="form" @input="clear_errors" @change="clear_errors">
@@ -224,9 +224,9 @@
             </div>
         </div>
         <div id="buttons1">
-                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft : false)">{{ isPriorListing ? 'Update Details' : 'List Item' }}</button>
-                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft ? false : true : true)">{{ resource && resource.is_draft ? 'List Item' : 'Save as Draft'}}</button>
-                <button class="delete_listing" @click="delete_listing">Delete Listing</button>
+                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft : false)">{{ isPriorListing ? 'Update' : 'List' }}</button>
+                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft ? false : true : true)">{{ resource && resource.is_draft ? 'List' : 'Draft'}}</button>
+                <button class="delete_listing" @click="delete_listing">Delete</button>
             </div>
     </div>
 </template>
@@ -817,12 +817,18 @@
 </script>
 <style scoped>
     #new-listing {
-        height: 58.5rem;
+        height: 85vh;
         overflow-y: auto;
-        padding-right: 10rem;
-        padding-left: 3rem;
+        width: 100vw;
+        /* padding-left: 3rem;
+        padding-right: 2rem; */
         margin-top: 2rem;
         padding-bottom: 3rem !important;
+    }
+
+    #header, #form {
+        padding-left: 3rem;
+        padding-right: 3rem;
     }
 
     h1 {
@@ -868,7 +874,7 @@
     }
 
     #dimensions-container .dimension select {
-        border-radius: 0.4rem;
+        border-radius: 0.5rem;
         text-align: center;
         width: 4rem !important;
     }
@@ -1025,6 +1031,7 @@
 
     textarea {
         height: 6rem;
+        resize: none;
     }
 
     .required {
@@ -1113,4 +1120,28 @@
         color: white;
     }
 
+    #buttons1 {
+        padding-right: 3rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1056px) {
+        #buttons1 {
+            padding-left: 3rem;
+            padding-right: 3rem;
+            margin-top: 2rem;
+            justify-content: flex-start;
+        }
+
+        #header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.5rem;
+        }
+
+        #subject-container div {
+            flex-direction: column;
+            align-items: start;
+        }
+    }
 </style>

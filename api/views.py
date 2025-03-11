@@ -687,7 +687,7 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
 
         # use first 8 search results
         reduced_search_dict = sorted_search_dict[0:min(8,len(sorted_search_dict))]
-        keys: list = [pair[0] for pair in reduced_search_dict if pair[1] >= 0.45]
+        keys: list = [pair[0] for pair in reduced_search_dict if pair[1] >= 0.2]
         resources: list = []
 
         # using iteration to preserve order of resources

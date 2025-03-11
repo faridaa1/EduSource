@@ -20,18 +20,22 @@ class AddressInline(admin.StackedInline):
 
 
 class ResourceInline(admin.StackedInline):
+    """Defining Resource model appearance on User page on django admin"""
     model = Resource
     extra = 0
 
 
 class ReviewInline(admin.StackedInline):
+    """Defining Review model appearance on Resource page on django admin"""
     model = Review
     extra = 0
 
 
 class UserInline(admin.StackedInline):
+    """Defining User model appearance on Cart page on django admin"""
     model = User
     extra = 0
+
 
 class SubjectInline(admin.StackedInline):
     """Defining Subject model appearance on django admin"""
@@ -40,11 +44,13 @@ class SubjectInline(admin.StackedInline):
 
 
 class OrderResourceInline(admin.StackedInline):
+    """Defining OrderResource model appearance on Order page django admin"""
     model = OrderResource
     extra = 0
 
 
 class SearchHistoryItemInline(admin.StackedInline):
+    """Defining OrderResource model appearance on SearchHistory page django admin"""
     model = SearchHistoryItem
     extra = 0
 
@@ -57,8 +63,10 @@ class SearchHistoryAdmin(admin.ModelAdmin):
 
 
 class MessageInline(admin.StackedInline):
+    """Defining Message model appearance on Messages page django admin"""
     model = Message
     extra = 0
+
 
 @admin.register(Exchange)
 class ExchangeAdmin(admin.ModelAdmin):
@@ -69,7 +77,7 @@ class ExchangeAdmin(admin.ModelAdmin):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     """Defining Order model appearance on django admin"""
-    list_display: tuple[str] = ('id', 'status', 'estimated_delivery_date')
+    list_display: tuple[str] = ('id', 'buyer', 'seller', 'status', 'estimated_delivery_date')
     inlines = [OrderResourceInline]
 
 
@@ -81,6 +89,7 @@ class MessagesAdmin(admin.ModelAdmin):
 
 
 class CartResourceInline(admin.StackedInline):
+    """Defining CartResource model appearance on Cart page django admin"""
     model = CartResource
     extra = 0
 
@@ -95,7 +104,7 @@ class CartAdmin(admin.ModelAdmin):
 @admin.register(Resource)
 class ResourceAdmin(admin.ModelAdmin):
     """Defining Resource model appearance on django admin"""
-    list_display: tuple[str] = ('name', 'author', 'type')
+    list_display: tuple[str] = ('id', 'name', 'author', 'type')
     inlines = [ReviewInline,]
 
 

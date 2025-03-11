@@ -49,7 +49,7 @@
                     <div>Seller Phone Number</div>
                     <div id="user_number">
                         <div id="number_container">
-                            <div><input id="number_input" type="text" :value="seller.phone_number" disabled @input="clear_number_error"></div>
+                            <div><input id="number_input" type="text" :value="seller.phone_number" :disabled="mode === 'buyer'" @input="clear_number_error"></div>
                             <div class="edit-buttons" v-if="changing_number">
                                 <button class="save" @click="change_phone_number"><i class="bi bi-floppy-fill"></i></button>
                                 <button class="clockwise" @click="cancel_edit(0)"><i class="bi bi-arrow-counterclockwise"></i></button>
@@ -110,9 +110,9 @@
                     </div>
                 </div>
                 <div id="buttons">
-                    <button v-if="order.status === 'Complete'" @click="submit_return(order, false)">Submit</button>
-                    <button id="cancel" v-if="order.status === 'Requested Return'" @click="submit_return(order, true)">Cancel</button>
-                    <button id="message_seller" v-if="order.status === 'Requested Return'" @click="message_seller(order.seller)">Message Seller</button>
+                    <button v-if="(user.mode == 'buyer') && order.status === 'Complete'" @click="submit_return(order, false)">Submit</button>
+                    <button id="cancel" v-if="(user.mode == 'buyer') && order.status === 'Requested Return'" @click="submit_return(order, true)">Cancel</button>
+                    <button id="message_seller" v-if="order.status === 'Requested Return'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
                 </div>
             </div>
         </div>
@@ -136,6 +136,7 @@
     export default defineComponent({
         components: { Error, Loading },
         data(): {
+            mode: 'buyer' | 'seller',
             total: number,
             return_reason: string,
             placed_order: boolean,
@@ -145,6 +146,7 @@
             return_method: 'Delivery' | 'Collection',
             select_item_error: string,
         } { return {
+            mode: 'buyer',
             return_method: 'Delivery',
             placed_order: false,
             select_item_error: '',
@@ -346,10 +348,10 @@
                 useResourcesStore().saveResources(data.resources)
                 const window_location: string[] = window.location.href.split('/')
                 if (window_location.length <= 5) {
-                    window.location.href = `/order/${window_location[4]}`
+                    window.location.href = `/${this.mode === 'buyer' ? 'order' : 'sold-order'}/${window_location[4]}`
                     return
                 }
-                window.location.href = `/order/${window_location[4]}/${this.order.status}/${window_location[6]}/${window_location[7]}`
+                window.location.href = `/${this.mode === 'buyer' ? 'order' : 'sold-order'}/${window_location[4]}/${this.order.status}/${window_location[6]}/${window_location[7]}`
             },
             attribute_existence(data: string): boolean {
                 const user = useUsersStore().users.filter(user => user.id !== this.user.id).find(user => user.phone_number === data)
@@ -358,10 +360,10 @@
             back(): void {
                 const window_location: string[] = window.location.href.split('/')
                 if (window_location.length <= 5) {
-                    window.location.href = `/order/${window_location[4]}`
+                    window.location.href = `/${this.mode === 'buyer' ? 'order' : 'sold-order'}/${window_location[4]}`
                     return
                 }
-                window.location.href = `/order/${window_location[4]}/${this.order.status}/${window_location[6]}/${window_location[7]}`
+                window.location.href = `/${this.mode === 'buyer' ? 'order' : 'sold-order'}/${window_location[4]}/${this.order.status}/${window_location[6]}/${window_location[7]}`
             },
             getResource(resource_id: number): Resource {
                 const resource: Resource | undefined = this.all_resources.find(resource => resource.id === resource_id)
@@ -415,14 +417,24 @@
                 return useResourcesStore().resources
             },
             order(): Order {
+                    console.log(2)
                 const window_location: string[] = window.location.href.split('/')
                 const id: number = parseInt(window_location[4])
-                if (!this.user || !this.user.placed_orders || !this.user.placed_orders.find(order => order.id === id)) return {} as Order
-                let order: Order = this.user.placed_orders.find(order => order.id === id) as Order
+                if (!this.user || ((this.mode === 'buyer') && ((!this.user.placed_orders) || (!this.user.placed_orders.find(order => order.id === id)))) || ((this.mode === 'seller') && ((!this.user.sold_orders)) || (!this.user.sold_orders.find(order => order.id === id)))) return {} as Order
+                let order: Order
+                if (this.mode === 'buyer') {
+                    order = this.user.placed_orders.find(order => order.id === id) || {} as Order
+                } else {
+                    order = this.user.sold_orders.find(order => order.id === id) || {} as Order
+                }
                 return order
             }
         },
         async mounted(): Promise<void> {
+            const window_location: string[] = window.location.href.split('/')
+            if (window_location.includes('sold-return')) {
+                this.mode = 'seller'
+            }
             for (const resource of useResourcesStore().resources) {
                 resource.price = await this.listedprice(resource)
             }

@@ -61,9 +61,9 @@
                     </div>
                 </div>
                 <div id="buttons">
-                    <button v-if="returnable && order.status === 'Complete'" @click="start_return(order)">Start Return</button>
-                    <button id="cancel" v-if="returnable && order.status === 'Requested Return'" @click="start_return(order)">Cancel Return</button>
-                    <button id="message_seller" v-if="returnable && order.status === 'Requested Return'" @click="message_seller(order.seller)">Message Seller</button>
+                    <button v-if="(user.mode == 'buyer') && returnable && order.status === 'Complete'" @click="start_return(order)">Start Return</button>
+                    <button id="cancel" v-if="returnable && order.status === 'Requested Return'" @click="start_return(order)">{{ mode === 'buyer' ? 'Cancel' : 'View' }} Return</button>
+                    <button id="message_seller" v-if="returnable && order.status === 'Requested Return'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
                     <button id="cancel" v-if="order.status === 'Placed'" @click="cancel_order">Cancel</button>
                 </div>
             </div>
@@ -88,10 +88,12 @@
     export default defineComponent({
         components: { Error, Loading }, 
         data(): {
+            mode: 'buyer' | 'seller',
             total: number,
             placed_order: boolean,
             error: string,
         } { return {
+            mode: 'buyer',
             placed_order: false,
             total: 0,
             error: ''
@@ -103,9 +105,9 @@
             start_return(order: Order): void {
                 const window_location: string[] = window.location.href.split('/')
                 if (window_location.length === 5) {
-                    window.location.href = `/return/${order.id}`
+                    window.location.href = `/${this.mode === 'buyer' ? 'return' : 'sold-return'}/${order.id}`
                 } else {
-                    window.location.href = `/return/${order.id}/${window_location[5]}/${window_location[6]}/${window_location[7]}`
+                    window.location.href = `/${this.mode === 'buyer' ? 'return' : 'sold-return'}/${order.id}/${window_location[5]}/${window_location[6]}/${window_location[7]}`
                 }
             },
             view_resource(event: Event, id: number): void {
@@ -147,9 +149,9 @@
             back(): void {
                 const window_location: string[] = window.location.href.split('/')
                 if (window_location.length === 5) {
-                    window.location.href = '/orders'
+                    window.location.href = `/${this.mode === 'buyer' ? 'orders' : 'sold-orders'}`
                 } else {
-                    window.location.href = `/orders/${this.order.id}/${window_location[5]}/${window_location[6]}/${window_location[7]}`
+                    window.location.href = `/${this.mode === 'buyer' ? 'orders' : 'sold-orders'}/${this.order.id}/${window_location[5]}/${window_location[6]}/${window_location[7]}`
                 }
             },
             home(): void {
@@ -208,15 +210,22 @@
                 return useResourcesStore().resources
             },
             order(): Order {
-                if (!this.user || !this.user.placed_orders) return {} as Order
+                if (!this.user || ((this.mode === 'buyer') && !this.user.placed_orders) || ((this.mode === 'seller') && !this.user.sold_orders)) return {} as Order
                 const window_location: string[] = window.location.href.split('/')
                 const id: number = parseInt(window_location[4])
-                return this.user.placed_orders.find(order => order.id === id) || {} as Order
+                if (this.mode === 'buyer') {
+                    return this.user.placed_orders.find(order => order.id === id) || {} as Order
+                }
+                return this.user.sold_orders.find(order => order.id === id) || {} as Order
             }
         },
         async mounted(): Promise<void> {
             for (const resource of useResourcesStore().resources) {
                 resource.price = await this.listedprice(resource)
+            }
+            const window_location: string[] = window.location.href.split('/')
+            if (window_location.includes('sold-order')) {
+                this.mode = 'seller'
             }
             this.placed_order = false
             this.get_total()

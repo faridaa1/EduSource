@@ -660,6 +660,10 @@
         cursor: pointer;
     }
 
+    textarea:disabled {
+        color: black;
+    }
+
     #dark .listed:hover {
         color: black;
     }

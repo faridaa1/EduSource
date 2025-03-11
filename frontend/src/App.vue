@@ -12,9 +12,9 @@
                 <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='buyer'">Orders</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/exchanges" v-if="has_resources()">Exchanges</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/messages">Messages</RouterLink>
-                <RouterLink class="profile-item border-bottom" to="/cart">Cart</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/cart" v-if="user.mode==='buyer'">Cart</RouterLink>
                 <RouterLink class="profile-item rounded-bottom" to="/wishlist" v-if="user.mode==='buyer'">Wishlist</RouterLink>
-                <RouterLink class="profile-item rounded-bottom" to="/" v-if="user.mode==='seller'">Orders</RouterLink>
+                <RouterLink class="profile-item rounded-bottom" to="/sold-orders" v-if="user.mode==='seller'">Orders</RouterLink>
             </div>
           </transition>
         </div>
@@ -44,9 +44,9 @@
                 <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='buyer'">Orders</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/exchanges" v-if="has_resources()">Exchanges</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/messages">Messages</RouterLink>
-                <RouterLink class="profile-item border-bottom" to="/cart">Cart</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/cart" v-if="user.mode==='buyer'">Cart</RouterLink>
                 <RouterLink class="profile-item rounded-bottom" to="/wishlist" v-if="user.mode==='buyer'">Wishlist</RouterLink>
-                <RouterLink class="profile-item rounded-bottom" to="/" v-if="user.mode==='seller'">Orders</RouterLink>
+                <RouterLink class="profile-item rounded-bottom" to="/sold-orders" v-if="user.mode==='seller'">Orders</RouterLink>
             </div>
           </transition>
           </div>

@@ -1,5 +1,5 @@
 <template>
-    <div id="orders-view" v-if="user && user.placed_orders">
+    <div id="orders-view" v-if="(user && (mode === 'buyer') &&  user.placed_orders) || (user && (mode === 'seller') &&  user.sold_orders)">
         <div id="header">
             <div id="header1">
                 <p>My Orders</p>
@@ -85,6 +85,7 @@
     export default defineComponent({
         components: { Loading },
         data(): {
+            mode: 'buyer' | 'seller',
             mounted: boolean,
             order: 'new' | 'old' | string
             status: 'all' | 'Placed' | 'Processing' | 'Refund Rejected' | 'Dispatched' 
@@ -95,6 +96,7 @@
             searching: boolean,
             searched_items: Order[]
         } { return {
+            mode: 'buyer',
             mounted: false,
             order: 'new',
             search: '',
@@ -145,7 +147,7 @@
                     return
                 } else {
                     const matches: number[] = await searchResults.json()
-                    this.searched_items = this.user.placed_orders.filter(order => matches.includes(order.id))
+                    this.searched_items = this.mode === 'buyer' ? this.user.placed_orders.filter(order => matches.includes(order.id)) : this.user.sold_orders.filter(order => matches.includes(order.id))
                     this.searching = false
                     if (matches.length === 0) {
                         input.setCustomValidity('Resource not found')
@@ -159,7 +161,7 @@
                 div.blur()
             },
             view_item(id: number): void {
-                window.location.href = `/order/${id}/${this.status}/${this.order}/${this.current_page}`
+                window.location.href = `/${this.mode === 'buyer' ? 'order' : 'sold-order'}/${id}/${this.status}/${this.order}/${this.current_page}`
             },
             order_total(order: Order): number {
                 let total = 0
@@ -171,7 +173,12 @@
         },
         computed: {
             filtered_orders(): Order[] {
-                let temp_orders = this.searched_items.length > 0 ? this.searched_items.filter(order => this.status === 'all' || order.status === this.status) : this.user.placed_orders.filter(order => this.status === 'all' || order.status === this.status)
+                let temp_orders;
+                if (this.mode === 'buyer') {
+                    temp_orders = this.searched_items.length > 0 ? this.searched_items.filter(order => this.status === 'all' || order.status === this.status) : this.user.placed_orders.filter(order => this.status === 'all' || order.status === this.status)
+                } else {
+                    temp_orders = this.searched_items.length > 0 ? this.searched_items.filter(order => this.status === 'all' || order.status === this.status) : this.user.sold_orders.filter(order => this.status === 'all' || order.status === this.status)
+                }
                 this.total_pages = Math.ceil(temp_orders.length/10)
                 return temp_orders.sort((a,b) => {return this.order === 'new' ? b.id-a.id : a.id-b.id})
                 .filter((_, index) => ((index) < (this.current_page*10)) && ((index+1) > ((this.current_page-1)*10)))
@@ -204,13 +211,16 @@
             }
         },
         mounted(): void {
-            this.total_pages = Math.ceil(this.user.placed_orders.length/10)
+            this.total_pages = this.mode === 'buyer' ? Math.ceil(this.user.placed_orders.length/10) : Math.ceil(this.user.sold_orders.length/10)
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter' && (event.target as HTMLInputElement).id === 'order-search') {
                     this.search_orders()
                 }
             })
             const window_location: string[] = window.location.href.split('/')
+            if (window_location.includes('sold-orders')) {
+                this.mode = 'seller'
+            }
             if (window_location.length > 4) {
                 // reset settings
                 this.status = window_location[5].replace('%20', ' ')
