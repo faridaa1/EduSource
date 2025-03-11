@@ -121,6 +121,9 @@
                 </div>
             </div>
         </div>
+        <div v-if="error!==''">
+            <Error :message="error" @close-error="error=''"/>
+        </div>
     </div>
 </template>
 
@@ -129,7 +132,9 @@
     import { defineComponent, nextTick } from 'vue';
     import type { Resource, User } from '@/types';
     import { useUsersStore } from '@/stores/users';
+    import Error from './user experience/error/Error.vue';
     export default defineComponent({
+        components: { Error },
         mounted(): void {
             if (window.location.href.includes('seller')) {
                 this.viewing_profile = true
@@ -148,7 +153,9 @@
             textbookMessage: 'All' | 'Sold' | 'Drafted',
             notesMessage: 'All' | 'Sold' | 'Drafted',
             stationeryMessage: 'All' | 'Sold' | 'Drafted',
+            error: string,
         } { return {
+            error: '',
             making_change: false,
             textbook_filter: 'listing-new',
             notes_filter: 'listing-new',
@@ -259,7 +266,7 @@
                 })
                 if (!updateDecriptionResponse.ok) {
                     this.making_change = false
-                    console.error('Error updating description')
+                    this.error = 'Error updating description. Please try again.'
                     return
                 } else {
                     this.making_change = false
@@ -407,7 +414,22 @@
                     const displays = Array.from(document.getElementsByClassName('displays'))
                     if (!displays) return
                     for (const display of displays) {
-                        (display as HTMLDivElement).style.setProperty('height', 'auto', 'important')
+                        const parent: HTMLDivElement = (display as HTMLDivElement).parentElement as HTMLDivElement
+                        if (parent && (parent.id === 'textbooks') && (this.textbooks.length > 0)) {
+                            (display as HTMLDivElement).style.setProperty('height', 'auto', 'important')
+                        } else if (parent && (parent.id === 'textbooks') && (this.textbooks.length === 0)){
+                            (display as HTMLDivElement).style.setProperty('height', '100%', 'important')
+                        } if (parent && (parent.id === 'notes') && (this.notes.length > 0)) {
+                            (display as HTMLDivElement).style.setProperty('height', 'auto', 'important')
+                        } else if (parent && (parent.id === 'notes') && (this.notes.length === 0)){
+                            (display as HTMLDivElement).style.setProperty('height', '70%', 'important')
+                        } if (parent && (parent.id === 'stationery') && (this.stationery.length > 0)) {
+                            (display as HTMLDivElement).style.setProperty('height', 'auto', 'important')
+                        } else if (parent && (parent.id === 'stationery') && (this.stationery.length === 0)){
+                            (display as HTMLDivElement).style.setProperty('height', '70%', 'important')
+                        } else {
+                            console.log(parent.id)
+                        }
                     }
                     const viewings = Array.from(document.getElementsByClassName('viewing'))
                     if (!viewings) return
@@ -439,7 +461,7 @@
                     resource.price = await this.listedprice(resource)
                 }
             },
-            seller(new_seller: User) {
+            seller() {
                 this.fill_stars()
             }
         },

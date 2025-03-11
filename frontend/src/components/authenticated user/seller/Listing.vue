@@ -5,7 +5,7 @@
             <div id="buttons">
                 <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft : false)">{{ isPriorListing ? 'Update' : 'List' }}</button>
                 <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft ? false : true : true)">{{ resource && resource.is_draft ? 'List' : 'Draft'}}</button>
-                <button class="delete_listing" @click="delete_listing">Delete</button>
+                <button class="delete_listing" @click="confirm='Are you sure you want to delete this listing? This action cannot be undone.'">Delete</button>
             </div>
         </div>
         <div id="form" @input="clear_errors" @change="clear_errors">
@@ -224,25 +224,36 @@
             </div>
         </div>
         <div id="buttons1">
-                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft : false)">{{ isPriorListing ? 'Update' : 'List' }}</button>
-                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft ? false : true : true)">{{ resource && resource.is_draft ? 'List' : 'Draft'}}</button>
-                <button class="delete_listing" @click="delete_listing">Delete</button>
-            </div>
+            <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft : false)">{{ isPriorListing ? 'Update' : 'List' }}</button>
+            <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft ? false : true : true)">{{ resource && resource.is_draft ? 'List' : 'Draft'}}</button>
+            <button class="delete_listing" @click="confirm='Are you sure you want to delete this listing? This action cannot be undone.'">Delete</button>
+        </div>
+        <div v-if="confirm!==''">
+            <Confirm :message="confirm" @confirm-no="confirm=''" @confirm-yes="confirm=''; delete_listing()" />
+        </div>
+        <div v-if="error!==''">
+            <Error :message="error" @close-error="error=''" />
+        </div>
     </div>
 </template>
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
     import { defineComponent, nextTick } from 'vue';
-    import type { CartResource, Resource, User } from '@/types';
+    import type { Resource, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
+    import Confirm from '@/components/user experience/confirm/Confirm.vue';
+    import Error from '@/components/user experience/error/Error.vue';
     export default defineComponent({
+        components: { Confirm, Error },
         data(): {
             isPriorListing: boolean,
             name: string,
             description: string,
             height: number,
+            confirm: string,
+            error: string,
             width: number,
             weight: number,
             subject_select: string
@@ -299,6 +310,8 @@
             subject: '',
             colour: 'Black',
             subject_select: '',
+            confirm: '',
+            error: '',
             author: '',
             condition: 'Used',
             source: 'None',
@@ -323,24 +336,22 @@
         }},
         methods: {
             async delete_listing(): Promise<void> {
-                if (confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
-                    let deleteListingResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/new-listing/`, {
-                        method: 'DELETE',
-                        credentials: 'include',
-                        headers: {
-                            'X-CSRFToken' : useUserStore().csrf
-                        },
-                        body: JSON.stringify(this.resource.id)
-                    })
-                    if (!deleteListingResponse.ok) {
-                        console.error('Failed to delete listing')
-                        return
-                    }
-                    useResourcesStore().removeResource(this.resource.id)
-                    useUserStore().removeResource(this.resource.id)
-                    useUsersStore().updateUser(this.user)
-                    window.location.href = '/listings'
+                let deleteListingResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/new-listing/`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf
+                    },
+                    body: JSON.stringify(this.resource.id)
+                })
+                if (!deleteListingResponse.ok) {
+                    this.error = 'Failed to delete listing. Please try again.'
+                    return
                 }
+                useResourcesStore().removeResource(this.resource.id)
+                useUserStore().removeResource(this.resource.id)
+                useUsersStore().updateUser(this.user)
+                window.location.href = '/listings'
             },
             clear_errors(): void {
                 const form: HTMLDivElement = document.getElementById('new-listing') as HTMLDivElement
@@ -548,7 +559,7 @@
                     })
                 }
                 if (!postListingResponse.ok) {
-                    console.error(is_draft ? 'Error saving listing as draft' : 'Error posting listing')
+                    this.error = is_draft ? 'Error saving listing as draft. Please try again.' : 'Error posting listing. Please try again.' 
                     return
                 }
                 const postListingData: Resource = await postListingResponse.json()

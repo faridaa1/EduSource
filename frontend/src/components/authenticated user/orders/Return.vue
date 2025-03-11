@@ -502,6 +502,7 @@
             }
             this.placed_order = false
             this.get_total()
+            this.phone_number = this.seller.phone_number
             this.return_method = this.order.return_method
             this.return_reason = this.order.return_reason
             document.addEventListener('keydown', (event) => {

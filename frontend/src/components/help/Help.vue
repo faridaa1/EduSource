@@ -5,7 +5,7 @@
             <button @click="chatbot">Start Chatting Now</button>
         </div>
         <div id="faqs">
-            <div>Frequently Asked Questions</div>
+            <div id="header">Frequently Asked Questions</div>
             <div class="item">
                 <div class="heading" @click="one=!one">
                     <p>How do I exchange resources?</p>
@@ -179,7 +179,6 @@
     }
 
     .heading {
-        color: #0DCAF0;
         display: flex;
         gap: 1rem;
     }
@@ -189,7 +188,7 @@
     }
 
     #dark .heading {
-        color: rgb(216, 216, 216);
+        color: rgb(235, 235, 235);
     }
 
     .heading:hover {
@@ -210,6 +209,10 @@
 
     #line {
         width: 80%;
+    }
+
+    #faqs #header {
+        text-decoration: underline;
     }
 
     .item {

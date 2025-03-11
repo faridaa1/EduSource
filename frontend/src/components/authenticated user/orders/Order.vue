@@ -621,6 +621,10 @@
         color: white;
     }
 
+    #dark #cancel {
+        color: white !important;
+    }
+
     #cancel:hover {
         background-color: darkred !important;
     }

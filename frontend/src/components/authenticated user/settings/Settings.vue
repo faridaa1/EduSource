@@ -10,6 +10,7 @@
                 </div>
             </div>
             <div id="currency" class="setting">
+                <label>Currency</label>
                 <select id="currency-dropdown" v-model="currency_setting" @change="update_setting('currency', currency_setting)">
                     <option v-for="currency in ['USD', 'GBP', 'EUR']" :key="currency" :value="currency">
                     {{ currency }}

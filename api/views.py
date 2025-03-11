@@ -985,7 +985,7 @@ known_questions_and_answers = {
     \n2. Select the item
     \n3. Select Buy Now
     \n4. Select Place Order
-    \nThe second way is as follows
+    \nThe second way is as follows:
     \n1. Search for the item
     \n2. Select the item
     \n3. Add item to Cart
