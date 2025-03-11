@@ -14,8 +14,8 @@
                     <i id="four" class="bi bi-star-fill"></i>
                     <i id="five" class="bi bi-star-fill"></i>
                     <p>{{ average_rating }}</p>
-                    <span v-if="total_ratings === 1">({{total_ratings}} rating)</span>
-                    <span v-if="total_ratings !== 1">({{total_ratings}} ratings)</span>
+                    <span class="rating-text" v-if="total_ratings === 1">({{total_ratings}} rating)</span>
+                    <span class="rating-text" v-if="total_ratings !== 1">({{total_ratings}} ratings)</span>
                 </div>
                 <span v-if="total_ratings === 0">0 ratings</span>
                 <div id="add-review" v-if="!written_review && total_ratings === 0" @click="add_review">Be the first to write a review</div>
@@ -32,8 +32,8 @@
                 <div id="cart">
                     <p id="cart-total">{{ cart_resource.number }}</p>
                     <div id="cart-toggle">
-                        <p v-if="(Object.keys(currentResource).length === 0) || cart_resource.number < currentResource.stock" id="plus" :class="(Object.keys(currentResource).length === 0) ? 'round-plus' : ''" @click="update_cart(1)">+</p>
-                        <hr v-if="cart_resource.number > 0 && (Object.keys(currentResource).length === 0) || (cart_resource.number < currentResource.stock)">
+                        <p v-if="(Object.keys(currentResource).length === 0) || cart_resource.number < currentResource.stock" id="plus" :class="cart_resource.number === 0 || (Object.keys(currentResource).length === 0) ? 'round-plus' : ''" @click="update_cart(1)">+</p>
+                        <hr v-if="cart_resource.number > 0 && ((Object.keys(currentResource).length === 0) || (cart_resource.number < currentResource.stock))">
                         <p v-if="cart_resource.number > 0" id="minus" :class="(Object.keys(currentResource).length === 0) || (cart_resource.number < currentResource.stock) ? '' : 'round-border'" @click="update_cart(-1)"><i :class="cart_resource.number === 1 ? 'bi bi-trash3-fill' : ''"></i>{{ cart_resource.number === 1 ? '' : '-' }}</p>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
                 <div id="sorting">
                     <div id="filter-right">
                         <div class="filtering">
-                            <label>Sort By</label>
+                            <label>Sort</label>
                             <select v-model="sort_by">
                                 <option value="earliest">Date: Earliest to Latest</option>
                                 <option value="latest">Date: Latest to Earliest</option>
@@ -112,7 +112,7 @@
                                     <div class="filter-item border-top">
                                         <label>Review Type</label>
                                         <div class="row">
-                                            <div :class="both_reviews ? '' : 'not'" class="datum" v-if="allResources.map(resource => resource.user).includes(user.id)" @click="both_reviews=!both_reviews">All</div>
+                                            <div :class="both_reviews ? '' : 'not'" class="datum" @click="both_reviews=!both_reviews">All</div>
                                             <div :class="my_reviews ? '' : 'not'" class="datum" @click="my_reviews=!my_reviews">My Reviews</div>
                                             <div :class="me_reviews ? '' : 'not'" class="datum" v-if="allResources.map(resource => resource.user).includes(user.id)" @click="me_reviews=!me_reviews">Reviews for Me</div>
                                         </div>
@@ -233,8 +233,8 @@
                         </div>
                     </div>
                     <div v-if="!editing || editing && editing_review !== review.id" class="review-media">
-                        <img class="review-image" v-if="review.image" :src="`http://localhost:8000${review.image}`" alt="image">
-                        <video class="review-video" v-if="review.video" :src="`http://localhost:8000${review.video}`" controls></video>
+                        <img class="review-image" @click="image_full_url=`http://localhost:8000${review.image}`, image_full=true" v-if="review.image" :src="`http://localhost:8000${review.image}`" alt="image">
+                        <video class="review-video" @click="video_full_url=`http://localhost:8000${review.video}`; video_full=true" v-if="review.video" :src="`http://localhost:8000${review.video}`" controls></video>
                     </div>
                 </div>
                 <div v-if="editing && editing_review === review.id">
@@ -283,6 +283,16 @@
             <div v-if="error!==''">
                 <Error :message="error" @close-error="error=''" />
             </div>
+            <div v-if="image_full || video_full" id="border" @click="image_full_url='',image_full=false,video_full=false,video_full_url=''">
+                <div class="full_media" v-if="image_full && (image_full_url!=='')">
+                    <i id="x" class="bi bi-x-lg"></i>
+                    <img :src="image_full_url">
+                </div>
+                <div class="full_media" v-if="video_full && (video_full_url!=='')">
+                    <i id="x" class="bi bi-x-lg"></i>
+                    <video :src="video_full_url" controls></video>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -299,6 +309,10 @@
     export default defineComponent({
         components: { Stars, ViewSellers, Error },
         data(): {
+            video_full: boolean,
+            video_full_url: string,
+            image_full: boolean,
+            image_full_url: string,
             api: boolean,
             no_reviews: boolean,
             filter_zero: boolean,
@@ -339,6 +353,10 @@
             all_stars: true,
             all_media: true,
             exchanging: false,
+            video_full: false,
+            video_full_url: '',
+            image_full: false,
+            image_full_url: '',
             seen_review: false,
             filter_zero: true,
             no_reviews: true,
@@ -882,7 +900,7 @@
                 )
                 reviews = reviews.filter(review => {
                     if (
-                        (   this.all_stars || 
+                        (   (this.filter_one && this.filter_two && this.filter_three && this.filter_five && this.filter_four) || 
                             (   (this.filter_one && parseFloat(review.rating.toString()) === 1)
                             || (this.filter_zero && parseFloat(review.rating.toString()) === 0)
                             || (this.filter_two && parseFloat(review.rating.toString()) === 2)
@@ -892,19 +910,20 @@
                             )
                         )
                         && (
-                            this.all_media || 
+                            (this.filter_images && this.filter_video && this.no_reviews) || 
                             (   (this.filter_images && (review.image !== null))
                                 || (this.filter_video && (review.video !== null))
                                 || (this.no_reviews && ((review.image === null) && review.video === null))
                             )
                         )
                         && (
-                            this.both_reviews || 
+                            (this.my_reviews && this.me_reviews) || 
                             (   (this.me_reviews && (this.allResources.find(resource => resource.id === review.resource)))
                                 || (this.my_reviews && (review.user === this.user.id))
                             )
                         )
                     ) {
+                        console.log(this.my_reviews)
                         return true
                     }
                     return false
@@ -1208,7 +1227,7 @@
 <style scoped>
     #resource-view {
         display: grid;
-        grid-template-columns: 1fr 2fr 0.5fr 0.5fr;
+        grid-template-columns: 1.5fr 2fr 0.5fr 0.5fr;
         grid-template-areas: "header header header header"
                              "resource resource-description view-sellers resource-cart"
                              "resource-details resource-details resource-details resource-details"
@@ -1234,7 +1253,7 @@
         grid-area: reviews;
         display: flex;
         flex-direction: column;
-        gap: 5rem;
+        gap: 2rem;
     }
 
     #header {
@@ -1330,7 +1349,7 @@
         border-radius: 0.5rem;
         border: 0.3rem solid #D9D9D9;
         padding: 0.4rem;
-        height: 100%;
+        height: 10rem;
         overflow-y: auto;
     }
 
@@ -1587,10 +1606,17 @@
     }
 
     .review-image, .review-video {
-        height: 5rem;
+        height: 6rem;
+        width: 6rem;
+        object-fit: contain;
         background-color: #D9D9D9;
         border-radius: 0.5rem;
         padding: 0.5rem;
+    }
+
+    .review-image:hover, .review-video:hover {
+        background-color: darkgray;
+        cursor: pointer;
     }
 
     #review-heading-one .icon {
@@ -1902,7 +1928,6 @@
         display: flex;
         padding: 0 !important;
         justify-content: center;
-        /* width: 3rem !important; */
         background-color: transparent !important;
     }
 
@@ -1937,7 +1962,7 @@
     hr {
         border: none;
         height: 1.7rem;
-        width: 0.01rem;
+        width: 0.08rem;
         background-color: black !important;
     }
 
@@ -1981,5 +2006,184 @@
 
     #dark #view-sellers, #dark #details .data, #dark #filtering-section {
         color: black;
+    }
+
+    #border {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        width: 100vw;
+        background-color: rgb(53, 53, 53, 50%);
+        z-index: 2;
+        justify-content: center;
+        align-items: center;
+        display: flex;
+    }
+
+    #border img, #border video {
+        height: 20rem;
+        width: 20rem;
+        object-fit: contain;
+        background-color: #d9d9d9;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    #border div {
+        position: relative;
+    }
+
+    #x {
+        color: red;
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        font-size: 1.2rem;
+    }
+
+    #x:hover {
+        cursor: pointer;
+        color: darkred;
+    }
+
+    /* Responsive design */
+    @media (max-width: 1594px) {
+        #resource-view {
+            grid-template-columns: 1fr 1.2fr 0.5fr;
+            grid-template-areas: "header header header"
+                                "resource resource-description view-sellers"
+                                "resource-cart resource-cart resource-cart"
+                                "resource-details resource-details resource-details"
+                                "stars stars stars"
+                                "my-review my-review my-review"
+                                "reviews reviews reviews"
+                                ;
+        }
+
+        #resource-cart {
+            justify-self: start !important;
+            flex-direction: row;
+            align-items: center;
+        }
+    }
+
+    @media (max-width: 1302px) {
+        #resource-view {
+            grid-template-columns: 1.5fr 0.7fr 0.7fr;
+            grid-template-areas: "header header header"
+                                "resource view-sellers resource-cart"
+                                "resource-description resource-description resource-description"
+                                "resource-details resource-details resource-details"
+                                "stars stars stars"
+                                "my-review my-review my-review"
+                                "reviews reviews reviews"
+                                ;
+        }
+
+        #resource-cart {
+            justify-self: start !important;
+            flex-direction: column;
+        }
+
+        .rating-text {
+            display: block !important;
+            white-space: nowrap;
+        }
+    }
+
+    @media (max-width: 930px) {
+        #resource-view {
+            grid-template-columns: 1fr 1fr;
+            grid-template-areas: "header header"
+                                "resource view-sellers"
+                                "resource-cart resource-cart"
+                                "resource-description resource-description"
+                                "resource-details resource-details"
+                                "stars stars"
+                                "my-review my-review"
+                                "reviews reviews"
+                                ;
+        }
+
+        #resource-cart, #view-sellers{
+            justify-self: start !important;
+        }
+
+        #resource-cart {
+            flex-direction: row;
+        }
+    }
+
+    @media (max-width: 644px) {
+        #resource-view {
+            grid-template-columns: 0.5fr 1fr;
+            grid-template-areas: "header header"
+                                "resource resource"
+                                "view-sellers resource-cart"
+                                "resource-description resource-description"
+                                "resource-details resource-details"
+                                "stars stars"
+                                "my-review my-review"
+                                "reviews reviews"
+                                ;
+        }
+
+        #resource-cart {
+            justify-self: start !important;
+        }
+
+        #resource-cart {
+            flex-direction: row;
+        }
+    }
+
+    @media (max-width: 496px) {
+        #resource-view {
+            grid-template-columns: 1fr 1fr;
+            grid-template-areas: "header header"
+                                "resource resource"
+                                "view-sellers resource-cart"
+                                "resource-description resource-description"
+                                "resource-details resource-details"
+                                "stars stars"
+                                "my-review my-review"
+                                "reviews reviews"
+                                ;
+            gap: 2rem;
+        }
+
+        #resource-cart {
+            justify-self: start !important;
+        }
+
+        #resource-cart {
+            flex-direction: column;
+        }
+
+        #resource img {
+            height: 8rem;
+            width: 8rem;
+        }
+
+        #desc {
+            height: 8rem;
+        }
+
+        .review-heading {
+            flex-direction: column;
+            gap: 0;
+            align-items: flex-start;
+            margin-bottom: 1.2rem;
+        }
+
+        #filter-right {
+            gap: 0.2rem;
+        }
+
+        #filtering {
+            flex-direction: column-reverse;
+            gap: 1rem;
+        }
     }
 </style>
