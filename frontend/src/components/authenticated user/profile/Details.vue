@@ -51,7 +51,7 @@
                 </div>
             </div>
             <div class="form-item">
-                <label for="">First Name</label>
+                <label>First Name</label>
                 <input required id="first_name" type="text" v-model="first_name" @input="validate_name(false)">
                 <div class="button-container">
                     <button id="name-save" class="save" type="submit" v-if="editingFirstName" @click="validate_name(true)"><i class="bi bi-floppy-fill"></i></button>
@@ -59,7 +59,7 @@
                 </div>
             </div>
             <div class="form-item">
-                <label for="">Last Name</label>
+                <label>Last Name</label>
                 <input required id="last_name" type="text" v-model="last_name" @input="validate_surname(false)">
                 <div class="button-container">
                         <button id="surname-save" class="save" type="submit" v-if="editingLastName" @click="validate_surname(true)"><i class="bi bi-floppy-fill"></i></button>
@@ -67,7 +67,7 @@
                 </div>
             </div>
             <div class="form-item">
-                <label for="">Phone Number</label>
+                <label>Phone Number</label>
                 <input required id="number" type="text" v-model="phone_number" @input="validate_number(false)">
                 <div class="button-container">
                     <button id="number-save" class="save" type="submit" v-if="editingPhoneNumber" @click="validate_number(true)"><i class="bi bi-floppy-fill"></i></button>

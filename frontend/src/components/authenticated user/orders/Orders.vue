@@ -38,7 +38,7 @@
             <div v-if="!searching" class="orders-item" @click="view_item(order.id)" v-for="order in filtered_orders">
                 <div class="item-one">
                     <div class="item-image">
-                        <img :src="`http://localhost:8000${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`" alt="">
+                        <img :src="`http://localhost:8000${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`">
                         <p id="number_of_items">{{ order_total(order) }}</p>
                     </div>
                     <div class="details">

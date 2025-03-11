@@ -230,7 +230,7 @@
                 <div id="row1">
                     <div id="col1" @click="showResourcePage(resource.id)">
                         <div id="search-picture">
-                            <img :src="`http://localhost:8000${resource.image1}`" alt="">
+                            <img :src="`http://localhost:8000${resource.image1}`">
                         </div>
                         <div id="search-data">
                             <p id="resource-name">{{ resource.name }}</p>

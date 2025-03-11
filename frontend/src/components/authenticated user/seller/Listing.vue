@@ -10,17 +10,17 @@
         </div>
         <div id="form" @input="clear_errors" @change="clear_errors">
             <div class="form-item" id="author">
-                <label for="" id="author-container">Author <span class="required">*</span></label>
+                <label id="author-container">Author <span class="required">*</span></label>
                 <input type="text" v-model="author" id="author-field" :disabled="self_made">
                 <div id="author-div">
-                    <label for="">Resource was self-made</label>
+                    <label>Resource was self-made</label>
                     <input type="checkbox" :checked="self_made" @click="self_made = !self_made">
                 </div>
                 <p v-if="self_made">Author will show up as your username, <span>{{ user.username }}</span></p>
             </div>
             <div class="form-item">
-                <label for="">Name <span class="required">*</span></label>
-                <input type="text" name="" id="name" v-model="name">
+                <label>Name <span class="required">*</span></label>
+                <input type="text" id="name" v-model="name">
                 <div id="resource_exists" v-if="exists_resource">
                     <p>A resource exists with this name, so certain details below cannot be changed.</p>
                     <p>Select 'Resource was self-made', change the resource name,  or change the resource author name to be able to edit all details.</p>
@@ -31,17 +31,17 @@
                 </div>
             </div>
             <div class="form-item">
-                <label for="">Description <span class="required">*</span></label>
-                <textarea name="" id="description" v-model="description" :disabled="exists_resource"></textarea>
+                <label>Description <span class="required">*</span></label>
+                <textarea id="description" v-model="description" :disabled="exists_resource"></textarea>
             </div>
             <div id="dimensions" class="form-item">
-                <label for="">Dimensions <span class="required">*</span></label>
+                <label>Dimensions <span class="required">*</span></label>
                 <div id="dimensions-container">
                     <div class="dimension">
-                        <label for="">Height</label>
+                        <label>Height</label>
                         <div>
                             <input required type="number" min="0" max="1000.00" step="0.01" v-model="height" :disabled="exists_resource">
-                            <select name="" id="height_dimension" v-model="dimension_unit" :disabled="exists_resource">
+                            <select id="height_dimension" v-model="dimension_unit" :disabled="exists_resource">
                                 <option value="cm">cm</option>
                                 <option value="m">m</option>
                                 <option value="in">in</option>
@@ -49,10 +49,10 @@
                         </div>
                     </div>
                     <div class="dimension">
-                        <label for="">Width</label>
+                        <label>Width</label>
                         <div>
                             <input required type="number" max="1000.00" min="0" step="0.01" v-model="width" :disabled="exists_resource">
-                            <select name="" id="width_dimension" v-model="dimension_unit" :disabled="exists_resource">
+                            <select id="width_dimension" v-model="dimension_unit" :disabled="exists_resource">
                                 <option value="cm">cm</option>
                                 <option value="m">m</option>
                                 <option value="in">in</option>
@@ -60,10 +60,10 @@
                         </div>
                     </div>
                     <div class="dimension">
-                        <label for="">Weight</label>
+                        <label>Weight</label>
                         <div>
                             <input required type="number" min="0" max="1000.00" step="0.01" v-model="weight" :disabled="exists_resource">
-                            <select name="" id="weight_dimension" v-model="weight_unit" :disabled="exists_resource">
+                            <select id="weight_dimension" v-model="weight_unit" :disabled="exists_resource">
                                 <option value="kg">kg</option>
                                 <option value="ml">ml</option>
                                 <option value="L">L</option>
@@ -76,22 +76,22 @@
                 </div>
             </div>
             <div class="form-item" id="type-container">
-                <label for="">Type <span class="required">*</span></label>
-                <select name="" id="type" v-model="type" :disabled="exists_resource">
+                <label>Type <span class="required">*</span></label>
+                <select id="type" v-model="type" :disabled="exists_resource">
                     <option value="Textbook">Textbook</option>
                     <option value="Notes">Notes</option>
                     <option value="Stationery">Stationery</option>
                 </select>
             </div>
             <div v-if="type !== 'Stationery'" class="form-item" id="type-container">
-                <label for="">Media <span class="required">*</span></label>
-                <select name="" id="type" v-model="media">
+                <label>Media <span class="required">*</span></label>
+                <select id="type" v-model="media">
                     <option value="Online">Online</option>
                     <option value="Paper">Paper</option>
                 </select>
             </div>
             <div v-if="type !== 'Stationery'" class="form-item" id="pages-container">
-                <label for="">Page Range <span class="required">*</span></label>
+                <label>Page Range <span class="required">*</span></label>
                 <div>
                 <input required type="number" min="1" max="9999" step="1" v-model="page_start">
                 <p>to</p>
@@ -99,11 +99,11 @@
                 </div>
             </div>
             <div class="form-item" id="subject-container">
-                <label for="">Subject <span class="required">*</span></label>
+                <label>Subject <span class="required">*</span></label>
                 <div>
                     <input id="subject" type="text" v-model="subject" :disabled="exists_resource">
                     <select v-model="subject_select" :disabled="exists_resource">
-                        <option value="" selected disabled hidden>
+                        <option selected disabled hidden>
                             Select
                         </option>
                         <option :value="subject" v-for="subject in all_subjects">
@@ -113,8 +113,8 @@
                 </div>
             </div>
             <div class="form-item" id="colour-container">
-                <label for="">Colour <span class="required">*</span></label>
-                <select name="" id="colour" v-model="colour">
+                <label>Colour <span class="required">*</span></label>
+                <select id="colour" v-model="colour">
                     <option value="Black">Black</option>
                     <option value="Red">Red</option>
                     <option value="Yellow">Yellow</option>
@@ -129,25 +129,25 @@
                 </select>
             </div>
             <div v-if="self_made" class="form-item" id="sources-container">
-                <label for="">Assisted Sources <span class="required">*</span></label>
-                <select name="" id="sources-field" v-model="source">
+                <label>Assisted Sources <span class="required">*</span></label>
+                <select id="sources-field" v-model="source">
                     <option value="AI">AI</option>
                     <option value="Internet">Internet</option>
                     <option value="None">None</option>
                 </select>
             </div>
             <div class="form-item" id="condition-container">
-                <label for="">Condition <span class="required">*</span></label>
-                <select name="" id="condition-field" v-model="condition">
+                <label>Condition <span class="required">*</span></label>
+                <select id="condition-field" v-model="condition">
                     <option value="New">New</option>
                     <option value="Used">Used</option>
                 </select>
             </div>
             <div class="form-item" id="price-container">
-                <label for="">Price <span class="required">*</span></label>
+                <label>Price <span class="required">*</span></label>
                 <div id="price-flex">
                     <input required type="number" max="9999.00" min="0" step="0.01" v-model="price">
-                    <select name="" id="price-field" v-model="currency">
+                    <select id="price-field" v-model="currency">
                         <option value="GBP">GBP</option>
                         <option value="USD">USD</option>
                         <option value="EUR">EUR</option>
@@ -155,31 +155,31 @@
                 </div>
             </div>
             <div class="form-item" id="price-container">
-                <label for="">Stock <span class="required">*</span></label>
+                <label>Stock <span class="required">*</span></label>
                 <input id="stock-field" required type="number" max="9999.00" v-model="stock" step="1" min="0">
             </div>
             <div class="form-item" id="delivery-container">
-                <label for="">Delivey Options <span class="required">*</span></label>
+                <label>Delivey Options <span class="required">*</span></label>
                 <div id="options">
                     <div>
-                        <label for="">Delivery</label>
+                        <label>Delivery</label>
                         <input type="checkbox" v-model="allow_delivery" id="allow_delivery">
                     </div>
                     <div>
-                        <label for="">Collection</label>
+                        <label>Collection</label>
                         <input type="checkbox" v-model="allow_collection">
                     </div>
                     <div>
-                        <label for="">Allow Returns</label>
+                        <label>Allow Returns</label>
                         <input type="checkbox" v-model="allow_return">
                     </div>
                 </div>
             </div>
             <div class="form-item" id="price-container">
-                <label for="">Estimated Delivery Time <span class="required">*</span></label>
+                <label>Estimated Delivery Time <span class="required">*</span></label>
                 <div id="price-flex">
                     <input required type="number" max="9999.00" min="1" step="1" v-model="estimated_delivery_number">
-                    <select name="" id="estimated-delivery-field" v-model="estimated_delivery_units">
+                    <select id="estimated-delivery-field" v-model="estimated_delivery_units">
                         <option value="minute">{{ estimated_delivery_number === 1.00 ? 'minute' : 'minutes' }}</option>
                         <option value="hour">{{ estimated_delivery_number === 1.00 ? 'hour' : 'hours' }}</option>
                         <option value="day">{{ estimated_delivery_number === 1.00 ? 'day' : 'days' }}</option>
@@ -189,7 +189,7 @@
                 </div>
             </div>
             <div class="form-item" id="image-container">
-                <label for="">Images (.png) <span class="required">*</span></label>
+                <label>Images (.png) <span class="required">*</span></label>
                 <p id="images-label" v-if="image_error">{{ image_error }}</p>
                 <div id="images">
                     <div class="image_input" id="image">
@@ -211,7 +211,7 @@
                 </div>
             </div>
             <div class="form-item" id="video-container">
-                <label for="">Videos (.mp4) <span class="required">*</span></label>
+                <label>Videos (.mp4) <span class="required">*</span></label>
                 <p id="videos-label" v-if="video_error">{{ video_error }}</p>
                 <div class="video_input" id="video_1">
                     <input id="video1" type="file" accept=".mp4" @change="show_video">

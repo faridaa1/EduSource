@@ -11,7 +11,7 @@
                     <div id="border">
                         <div id="body">
                             <div class="resource" v-for="resource in user.cart.resources.filter(resource => valid(resource))">
-                                <div id="image"><img :src="`http://localhost:8000/${getResource(resource.resource).image1}`" alt=""></div>
+                                <div id="image"><img :src="`http://localhost:8000/${getResource(resource.resource).image1}`"></div>
                                 <div class="name">
                                     <div>{{ getResource(resource.resource).name }}</div>
                                     <div id="toggle">
@@ -45,19 +45,19 @@
                         <div v-if="!changing_address">{{ user.postcode }}</div>
                         <div v-if="!changing_address" class="change_text" @click="changing_address = true">Change Address</div>
                         <div v-if="changing_address" class="input">
-                            <label for="">First Line</label>
+                            <label>First Line</label>
                             <input id="address1" type="text" :value="user.address_line_one" @input="clear_address_error">
                         </div>
                         <div v-if="changing_address" class="input">
-                            <label for="" class="header">Second Line</label>
+                            <label class="header">Second Line</label>
                             <input id="address2" type="text" :value="user.address_second_line" @input="clear_address_error">
                         </div>
                         <div v-if="changing_address" class="input">
-                            <label for="" class="header">City</label>
+                            <label class="header">City</label>
                             <input id="city" type="text" :value="user.city" @input="clear_address_error">
                         </div>
                         <div v-if="changing_address" class="input">
-                            <label for="" class="header">Postcode</label>
+                            <label class="header">Postcode</label>
                             <input id="postcode" type="text" :value="user.postcode" @input="clear_address_error">
                         </div>
                         <div v-if="changing_address" class="edit-buttons header">

@@ -18,7 +18,7 @@
                         <div id="body">
                             <div class="resource" v-for="resource in order.resources" @click="(event) => view_resource(event, getResource(resource.resource).id)">
                                 <div id="image">
-                                    <img :src="`http://localhost:8000/${getResource(resource.resource).image1}`" alt="">
+                                    <img :src="`http://localhost:8000/${getResource(resource.resource).image1}`">
                                     <div id="resnum">{{ resource.number }}</div>
                                 </div>
                                 <div class="name">

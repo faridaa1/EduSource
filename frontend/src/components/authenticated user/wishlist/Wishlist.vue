@@ -8,7 +8,7 @@
             <div class="cart-item" v-for="resource in user.wishlist.resources">
                 <div class="item-one">
                     <div class="item-image">
-                        <img @click="view_item((allResources.find(res => res.id === resource.resource) as Resource)?.id)" :src="`http://localhost:8000${(allResources.find(res => res.id === resource.resource) as Resource)?.image1}`" alt="">
+                        <img @click="view_item((allResources.find(res => res.id === resource.resource) as Resource)?.id)" :src="`http://localhost:8000${(allResources.find(res => res.id === resource.resource) as Resource)?.image1}`">
                     </div>
                     <div class="details">
                         <p>{{ (allResources.find(res => res.id === resource.resource) as Resource)?.name }}</p>

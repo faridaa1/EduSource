@@ -19,7 +19,7 @@
                             <div id="select_item_error" v-if="select_item_error !== ''">{{ select_item_error }}</div>
                             <div class="resource" v-for="resource in order.resources.filter(resource => getResource(resource.resource).allow_return)">
                                 <div id="image">
-                                    <img :src="`http://localhost:8000/${getResource(resource.resource).image1}`" alt="">
+                                    <img :src="`http://localhost:8000/${getResource(resource.resource).image1}`">
                                     <div v-if="order.status === 'Requested Return'" id="resnum">{{ resource.number_for_return }}</div>
                                 </div>
                                 <div class="name">
@@ -49,12 +49,13 @@
                     <div>Seller Phone Number</div>
                     <div id="user_number">
                         <div id="number_container">
-                            <div><input id="number_input" type="text" :value="seller.phone_number" :disabled="mode === 'buyer'" @input="clear_number_error"></div>
+                            <div><input id="number_input" type="text" v-model="phone_number" :disabled="mode === 'buyer'" @input="changing_number=true; clear_number_error()"></div>
                             <div class="edit-buttons" v-if="changing_number">
-                                <button class="save" @click="change_phone_number"><i class="bi bi-floppy-fill"></i></button>
-                                <button class="clockwise" @click="cancel_edit(0)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                                <button :disabled="making_change" class="save" @click="change_phone_number"><i class="bi bi-floppy-fill"></i></button>
+                                <button :disabled="making_change" class="clockwise" @click="cancel_edit(0)"><i class="bi bi-arrow-counterclockwise"></i></button>
                             </div>
                         </div>
+                        <div v-if="mode === 'seller' && !changing_number" class="change_text" @click="changing_number = true">Change Phone Number</div>
                     </div>
                 </div>
             </div>
@@ -74,29 +75,30 @@
                 <div id="address">
                     <div>Seller Address</div>
                     <div id="address_lines">
-                        <div v-if="!changing_address">{{ seller.address_line_one }}</div>
-                        <div v-if="seller.address_second_line && !changing_address">{{ seller.address_second_line }}</div>
-                        <div v-if="!changing_address">{{ seller.city }}</div>
-                        <div v-if="!changing_address">{{ seller.postcode }}</div>
+                        <div v-if="!changing_address">{{ mode === 'buyer' ? seller.address_line_one : user.address_line_one }}</div>
+                        <div v-if="seller.address_second_line && !changing_address">{{ mode === 'buyer' ? seller.address_second_line : user.address_second_line }}</div>
+                        <div v-if="!changing_address">{{ mode === 'buyer' ? seller.city : user.city }}</div>
+                        <div v-if="!changing_address">{{ mode === 'buyer' ? seller.postcode : user.postcode }}</div>
+                        <div v-if="mode === 'seller' && !changing_address" class="change_text" @click="changing_address = true">Change Address</div>
                         <div v-if="changing_address" class="input">
-                            <label for="">First Line</label>
+                            <label>First Line</label>
                             <input id="address1" type="text" :value="user.address_line_one" @input="clear_address_error">
                         </div>
                         <div v-if="changing_address" class="input">
-                            <label for="" class="header">Second Line</label>
+                            <label class="header">Second Line</label>
                             <input id="address2" type="text" :value="user.address_second_line" @input="clear_address_error">
                         </div>
                         <div v-if="changing_address" class="input">
-                            <label for="" class="header">City</label>
+                            <label class="header">City</label>
                             <input id="city" type="text" :value="user.city" @input="clear_address_error">
                         </div>
                         <div v-if="changing_address" class="input">
-                            <label for="" class="header">Postcode</label>
+                            <label class="header">Postcode</label>
                             <input id="postcode" type="text" :value="user.postcode" @input="clear_address_error">
                         </div>
                         <div v-if="changing_address" class="edit-buttons header">
-                            <button class="save" @click="change_address"><i class="bi bi-floppy-fill"></i></button>
-                            <button class="clockwise" @click="cancel_edit(1)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                            <button :disabled="making_change" class="save" @click="change_address"><i class="bi bi-floppy-fill"></i></button>
+                            <button :disabled="making_change" class="clockwise" @click="cancel_edit(1)"><i class="bi bi-arrow-counterclockwise"></i></button>
                         </div>
                     </div>
                 </div>
@@ -116,9 +118,9 @@
                     </div>
                 </div>
                 <div id="buttons">
-                    <button v-if="(user.mode == 'buyer') && order.status === 'Complete'" @click="submit_return(order, false)">Submit</button>
-                    <button id="cancel" v-if="(user.mode == 'buyer') && order.status === 'Requested Return'" @click="submit_return(order, true)">Cancel</button>
-                    <button id="message_seller" v-if="order.status === 'Requested Return'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
+                    <button :disabled="making_change" v-if="(user.mode == 'buyer') && order.status === 'Complete'" @click="submit_return(order, false)">Submit</button>
+                    <button :disabled="making_change" id="cancel" v-if="(user.mode == 'buyer') && order.status === 'Requested Return'" @click="submit_return(order, true)">Cancel</button>
+                    <button :disabled="making_change" id="message_seller" v-if="order.status === 'Requested Return'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
                 </div>
             </div>
         </div>
@@ -145,9 +147,11 @@
             mode: 'buyer' | 'seller',
             total: number,
             return_reason: string,
+            making_change: boolean,
             placed_order: boolean,
             status: 'Placed' | 'Requested Return' | 'Processing' | 'Return Rejected' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Being Returned' | 'Refunded',
             error: string,
+            phone_number: string,
             changing_number: boolean,
             changing_address: boolean,
             return_method: 'Delivery' | 'Collection',
@@ -158,8 +162,10 @@
             placed_order: false,
             status: 'Requested Return',
             select_item_error: '',
+            phone_number: '',
             return_reason: '',
             total: 0,
+            making_change: false,
             error: '',
             changing_number: false,
             changing_address: false,
@@ -171,6 +177,7 @@
                     this.error = 'Error updating status. Please try again'
                     return
                 }
+                this.making_change = true
                 let userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
                         method: 'PUT',
                         credentials: 'include',
@@ -180,33 +187,39 @@
                         body: JSON.stringify({'id': this.order.id, status: status.value})
                     })
                 if (!userResponse.ok) {
+                    this.making_change = false
                     this.error = 'Error updating status. Please try again'
                     return
+                } else {
+                    this.making_change = false
+                    let user: User = await userResponse.json()
+                    useUserStore().saveUser(user)
+                    useUsersStore().updateUser(user)
                 }
-                let user: User = await userResponse.json()
-                useUserStore().saveUser(user)
-                useUsersStore().updateUser(user)
             },
             message_seller(seller_id: number): void {
                 window.location.href = `/message/${this.user.id}/${seller_id}`
             },
             async return_item(return_number: number, resource_id: number): Promise<void> {
+                this.making_change = true
                 let returnItemResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/return/${this.order.id}/${resource_id}/`, {
-                        method: 'PUT',
-                        credentials: 'include',
-                        headers: {
-                            'X-CSRFToken' : useUserStore().csrf,
-                            'Content-Type' : 'application/json',
-                        },
-                        body: JSON.stringify(return_number)
-                    })
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf,
+                        'Content-Type' : 'application/json',
+                    },
+                    body: JSON.stringify(return_number)
+                })
                 if (!returnItemResponse.ok) {
+                    this.making_change = false
                     this.error = 'Error updating return status. Please try again.'
                     return
                 }
                 if (return_number > 0) {
                     this.select_item_error = ''
                 }
+                this.making_change = false
                 let data: {user: User, resource: Resource} = await returnItemResponse.json()
                 useUserStore().saveUser(data.user)
                 useUsersStore().updateUser(data.user)
@@ -292,6 +305,7 @@
                 await this.update_address('postcode', postcodeInput)
             },
             async update_address(attribute: string, data: string): Promise<void> {
+                this.making_change = true
                 let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/${attribute}/`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -302,10 +316,12 @@
                     body: JSON.stringify(data)
                 })
                 if (userResponse.ok) {
+                    this.making_change = false
                     const user: User = await userResponse.json()
                     useUsersStore().updateUser(user)
                     useUserStore().saveUser(user)
                 } else {
+                    this.making_change = false
                     this.error = 'Error updating address. Please try again'
                 }
             },
@@ -322,12 +338,15 @@
                     numberElement.reportValidity()
                     return
                 }
+                
+                this.making_change = true
                 let correctNumber: boolean = this.attribute_existence(input)
                 if (correctNumber) {
                     numberElement.setCustomValidity('Account already exists with this phone number')
                     numberElement.reportValidity()
                     return
                 } 
+                this.making_change = true
                 let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/number/`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -338,12 +357,14 @@
                     body: JSON.stringify(input)
                 })
                 if (userResponse.ok) {
+                    this.making_change = false
                     const user: User = await userResponse.json()
                     useUsersStore().updateUser(user)
                     useUserStore().saveUser(user)
                     this.changing_number = false
                     numberElement.blur()
                 } else {
+                    this.making_change = false
                     this.error = 'Error updating number. Please try again.'
                 }
             },
@@ -359,6 +380,7 @@
                     this.select_item_error = 'Select at least one item to be returned.'
                     return
                 }
+                this.making_change = true
                 let returnResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/return/${this.order.id}/`, {
                         method: 'PUT',
                         credentials: 'include',
@@ -369,9 +391,11 @@
                         body: JSON.stringify({cancel: cancel ? 'true' : 'false', return_reason: this.return_reason, return_method: this.return_method})
                     })
                 if (!returnResponse.ok) {
+                    this.making_change = false
                     this.error = 'Error submitting return. Please try again.'
                     return
                 }
+                this.making_change = false
                 let data: {user: User, resources: Resource[]} = await returnResponse.json()
                 useUserStore().saveUser(data.user)
                 useUsersStore().updateUser(data.user)
@@ -385,6 +409,7 @@
             },
             attribute_existence(data: string): boolean {
                 const user = useUsersStore().users.filter(user => user.id !== this.user.id).find(user => user.phone_number === data)
+                this.making_change = false
                 return user === undefined ? false : true
             },
             back(): void {
@@ -402,6 +427,7 @@
             },
             async listedprice(resource: Resource): Promise<number> {
                 if (resource === undefined) return 0
+                this.making_change = true
                 let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
@@ -409,9 +435,14 @@
                         'X-CSRFToken' : useUserStore().csrf
                     }
                 })
-                if (!convertedPrice.ok) return resource.price
-                let returnedPrice: {new_price: number} = await convertedPrice.json()
-                return returnedPrice.new_price
+                if (!convertedPrice.ok) {
+                    this.making_change = false
+                    return resource.price
+                } else {
+                    this.making_change = false
+                    let returnedPrice: {new_price: number} = await convertedPrice.json()
+                    return returnedPrice.new_price
+                }
             },
             get_total(): void {
                 this.total = 0
@@ -523,6 +554,9 @@
                     resource.price = await this.listedprice(resource)
                 }
                 this.get_total()
+            },
+            seller(): void {
+                this.phone_number = this.seller.phone_number
             }
         },
     })
@@ -984,6 +1018,11 @@
         resize: none;
     }
 
+    button:disabled, button:disabled:hover {
+        background-color: darkgray !important;
+        cursor: not-allowed !important;
+    }
+
     /* Responsive Design */
     @media (max-width: 1002px) {
         #content { 
@@ -1005,9 +1044,6 @@
     }
 
     @media (max-width: 859px) {
-        input {
-            width: 20rem !important;
-        }
     }
 
     @media (max-width: 782px) {
@@ -1028,20 +1064,10 @@
         }
     }
 
-    @media (max-width: 686px) {
-        input {
-            width: 15rem !important;
-        }
-    }
-
     @media (max-width: 611px) {
         #search {
             margin-top: 5rem;
             position: absolute;
-        }
-
-        input {
-            width: 20rem !important;
         }
 
         #header1 {

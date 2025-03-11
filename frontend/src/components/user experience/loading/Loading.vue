@@ -1,7 +1,7 @@
 <template>
     <div>
         <!-- https://pixabay.com/gifs/gradient-web-loader-design-online-5812/ -->
-        <img src="./loading.gif" alt="">
+        <img src="./loading.gif" alt="Loading">
     </div>
 </template>
 
