@@ -388,7 +388,7 @@
                         return new Date(a.last_edited).getTime()  - new Date(b.last_edited).getTime() 
                     } else if (this.stat_filter === 'listing-new') {
                         return b.id - a.id
-                    }else {
+                    } else {
                         return a.id - b.id
                     }
                 })
@@ -399,9 +399,33 @@
             }
         },
         watch: {
+            $route(): void {
+                window.location.reload()
+            },
             viewing_profile(): void {
                 if (this.viewing_profile) {
-                    
+                    const displays = Array.from(document.getElementsByClassName('displays'))
+                    if (!displays) return
+                    for (const display of displays) {
+                        (display as HTMLDivElement).style.setProperty('height', 'auto', 'important')
+                    }
+                    const viewings = Array.from(document.getElementsByClassName('viewing'))
+                    if (!viewings) return
+                    for (const viewing of viewings) {
+                        (viewing as HTMLDivElement).style.setProperty('flex-direction', 'row', 'important')
+                        const child: HTMLParagraphElement = viewing.firstElementChild as HTMLParagraphElement
+                        if (!child) return
+                        child.style.setProperty('margin-top', '0rem', 'important')
+                    }
+                    const textbooks: HTMLDivElement = document.getElementById('textbooks') as HTMLDivElement
+                    if (!textbooks) return
+                    textbooks.style.setProperty('height', '12.5rem', 'important')
+                    const notes: HTMLDivElement = document.getElementById('notes') as HTMLDivElement
+                    if (!notes) return
+                    notes.style.setProperty('height', '12.5rem', 'important')
+                    const stationery: HTMLDivElement = document.getElementById('stationery') as HTMLDivElement
+                    if (!stationery) return
+                    stationery.style.setProperty('height', '12.5rem', 'important')
                 }
             },
             async user(new_user: User): Promise<void> {
