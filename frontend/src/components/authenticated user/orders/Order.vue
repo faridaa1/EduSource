@@ -73,7 +73,7 @@
                 <div id="buttons">
                     <button v-if="(user.mode == 'buyer') && returnable && order.status === 'Complete'" @click="start_return(order)">Start Return</button>
                     <button id="cancel" v-if="returnable && order.status === 'Requested Return'" @click="start_return(order)">{{ mode === 'buyer' ? 'Cancel' : 'View' }} Return</button>
-                    <button id="message_seller" v-if="returnable && order.status === 'Requested Return'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
+                    <button id="message_seller" v-if="(order.seller !== order.buyer) && returnable && order.status === 'Requested Return'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
                     <button id="cancel" v-if="(user.mode == 'buyer') && order.status === 'Placed'" @click="cancel_order">Cancel</button>
                 </div>
             </div>

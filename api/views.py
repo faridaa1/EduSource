@@ -25,9 +25,10 @@ chatbot_tokeniser = BlenderbotTokenizer.from_pretrained("facebook/blenderbot-400
 chatbot_model = BlenderbotForConditionalGeneration.from_pretrained("facebook/blenderbot-400M-distill")
 
 
-def spa(request: HttpRequest) -> HttpResponse:
+def frontend(request: HttpRequest) -> HttpResponse:
     """Used to ensure frontend routing"""
     return render(request, 'api/templates/api/index.html')
+
 def signup(request: HttpRequest) -> HttpResponse:
     """Handling user sign up"""
     if request.method == 'POST':
@@ -520,7 +521,7 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
         data = json.loads(request.body)
         user: User = get_object_or_404(User, id=user)
         current_date = datetime.datetime.now()
-        if data.get('exchange_id'):
+        if (not isinstance(data, int)) and data.get('exchange_id'):
             exchange: Exchange = get_object_or_404(Exchange, id=data.get('exchange_id'))
             resource1: Resource = exchange.resource1
             if resource1.estimated_delivery_units == 'day':
@@ -606,6 +607,8 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
             resource.stock = resource.stock - cart_resource.number
             resource.save()
             cart_resource.delete()
+        send_mail('Order Confirmation', f'Hi {user.first_name}!\n\nThis is to confirm that your order has been placed.\n\nThank you for shopping with EduSource.', 'edusource9325@gmail.com', [user.email])
+        send_mail('Order Placed', f'Hi {order.seller.first_name}!\n\nPlease check your account - a new order has been placed.\n\nEduSource', 'edusource9325@gmail.com', [order.seller.email])
         return JsonResponse({'user': user.as_dict(), 'resources': [resource.as_dict() for resource in Resource.objects.all()]})
     elif request.method == 'DELETE':
         user: User = get_object_or_404(User, id=user)

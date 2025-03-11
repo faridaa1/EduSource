@@ -120,7 +120,7 @@
                 <div id="buttons">
                     <button :disabled="making_change" v-if="(user.mode == 'buyer') && order.status === 'Complete'" @click="submit_return(order, false)">Submit</button>
                     <button :disabled="making_change" id="cancel" v-if="(user.mode == 'buyer') && order.status === 'Requested Return'" @click="submit_return(order, true)">Cancel</button>
-                    <button :disabled="making_change" id="message_seller" v-if="order.status === 'Requested Return'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
+                    <button :disabled="making_change" id="message_seller" v-if="(order.seller !== order.buyer) && order.status === 'Requested Return'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
                 </div>
             </div>
         </div>
