@@ -62,7 +62,13 @@
                 <div id="number">
                     <div class="title">Status</div>
                     <div id="user_number">
-                        {{ order.status }}
+                        <select @input="update_status" v-model="status" v-if="(mode==='seller') && (order.status !== 'Refunded') && (order.status !== 'Return Rejected')" id='order-status'>
+                            <option v-if="(order.status === 'Requested Return')" style="display: none;" value="Requested Return" disabled>Requested Return</option>
+                            <option v-if="(order.status === 'Requested Return')" value="Return Rejected">Return Rejected</option>
+                            <option v-if="(order.status === 'Requested Return') || (order.status === 'Being Returned')" value="Being Returned">Being Returned</option>
+                            <option v-if="(order.status === 'Being Returned')" value="Refunded">Refunded</option>
+                        </select>
+                        <p v-else>{{ order.status }}</p>
                     </div>
                 </div>
                 <div id="address">
@@ -140,6 +146,7 @@
             total: number,
             return_reason: string,
             placed_order: boolean,
+            status: 'Placed' | 'Requested Return' | 'Processing' | 'Return Rejected' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Being Returned' | 'Refunded',
             error: string,
             changing_number: boolean,
             changing_address: boolean,
@@ -149,6 +156,7 @@
             mode: 'buyer',
             return_method: 'Delivery',
             placed_order: false,
+            status: 'Requested Return',
             select_item_error: '',
             return_reason: '',
             total: 0,
@@ -157,6 +165,28 @@
             changing_address: false,
         }},
         methods: {
+            async update_status(): Promise<void> {
+                const status: HTMLSelectElement = document.getElementById('order-status') as HTMLSelectElement
+                if (!status) {
+                    this.error = 'Error updating status. Please try again'
+                    return
+                }
+                let userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: {
+                            'X-CSRFToken' : useUserStore().csrf
+                        },
+                        body: JSON.stringify({'id': this.order.id, status: status.value})
+                    })
+                if (!userResponse.ok) {
+                    this.error = 'Error updating status. Please try again'
+                    return
+                }
+                let user: User = await userResponse.json()
+                useUserStore().saveUser(user)
+                useUsersStore().updateUser(user)
+            },
             message_seller(seller_id: number): void {
                 window.location.href = `/message/${this.user.id}/${seller_id}`
             },
@@ -417,15 +447,16 @@
                 return useResourcesStore().resources
             },
             order(): Order {
-                    console.log(2)
                 const window_location: string[] = window.location.href.split('/')
                 const id: number = parseInt(window_location[4])
-                if (!this.user || ((this.mode === 'buyer') && ((!this.user.placed_orders) || (!this.user.placed_orders.find(order => order.id === id)))) || ((this.mode === 'seller') && ((!this.user.sold_orders)) || (!this.user.sold_orders.find(order => order.id === id)))) return {} as Order
+                if (!this.user || ((this.mode === 'buyer') && ((!this.user.placed_orders) || (!this.user.placed_orders.find(order => order.id === id)))) || ((this.mode === 'seller') && ((!this.user.sold_orders) || (!this.user.sold_orders.find(order => order.id === id))))) return {} as Order
                 let order: Order
                 if (this.mode === 'buyer') {
                     order = this.user.placed_orders.find(order => order.id === id) || {} as Order
+                    this.status = order.status
                 } else {
                     order = this.user.sold_orders.find(order => order.id === id) || {} as Order
+                    this.status = order.status
                 }
                 return order
             }
@@ -794,6 +825,10 @@
         border-radius: 0.5rem;
         width: 2rem;
         height: 2rem;
+    }
+
+    #user_number p {
+        font-size: 1.3rem;
     }
 
     #number_container button i, #address_lines button i {

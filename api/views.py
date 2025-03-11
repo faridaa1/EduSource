@@ -465,7 +465,7 @@ def cart_to_wishlist(request: HttpRequest, user: int) -> JsonResponse:
     
 
 def order(request: HttpRequest, user: int) -> JsonResponse:
-    """Defining order GET, POST, and DELETE"""
+    """Defining order GET, POST, PUT, and DELETE"""
     if request.method == 'GET':
         """Creating and returning order"""
         user: User = get_object_or_404(User, id=user)
@@ -607,6 +607,13 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
         user: User = get_object_or_404(User, id=user)
         order: Order = get_object_or_404(Order, id=json.loads(request.body))
         order.status = 'Cancelled'
+        order.save()
+        return JsonResponse(user.as_dict())
+    elif request.method == 'PUT': 
+        user: User = get_object_or_404(User, id=user)
+        data = json.loads(request.body)
+        order: Order = get_object_or_404(Order, id=data['id'])
+        order.status = data['status']
         order.save()
         return JsonResponse(user.as_dict())
     return JsonResponse({})

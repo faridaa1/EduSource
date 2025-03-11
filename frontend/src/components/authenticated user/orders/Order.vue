@@ -57,14 +57,24 @@
                 <div id="number">
                     <div class="title">Status</div>
                     <div id="user_number">
-                        {{ order.status }}
+                        <select @click="update_status" v-if="(mode==='seller') && (order.status !== 'Cancelled') && (order.status !== 'Refunded') && (order.status !== 'Return Rejected') && (order.status !== 'Complete')" id='order-status' v-model="status">
+                            <option style="display: none;" value="Placed" disabled>Placed</option>
+                            <option @click="update_status" v-if="(order.status === 'Placed') || (order.status === 'Processing')" value="Processing">Processing</option>
+                            <option @click="update_status" v-if="(order.status === 'Processing') || (order.status === 'Placed') || (order.status === 'Dispatched')" value="Dispatched">Dispatched</option>
+                            <option @click="update_status" v-if="(order.status === 'Processing') || (order.status === 'Placed') || (order.status === 'Dispatched')" value="Complete">Complete</option>
+                            <option v-if="(order.status !== 'Being Returned')" style="display: none;" value="Requested Return" disabled>Requested Return</option>
+                            <option @click="update_status" v-if="(order.status === 'Requested Return')" value="Return Rejected">Return Rejected</option>
+                            <option @click="update_status" v-if="(order.status === 'Requested Return') || (order.status === 'Being Returned')" value="Being Returned">Being Returned</option>
+                            <option @click="update_status" v-if="(order.status === 'Being Returned')" value="Refunded">Refunded</option>
+                        </select>
+                        <p v-else>{{ order.status }}</p>
                     </div>
                 </div>
                 <div id="buttons">
                     <button v-if="(user.mode == 'buyer') && returnable && order.status === 'Complete'" @click="start_return(order)">Start Return</button>
                     <button id="cancel" v-if="returnable && order.status === 'Requested Return'" @click="start_return(order)">{{ mode === 'buyer' ? 'Cancel' : 'View' }} Return</button>
                     <button id="message_seller" v-if="returnable && order.status === 'Requested Return'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
-                    <button id="cancel" v-if="order.status === 'Placed'" @click="cancel_order">Cancel</button>
+                    <button id="cancel" v-if="(user.mode == 'buyer') && order.status === 'Placed'" @click="cancel_order">Cancel</button>
                 </div>
             </div>
         </div>
@@ -92,13 +102,37 @@
             total: number,
             placed_order: boolean,
             error: string,
+            status: 'Placed' | 'Requested Return' | 'Processing' | 'Return Rejected' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Being Returned' | 'Refunded',
         } { return {
+            status: 'Processing',
             mode: 'buyer',
             placed_order: false,
             total: 0,
             error: ''
         }},
         methods: {
+            async update_status(): Promise<void> {
+                const status: HTMLSelectElement = document.getElementById('order-status') as HTMLSelectElement
+                if (!status) {
+                    this.error = 'Error updating status. Please try again'
+                    return
+                }
+                let userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: {
+                            'X-CSRFToken' : useUserStore().csrf
+                        },
+                        body: JSON.stringify({'id': this.order.id, status: status.value})
+                    })
+                if (!userResponse.ok) {
+                    this.error = 'Error updating status. Please try again'
+                    return
+                }
+                let user: User = await userResponse.json()
+                useUserStore().saveUser(user)
+                useUsersStore().updateUser(user)
+            },
             message_seller(seller_id: number): void {
                 window.location.href = `/message/${this.user.id}/${seller_id}`
             },
@@ -214,9 +248,13 @@
                 const window_location: string[] = window.location.href.split('/')
                 const id: number = parseInt(window_location[4])
                 if (this.mode === 'buyer') {
-                    return this.user.placed_orders.find(order => order.id === id) || {} as Order
+                    const order: Order = this.user.placed_orders.find(order => order.id === id) || {} as Order
+                    this.status = order.status
+                    return order
                 }
-                return this.user.sold_orders.find(order => order.id === id) || {} as Order
+                const order: Order = this.user.sold_orders.find(order => order.id === id) || {} as Order
+                this.status = order.status
+                return order
             }
         },
         async mounted(): Promise<void> {
@@ -433,6 +471,16 @@
 
     #payment {
         display: fl;
+    }
+
+    #user_number select {
+        border: none;
+        font-size: 1.3rem;
+        width: 100%;
+    }
+
+    #user_number p {
+        font-size: 1.3rem;
     }
 
     #card_ending, #address_lines, #user_number {

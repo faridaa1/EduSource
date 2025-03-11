@@ -23,11 +23,11 @@
                         <option value="all">All</option>
                         <option value="Placed">Placed</option>
                         <option value="Processing">Processing</option>
-                        <option value="Cancelled">Cancelled</option>
-                        <option value="Refund Rejected">Refund Rejected</option>
                         <option value="Dispatched">Dispatched</option>
+                        <option value="Cancelled">Cancelled</option>
                         <option value="Complete">Complete</option>
                         <option value="Requested Return">Requested Return</option>
+                        <option value="Return Rejected">Return Rejected</option>
                         <option value="Being Returned">Being Returned</option>
                         <option value="Refunded">Refunded</option>
                     </select>
@@ -88,7 +88,7 @@
             mode: 'buyer' | 'seller',
             mounted: boolean,
             order: 'new' | 'old' | string
-            status: 'all' | 'Placed' | 'Processing' | 'Refund Rejected' | 'Dispatched' 
+            status: 'all' | 'Placed' | 'Processing' | 'Return Rejected' | 'Dispatched' 
                     | 'Cancelled' | 'Complete' | 'Being Returned' | 'Refunded' | string
             current_page: number,
             total_pages: number,
