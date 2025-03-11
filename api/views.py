@@ -24,6 +24,10 @@ bert = pipeline("text-classification", model="nlptown/bert-base-multilingual-unc
 chatbot_tokeniser = BlenderbotTokenizer.from_pretrained("facebook/blenderbot-400M-distill") 
 chatbot_model = BlenderbotForConditionalGeneration.from_pretrained("facebook/blenderbot-400M-distill")
 
+
+def spa(request: HttpRequest) -> HttpResponse:
+    """Used to ensure frontend routing"""
+    return render(request, 'api/templates/api/index.html')
 def signup(request: HttpRequest) -> HttpResponse:
     """Handling user sign up"""
     if request.method == 'POST':
