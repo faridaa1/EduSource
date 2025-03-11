@@ -156,7 +156,7 @@
             </div>
             <div class="form-item" id="price-container">
                 <label for="">Stock <span class="required">*</span></label>
-                <input id="price-field" required type="number" max="9999.00" v-model="stock" step="1" min="0">
+                <input id="stock-field" required type="number" max="9999.00" v-model="stock" step="1" min="0">
             </div>
             <div class="form-item" id="delivery-container">
                 <label for="">Delivey Options <span class="required">*</span></label>
@@ -463,6 +463,15 @@
                     return
                 }
 
+                // validating stock - to list you need at least one item
+                if (!is_draft && (this.stock < 1)) {
+                    const stockInput: HTMLInputElement = document.getElementById('stock-field') as HTMLInputElement
+                    stockInput.setCustomValidity('You need at least one item in stock to list this item.')
+                    stockInput.reportValidity()
+                    stockInput.scrollIntoView()
+                    return
+                }
+
                 // built in validation
                 const form: HTMLDivElement = document.getElementById('new-listing') as HTMLDivElement
                 const inputs = form.querySelectorAll('input, textarea, select')
@@ -644,9 +653,8 @@
                 const urlArray: string | undefined = url.split('/').pop()
                 if (urlArray === undefined) return emptyResource
                 const resourceId: number = parseInt(urlArray) as number
-
-                let resource: Resource = useUserStore().user.listings?.find(listing => listing.id === resourceId) as Resource
-                return resource
+                let resource: Resource = this.user.listings.find(listing => listing.id === resourceId) as Resource
+                return resource || {}
             },
             resources(): Resource[] {
                 return useResourcesStore().resources
@@ -662,50 +670,93 @@
             },
         },
         watch: {
+            isPriorListing(): void {
+                if (this.isPriorListing) {
+                    this.currency = this.resource.price_currency
+                    this.name = this.resource.name
+                    this.description = this.resource.description
+                    this.height = this.resource.height
+                    this.dimension_unit = this.resource.height_unit
+                    this.width = this.resource.width
+                    this.weight = this.resource.weight
+                    this.weight_unit = this.resource.weight_unit
+                    this.type = this.resource.type
+                    this.media = this.resource.media
+                    this.page_start = this.resource.page_start
+                    this.page_end = this.resource.page_end
+                    this.subject = this.resource.subject
+                    this.colour = this.resource.colour
+                    this.author = this.resource.author
+                    this.self_made = this.resource.self_made
+                    this.source = this.resource.source
+                    this.condition = this.resource.condition
+                    this.price = this.resource.price
+                    this.currency = this.resource.price_currency
+                    this.stock = this.resource.stock
+                    this.is_draft = this.resource.is_draft
+                    this.allow_delivery = this.resource.allow_delivery
+                    this.allow_collection = this.resource.allow_collection
+                    this.allow_return = this.resource.allow_return
+                    this.estimated_delivery_number = parseFloat(this.resource.estimated_delivery_time.toString())
+                    this.estimated_delivery_units = this.resource.estimated_delivery_units
+                    const image1: HTMLImageElement = document.getElementById('img1') as HTMLImageElement
+                    image1.src = `http://localhost:8000${this.resource.image1}`
+                    image1.style.display = 'block'
+                    this.image1 = new File([], image1.src)
+                    const image2: HTMLImageElement = document.getElementById('img2') as HTMLImageElement
+                    image2.src = `http://localhost:8000${this.resource.image2}`
+                    this.image2 = new File([], image2.src)
+                    image2.style.display = 'block'
+                    const vid: HTMLImageElement = document.getElementById('vid1') as HTMLImageElement
+                    vid.src = `http://localhost:8000${this.resource.video}`
+                    vid.style.display = 'block'
+                    this.video1 = new File([], vid.src)
+                }
+            },
             user(new_user: User): void {
                 this.currency = new_user.currency
             },
-            resource(new_resource: Resource): void{
-                this.currency = this.user.currency
-                this.name = new_resource.name
-                this.description = new_resource.description
-                this.height = new_resource.height
-                this.dimension_unit = new_resource.height_unit
-                this.width = new_resource.width
-                this.weight = new_resource.weight
-                this.weight_unit = new_resource.weight_unit
-                this.type = new_resource.type
-                this.media = new_resource.media
-                this.page_start = new_resource.page_start
-                this.page_end = new_resource.page_end
-                this.subject = new_resource.subject
-                this.colour = new_resource.colour
-                this.author = new_resource.author
-                this.self_made = new_resource.self_made
-                this.source = new_resource.source
-                this.condition = new_resource.condition
-                this.price = new_resource.price
-                this.currency = new_resource.price_currency
-                this.stock = new_resource.stock
-                this.is_draft = new_resource.is_draft
-                this.allow_delivery = new_resource.allow_delivery
-                this.allow_collection = new_resource.allow_collection
-                this.allow_return = new_resource.allow_return
-                this.estimated_delivery_number = parseFloat(new_resource.estimated_delivery_time.toString())
-                this.estimated_delivery_units = new_resource.estimated_delivery_units
-                const image1: HTMLImageElement = document.getElementById('img1') as HTMLImageElement
-                image1.src = `http://localhost:8000${new_resource.image1}`
-                image1.style.display = 'block'
-                this.image1 = new File([], image1.src)
-                const image2: HTMLImageElement = document.getElementById('img2') as HTMLImageElement
-                image2.src = `http://localhost:8000${new_resource.image2}`
-                this.image2 = new File([], image2.src)
-                image2.style.display = 'block'
-                const vid: HTMLImageElement = document.getElementById('vid1') as HTMLImageElement
-                vid.src = `http://localhost:8000${new_resource.video}`
-                vid.style.display = 'block'
-                this.video1 = new File([], vid.src)
-            },
+            // resource(new_resource: Resource): void {
+            //     this.currency = this.user.currency
+            //     this.name = new_resource.name
+            //     this.description = new_resource.description
+            //     this.height = new_resource.height
+            //     this.dimension_unit = new_resource.height_unit
+            //     this.width = new_resource.width
+            //     this.weight = new_resource.weight
+            //     this.weight_unit = new_resource.weight_unit
+            //     this.type = new_resource.type
+            //     this.media = new_resource.media
+            //     this.page_start = new_resource.page_start
+            //     this.page_end = new_resource.page_end
+            //     this.subject = new_resource.subject
+            //     this.colour = new_resource.colour
+            //     this.author = new_resource.author
+            //     this.self_made = new_resource.self_made
+            //     this.source = new_resource.source
+            //     this.condition = new_resource.condition
+            //     this.price = new_resource.price
+            //     this.currency = new_resource.price_currency
+            //     this.stock = new_resource.stock
+            //     this.is_draft = new_resource.is_draft
+            //     this.allow_delivery = new_resource.allow_delivery
+            //     this.allow_collection = new_resource.allow_collection
+            //     this.allow_return = new_resource.allow_return
+            //     this.estimated_delivery_number = parseFloat(new_resource.estimated_delivery_time.toString())
+            //     this.estimated_delivery_units = new_resource.estimated_delivery_units
+            //     const image1: HTMLImageElement = document.getElementById('img1') as HTMLImageElement
+            //     image1.src = `http://localhost:8000${new_resource.image1}`
+            //     image1.style.display = 'block'
+            //     this.image1 = new File([], image1.src)
+            //     const image2: HTMLImageElement = document.getElementById('img2') as HTMLImageElement
+            //     image2.src = `http://localhost:8000${new_resource.image2}`
+            //     this.image2 = new File([], image2.src)
+            //     image2.style.display = 'block'
+            //     const vid: HTMLImageElement = document.getElementById('vid1') as HTMLImageElement
+            //     vid.src = `http://localhost:8000${new_resource.video}`
+            //     vid.style.display = 'block'
+            //     this.video1 = new File([], vid.src)
+            // },
             subject(new_subject: string): void {
                 if (this.resources.map(resource => resource.subject).includes(new_subject)) {
                     this.subject_select = new_subject
@@ -1056,6 +1107,10 @@
 
     #delivery-container #options label {
         width: 8rem;
+    }
+
+    #dark #new-listing {
+        color: white;
     }
 
 </style>
