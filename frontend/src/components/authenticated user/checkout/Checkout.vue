@@ -61,8 +61,8 @@
                             <input id="postcode" type="text" :value="user.postcode" @input="clear_address_error">
                         </div>
                         <div v-if="changing_address" class="edit-buttons header">
-                            <button class="save" @click="change_address"><i class="bi bi-floppy-fill"></i></button>
-                            <button class="clockwise" @click="cancel_edit(1)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                            <button :disabled="updating_detail" class="save" @click="change_address"><i class="bi bi-floppy-fill"></i></button>
+                            <button :disabled="updating_detail" class="clockwise" @click="cancel_edit(1)"><i class="bi bi-arrow-counterclockwise"></i></button>
                         </div>
                     </div>
                 </div>
@@ -72,8 +72,8 @@
                         <div id="number_container">
                             <div><input id="number_input" type="text" :value="user.phone_number" @click="changing_number=true" @input="clear_number_error"></div>
                             <div class="edit-buttons" v-if="changing_number">
-                                <button class="save" @click="change_phone_number"><i class="bi bi-floppy-fill"></i></button>
-                                <button class="clockwise" @click="cancel_edit(0)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                                <button :disabled="updating_detail" class="save" @click="change_phone_number"><i class="bi bi-floppy-fill"></i></button>
+                                <button :disabled="updating_detail" class="clockwise" @click="cancel_edit(0)"><i class="bi bi-arrow-counterclockwise"></i></button>
                             </div>
                         </div>
                         <div v-if="!changing_number" class="change_text" @click="changing_number = true">Change Phone Number</div>
@@ -82,8 +82,8 @@
             </div>
         </div>
         <div id="buttons">
-            <button id="place_order" @click="place_order">Place Order</button>
-            <button id="cancel" @click="home">Cancel</button>
+            <button :disabled="updating_detail" id="place_order" @click="place_order">Place Order</button>
+            <button :disabled="updating_detail" id="cancel" @click="home">Cancel</button>
         </div>
         <div v-if="confirm !== ''">
             <Confirm :message="confirm" @confirm-no="confirm=''" @confirm-yes="remove_from_cart(stored_resource)" />
@@ -105,6 +105,7 @@
     export default defineComponent({
         components: { Error, Confirm },
         data(): {
+            updating_detail: boolean
             total: number,
             changing_number: boolean,
             changing_address: boolean,
@@ -113,6 +114,7 @@
             confirm: string,
             stored_resource: CartResource,
         } { return {
+            updating_detail: false,
             error: '',
             confirm: '',
             placed_order: false,
@@ -137,6 +139,7 @@
                     const id: number = parseInt(window_location[window_location.length-1])
                     const resource: number | undefined = this.user.cart.resources.find(resource => resource.resource === id)?.id
                     if (!resource) return
+                    this.updating_detail = true
                     userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
                         method: 'POST',
                         credentials: 'include',
@@ -146,6 +149,7 @@
                         body: JSON.stringify(resource)
                     })
                 } else {
+                    this.updating_detail = true
                     userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
                         method: 'GET',
                         credentials: 'include',
@@ -155,11 +159,13 @@
                     })
                 }
                 if (userResponse.ok) {
+                    this.updating_detail = false
                     this.placed_order = true
                     const data: {user: User, resources: Resource[]} = await userResponse.json()
                     useUserStore().saveUser(data.user)
                     useResourcesStore().saveResources(data.resources)
                 } else {
+                    this.updating_detail = false
                     this.error = 'Error placing order. Please try again.'
                     return
                 }
@@ -239,10 +245,12 @@
                     return
                 }
                 this.changing_address = false
+                this.updating_detail = true
                 await this.update_address('address_line_one', address1Input)
                 await this.update_address('address_line_two', address2Input)
                 await this.update_address('city', cityInput)
                 await this.update_address('postcode', postcodeInput)
+                this.updating_detail = false
             },
             async update_address(attribute: string, data: string): Promise<void> {
                 let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/${attribute}/`, {
@@ -259,6 +267,7 @@
                     useUsersStore().updateUser(user)
                     useUserStore().saveUser(user)
                 } else {
+                    this.updating_detail = false
                     this.error = 'Error updating address. Please try again'
                 }
             },
@@ -281,6 +290,7 @@
                     numberElement.reportValidity()
                     return
                 } 
+                this.updating_detail = true
                 let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/number/`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -291,12 +301,14 @@
                     body: JSON.stringify(input)
                 })
                 if (userResponse.ok) {
+                    this.updating_detail = false
                     const user: User = await userResponse.json()
                     useUsersStore().updateUser(user)
                     useUserStore().saveUser(user)
                     this.changing_number = false
                     numberElement.blur()
                 } else {
+                    this.updating_detail = false
                     this.error = 'Error updating number. Please try again.'
                 }
             },
@@ -317,6 +329,7 @@
                     resource = this.stored_resource
                     this.confirm = ''
                 }
+                this.updating_detail = true
                 const putCartItem: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
                     method: resource.number === 1 ? 'DELETE' : 'PUT',
                     credentials: 'include',
@@ -327,14 +340,18 @@
                     body: JSON.stringify(resource.number-1)
                 })
                 if (!putCartItem.ok) {
+                    this.updating_detail = false
                     this.error = 'Error editing cart. Please try again.'
                     return
+                } else {
+                    this.updating_detail = false
+                    const data: {resource: CartResource, cart: Cart} = await putCartItem.json()
+                    useUserStore().updateCart(data.cart)
+                    useUsersStore().updateUser(this.user)
                 }
-                const data: {resource: CartResource, cart: Cart} = await putCartItem.json()
-                useUserStore().updateCart(data.cart)
-                useUsersStore().updateUser(this.user)
             },
             async add_to_cart(resource: CartResource): Promise<void> {
+                this.updating_detail = true
                 const putCartItem: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -345,12 +362,15 @@
                     body: JSON.stringify(resource.number+1)
                 })
                 if (!putCartItem.ok) {
+                    this.updating_detail = false
                     this.error = 'Error editing cart. Please try again'
                     return
+                } else {
+                    this.updating_detail = false
+                    const data: {resource: CartResource, cart: Cart} = await putCartItem.json()
+                    useUserStore().updateCart(data.cart)
+                    useUsersStore().updateUser(this.user)
                 }
-                const data: {resource: CartResource, cart: Cart} = await putCartItem.json()
-                useUserStore().updateCart(data.cart)
-                useUsersStore().updateUser(this.user)
             },
             getResource(resource_id: number): Resource {
                 const resource: Resource | undefined = useResourcesStore().resources.find(resource => resource.id === resource_id)
@@ -769,6 +789,11 @@
 
     #dark #number_input {
         background-color: transparent;
+    }
+
+    button:disabled {
+        background-color: darkgray !important;
+        cursor: not-allowed;
     }
 
     /* Responsive Design */

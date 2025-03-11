@@ -72,7 +72,6 @@
                         <div v-if="seller.address_second_line && !changing_address">{{ seller.address_second_line }}</div>
                         <div v-if="!changing_address">{{ seller.city }}</div>
                         <div v-if="!changing_address">{{ seller.postcode }}</div>
-                        <!-- <div v-if="!changing_address" class="change_text" @click="changing_address = true">Change Address</div> -->
                         <div v-if="changing_address" class="input">
                             <label for="">First Line</label>
                             <input id="address1" type="text" :value="user.address_line_one" @input="clear_address_error">

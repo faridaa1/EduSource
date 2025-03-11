@@ -1355,6 +1355,11 @@
         border-radius: 0.5rem;
     }
 
+    button:disabled {
+        background-color: darkgray !important;
+        cursor: not-allowed;
+    }
+
     /* Responsive design */
     @media (max-width: 1397px) {
         #details {
