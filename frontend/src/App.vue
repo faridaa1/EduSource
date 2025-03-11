@@ -285,7 +285,7 @@
     padding: 0.25rem;
     display: flex;
     flex-direction: column;
-    z-index: 3;
+    z-index: 4;
     width: 11.6rem;
     border: 0.1rem solid black;
   }
@@ -439,7 +439,7 @@
   }
 
   #hamburger, #profile-nav {
-    z-index: 3;
+    z-index: 4;
   }
 
 

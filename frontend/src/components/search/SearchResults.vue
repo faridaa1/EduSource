@@ -1670,7 +1670,7 @@
         height: 100vh;
         top: 0;
         left: 0;
-        z-index: 2;
+        z-index: 4;
         background-color: rgba(140, 140, 140, 0.5);
         margin: 0;
     }

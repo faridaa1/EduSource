@@ -70,35 +70,27 @@
                 <div id="media">
                     <img class="hoverable" :src="`http://localhost:8000${resource.image1}`" alt="Image1" @click="media_clicked=`${resource.id}image1`">
                     <img class="hoverable" :src="`http://localhost:8000${resource.image2}`" alt="Image1" @click="media_clicked=`${resource.id}image2`">
-                    <video :src="`http://localhost:8000${resource.video}`" controls @click="media_clicked=`${resource.id}video`"></video>
-                    <div id="large-media">
-                        <div v-if="media_clicked === `${resource.id}image1`">
-                            <div>
-                                <i class="bi bi-x-lg" @click="media_clicked=''"></i>
-                            </div>
-                            <div>
-                                <img :src="`http://localhost:8000${resource.image1}`">
-                            </div>
+                    <video class="hoverable" :src="`http://localhost:8000${resource.video}`" @click="media_clicked=`${resource.id}video`"></video>
+                    <div @click="media_clicked=''" class="large-media" v-if="media_clicked === `${resource.id}video`">
+                        <div class="big-media" v-if="media_clicked === `${resource.id}video`">
+                            <i class="bi bi-x-lg"></i>
+                            <video :src="`http://localhost:8000${resource.video}`" controls @click="media_clicked=`${resource.id}video`"></video>
                         </div>
-                        <div v-if="media_clicked === `${resource.id}image2`">
-                            <div>
-                                <i class="bi bi-x-lg" @click="media_clicked=''"></i>
-                            </div>
-                            <div>
-                                <img :src="`http://localhost:8000${resource.image2}`">
-                            </div>
-                            </div>
-                        <div v-if="media_clicked === `${resource.id}video`">
-                            <div>
-                                <i class="bi bi-x-lg" @click="media_clicked=''"></i>
-                            </div>
-                            <div>
-                                <video :src="`http://localhost:8000${resource.video}`" controls @click="media_clicked=`${resource.id}video`"></video>
-                            </div>
+                    </div>
+                    <div @click="media_clicked=''" class="large-media" v-if="media_clicked === `${resource.id}image1`">
+                        <div class="big-media">
+                            <i class="bi bi-x-lg"></i>
+                            <img :src="`http://localhost:8000${resource.image1}`">
+                        </div>
+                    </div>
+                    <div @click="media_clicked=''" class="large-media" v-if="media_clicked === `${resource.id}image2`">
+                        <div class="big-media" v-if="media_clicked === `${resource.id}image2`">
+                            <i class="bi bi-x-lg"></i>
+                            <img :src="`http://localhost:8000${resource.image2}`">
                         </div>
                     </div>
                 </div>
-                <hr>
+                <hr v-if="resource !== listed_resources[listed_resources.length-1]">
             </div>
         </div>
     </div>
@@ -267,18 +259,19 @@
     }
     
     #view-sellers-container {
-        z-index: 3;
+        z-index: 2;
         background-color: rgba(0, 0, 0, 0.5);
-        position: absolute;
+        position: fixed;
         height: 100%;
         width: 100%;
+        color: black !important;
     }
 
     #view-sellers {
         margin-right: 1rem;
         background-color: #D9D9D9;
         position: absolute;
-        height: 89vh;
+        max-height: 85vh;
         width: 50rem;
         top: 1rem;
         right: 0;
@@ -286,6 +279,7 @@
         border: 0.3rem solid #D9D9D9;
         border-radius: 0.5rem;
         overflow-y: auto;
+        padding-right: 1rem;
         display: flex;
         flex-direction: column;
     }
@@ -309,6 +303,7 @@
 
     #media img, #media video {
         border-radius: 0.5rem;
+        padding: 0.5rem;
         height: 5rem;
     }
 
@@ -334,8 +329,8 @@
         grid-area: data;
         display: flex;
         flex-direction: column;
-        gap: 0.6rem;
-        width: 15rem;
+        gap: 0.5rem;
+        width: 21rem;
     }
 
     #buttons {
@@ -355,6 +350,15 @@
         border-radius: 0.5rem;
     }
 
+    #dark button {
+        background-color: black;
+        color: white;
+    }
+
+    #dark button:hover {
+        background-color: darkgray !important;
+    }
+
     #buttons button:hover {
         cursor: pointer;
         color: white;
@@ -365,6 +369,7 @@
         color: red;
         align-self: flex-end;
         transform: scale(1);
+        position: absolute;
     }
 
     #exit i {
@@ -385,35 +390,155 @@
         color: white;
     }
 
-    #large-media {
-        position: absolute;
-        background-color: white;
+    .big-media {
+        background-color: #D9D9D9;
         border-radius: 0.5rem;
-        right: 5rem;
-        z-index: 1;
-        height: 28rem;
-        display: flex;
+        height: 30rem;
+        width: 30rem;
+        position: relative;
     }
 
-    #large-media div i {
+    .large-media {
+        position: fixed;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+        top: 0;
+        right: 0;
+        background-color: rgb(53, 53, 53, 50%);
+    }
+
+    .large-media i {
         color: red;
         font-size: 1.3rem;
-        margin-left: auto;
+        right: 1rem;
+        top: 0.5rem;
+        position: absolute;
+        z-index: 3;
     }
 
-    #large-media div i:hover {
+    .large-media i:hover {
         cursor: pointer;
-        /* transform: scale(1.5); */
+        transform: scale(1.5);
         color: darkred;
     }
 
-    #large-media img {
-        height: 25rem;
-        width: 25rem;
-        object-fit: contain;
+    .large-media img, .large-media video {
+        height: 30rem !important;
+        width: 30rem !important;
+        object-fit: contain !important;
+        padding: 0 !important;
     }
 
-     #large-media video {
-        height: 20rem;
+    /* Responsive Design */
+    @media (max-width: 863px) {
+        #seller {
+            display: grid;
+            grid-template-areas: "profile-pic data"
+                                "buttons buttons"
+                                "media media"
+                                "hr hr";
+            column-gap: 0rem;
+            row-gap: 1rem;
+        }
+
+        #profile-pic, #data {
+            justify-self: start;
+        }
+
+        #view-sellers {
+            margin-right: 1rem;
+            width: 35rem;
+        }
+
+        #buttons {
+            margin-top: 1rem;
+            gap: 2rem;
+        }
+
+        hr {
+            margin-bottom: 1.5rem;
+        }
+    }
+
+    @media (max-width: 626px) {
+        #seller {
+            display: grid;
+            grid-template-areas: "profile-pic buttons"
+                                "data data"
+                                "media media"
+                                "hr hr";
+        }
+
+        #view-sellers {
+            margin-right: 1rem;
+            width: 28rem;
+            padding: 1rem;
+        }
+
+        #buttons {
+            margin-top: 1rem;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        #data {
+            margin-top: 1rem;
+        }
+
+        hr {
+            margin-bottom: 1.5rem;
+        }
+    }
+
+    @media (max-width: 558px) {
+        .large-media img, .large-media video {
+            height: 23rem !important;
+            width: 23rem !important;
+        }
+
+        .big-media {
+            height: 23rem;
+            width: 23rem;
+        }
+    }
+
+    @media (max-width: 514px) {
+        #seller {
+            display: grid;
+            grid-template-areas: "profile-pic buttons"
+                                "data data"
+                                "media media"
+                                "hr hr";
+        }
+
+        #view-sellers {
+            padding-right: 1.5rem !important;
+            width: 23rem;
+            padding-left: 0.4rem;
+        }
+
+        #buttons {
+            margin-top: 1rem;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        #media {
+            padding-bottom: 0.5rem;
+            overflow-y: auto;
+        }
+
+        #data {
+            justify-self: center;
+            margin-top: 1rem;
+        }
+
+        hr {
+            margin-bottom: 1.5rem;
+        }
     }
 </style>
