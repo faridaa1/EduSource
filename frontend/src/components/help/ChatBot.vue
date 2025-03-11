@@ -35,7 +35,7 @@
         </div>
         <div id="message-box">
             <textarea @input="clear" id="message-content" placeholder="Write a message here"></textarea>
-            <button @click="send_message"><i class="bi bi-send"></i></button>
+            <button :disabled="chatbot_responding" @click="send_message"><i class="bi bi-send"></i></button>
         </div>
         <div v-if="error !== ''">
             <Error :message="error" @close-error="error = ''" />
@@ -340,6 +340,11 @@
     #x:hover {
         cursor: pointer;
         color: darkred;
+    }
+
+    button:disabled {
+        background-color: darkgray !important;
+        cursor: not-allowed;
     }
 
     /* Responsive design */

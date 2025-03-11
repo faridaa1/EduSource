@@ -22,7 +22,7 @@
         </div>
         <div id="message-box">
             <textarea @input="clear" id="message-content" placeholder="Write a message here"></textarea>
-            <button @keydown.enter="send_message" @click="send_message"><i class="bi bi-send"></i></button>
+            <button :disabled="sending_message" @keydown.enter="send_message" @click="send_message"><i class="bi bi-send"></i></button>
         </div>
         <div v-if="error !== ''">
             <Error :message="error" @close-error="error = ''" />
@@ -47,7 +47,9 @@
             messages: Messages,
             messages_set: boolean,
             unread_index: number,
+            sending_message: boolean
         } { return {
+            sending_message: false,
             error: '',
             unread_index: -1,
             messages_set: false,
@@ -97,6 +99,7 @@
             },
             async update_last_seen(): Promise<void> {
                 this.get_unread_message_index()
+                this.sending_message = true
                 let messageResponse: Response = await fetch(`http://localhost:8000/api/message/${this.messages.id}/${this.user.id}/`, {
                     method: 'GET',
                     credentials: 'include',
@@ -115,6 +118,7 @@
                     this.messages = messages
                 } 
                 this.scroll()
+                this.sending_message = false
             },
             clear(): void {
                 const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
@@ -141,6 +145,7 @@
                 }
                 const message_value = message.value
                 message.value = ''
+                this.sending_message = true
                 let messageResponse: Response = await fetch(`http://localhost:8000/api/message/${this.messages.id}/${this.user.id}/`, {
                     method: 'POST',
                     credentials: 'include',
@@ -163,9 +168,11 @@
                     this.messages = messages
                 } 
                 this.update_last_seen()
+                this.sending_message = false
             },
             async create_messages(): Promise<void> {
                 if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
+                this.sending_message = true
                 let messagesResponse: Response = await fetch(`http://localhost:8000/api/messages/${this.user.id}/${this.other_user.id}/`, {
                     method: 'POST',
                     credentials: 'include',
@@ -188,6 +195,7 @@
                 } 
                 this.messages_set = true
                 this.send_message()
+                this.sending_message = false
             },
             get_messages(): void {
                 if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
@@ -463,6 +471,11 @@
 
    #dark hr {
         background-color: rgb(206, 206, 206);
+    }
+
+    button:disabled {
+        background-color: darkgray !important;
+        cursor: not-allowed;
     }
 
     /* Responsive design */
