@@ -9,7 +9,7 @@ from django.db.models import Avg, Sum
 from django.contrib import auth
 import torch
 from .forms import SignupForm, AddressForm, LoginForm
-from .models import Cart, CartResource, Exchange, Messages, Order, OrderResource, Resource, Review, SearchHistory, SearchHistoryItem, Subject, User, Address, WishlistResource, Message
+from .models import Cart, CartResource, Exchange, Messages, Order, OrderResource, Resource, Review, SearchHistory, SearchHistoryItem, Subject, User, Address, Wishlist, WishlistResource, Message
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 from transformers import pipeline
@@ -48,6 +48,7 @@ def signup(request: HttpRequest) -> HttpResponse:
                 mode=signup_data['mode'],
                 description=signup_data['description'],
                 cart=Cart.objects.create(),
+                wishlist=Wishlist.objects.create(),
             )
             user.search_history=SearchHistory.objects.create(user=user)
             Address.objects.create(

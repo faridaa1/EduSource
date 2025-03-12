@@ -38,10 +38,6 @@ class Wishlist(models.Model):
         }
 
 
-def create_wishlist(): 
-    return Wishlist.objects.create()
-
-    
 class User(AbstractUser):
     """Defining attrbiutes and methods for User model"""
     email = models.EmailField(unique=True, null=False, blank=False)
@@ -52,7 +48,7 @@ class User(AbstractUser):
     description = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
     THEMES: list [tuple[str, str]] = [('light', 'light'), ('dark', 'dark')]
     cart = models.OneToOneField(Cart, on_delete=models.CASCADE, related_name='user')
-    wishlist = models.OneToOneField(Wishlist, on_delete=models.CASCADE, related_name='user', default=create_wishlist)
+    wishlist = models.OneToOneField(Wishlist, on_delete=models.CASCADE, related_name='user')
     theme_preference = models.CharField(max_length=5, choices=THEMES, default='light', null=False, blank=False)
     
     MODES: list [tuple[str, str]] = [('buyer', 'buyer'), ('seller', 'seller')]
