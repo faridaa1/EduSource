@@ -111,6 +111,7 @@
           this.search_results = []
         }
       })
+      if (window.location.p)
       let usersResponse: Response = await fetch('http://localhost:8000/api/users/', {
         method: 'GET',
         credentials: 'include',
