@@ -140,7 +140,7 @@ export interface WishlistResource {
 
 export interface Order {
     id: number,
-    status: 'Placed' | 'Requested Return' | 'Processing' | 'Return Rejected' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Being Returned' | 'Refunded',
+    status: 'Placed' | 'Processing' | 'Return Received' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Return Started' | 'Refunded',
     buyer: number,
     seller: number,
     resources: OrderResource[],

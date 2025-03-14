@@ -103,7 +103,7 @@ import { useURLStore } from '@/stores/url';
             total: number,
             placed_order: boolean,
             error: string,
-            status: 'Placed' | 'Requested Return' | 'Processing' | 'Return Rejected' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Being Returned' | 'Refunded',
+            status: 'Placed' | 'Processing' | 'Return Received' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Return Started' | 'Refunded',
         } { return {
             status: 'Processing',
             mode: 'buyer',
@@ -329,7 +329,7 @@ import { useURLStore } from '@/stores/url';
     }
 
     div, button {
-        font-size: 1.3rem;
+        font-size: 1.1rem;
     }
 
     #border {
@@ -488,12 +488,12 @@ import { useURLStore } from '@/stores/url';
 
     #user_number select {
         border: none;
-        font-size: 1.3rem;
+        font-size: 1.1rem;
         width: 100%;
     }
 
     #user_number p {
-        font-size: 1.3rem;
+        font-size: 1.1rem;
     }
 
     #card_ending, #address_lines, #user_number {

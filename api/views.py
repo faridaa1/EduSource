@@ -878,6 +878,7 @@ def recommendations(request: HttpRequest, user: int) -> JsonResponse:
     for key in keys:
         resource = Resource.objects.get(id=key)
         resources.append(resource.as_dict())
+    print(resources)
     return JsonResponse(resources, safe=False)
 
 
@@ -903,7 +904,7 @@ def submit_return(request: HttpRequest, user: id, order: id) -> JsonResponse:
     order: Order = get_object_or_404(Order, id=order)
     if request.method == 'PUT':
         data = json.loads(request.body)
-        order.status = 'Complete' if data['cancel'] == 'true' else 'Requested Return'
+        order.status = 'Complete' if data['cancel'] == 'true' else 'Return Started'
         order.save()
         if data['cancel'] == 'true':
             for order_resource in order.order_resource.all():

@@ -289,7 +289,7 @@ class Review(models.Model):
 
 class Order(models.Model):
     """Defining attributes and methods for Order model"""
-    STATUSES: list [tuple[str, str]] = [('Placed', 'Placed'), ('Processing', 'Processing'), ('Cancelled', 'Cancelled'), ('Return Rejected', 'Return Rejected'), ('Dispatched', 'Dispatched'), ('Complete', 'Complete'), ('Requested Return', 'Requested Return'), ('Being Returned', 'Being Returned'), ('Refunded', 'Refunded')]
+    STATUSES: list [tuple[str, str]] = [('Placed', 'Placed'), ('Processing', 'Processing'), ('Cancelled', 'Cancelled'), ('Dispatched', 'Dispatched'), ('Complete', 'Complete'), ('Return Started', 'Return Started'), ('Return Received', 'Return Received'), ('Refunded', 'Refunded')]
     status = models.CharField(max_length=16, choices=STATUSES, default='Placed', null=False, blank=False)
     buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='buyer')
     seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='seller')

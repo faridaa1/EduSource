@@ -6,7 +6,7 @@
             </div>
             <div class="displays">
                 <div v-for="listing in recommendations">
-                    <div class="listed" v-if="listing.type === 'Textbook'" @click="showResourcePage(listing)">
+                    <div class="listed" @click="showResourcePage(listing)">
                         <img :src="`${url}${listing.image1}`" alt="Textbook">
                         {{ currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>

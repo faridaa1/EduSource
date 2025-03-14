@@ -20,13 +20,13 @@
                             <div class="resource" v-for="resource in order.resources.filter(resource => getResource(resource.resource).allow_return)">
                                 <div id="image">
                                     <img :src="`${url}/${getResource(resource.resource).image1}`">
-                                    <div v-if="order.status === 'Requested Return'" id="resnum">{{ resource.number_for_return }}</div>
+                                    <div v-if="order.status === 'Return Started'" id="resnum">{{ resource.number_for_return }}</div>
                                 </div>
                                 <div class="name">
                                     <div>{{ getResource(resource.resource).name }}</div>
-                                    <div v-if="order.status !== 'Requested Return'">{{ currency }}{{ order.is_exchange ? parseFloat((0).toString()).toFixed(2) : (parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
+                                    <div v-if="order.status !== 'Return Started'">{{ currency }}{{ order.is_exchange ? parseFloat((0).toString()).toFixed(2) : (parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
                                     <div v-else>{{ currency }}{{ order.is_exchange ? parseFloat((0).toString()).toFixed(2) : (resource.number_for_return*parseFloat(getResource(resource.resource).price?.toString().replace('$','').replace('£','').replace('€',''))).toFixed(2) }}</div>
-                                    <div id="toggle" v-if="order.status !== 'Requested Return'">
+                                    <div id="toggle" v-if="order.status !== 'Return Started'">
                                         <div id="resnum1">{{ resource.number_for_return }}</div>
                                         <div id=controls>
                                             <div id="plus" v-if="resource.number_for_return < resource.number" @click="return_item(resource.number_for_return+1, resource.id)">+</div>
@@ -63,11 +63,10 @@
                 <div id="number">
                     <div class="title">Status</div>
                     <div id="user_number">
-                        <select @input="update_status" v-model="status" v-if="(mode==='seller') && (order.status !== 'Refunded') && (order.status !== 'Return Rejected')" id='order-status'>
-                            <option v-if="(order.status === 'Requested Return')" style="display: none;" value="Requested Return" disabled>Requested Return</option>
-                            <option v-if="(order.status === 'Requested Return')" value="Return Rejected">Return Rejected</option>
-                            <option v-if="(order.status === 'Requested Return') || (order.status === 'Being Returned')" value="Being Returned">Being Returned</option>
-                            <option v-if="(order.status === 'Being Returned')" value="Refunded">Refunded</option>
+                        <select @input="update_status" v-model="status" v-if="(mode==='seller') && (order.status !== 'Refunded') && (order.status !== 'Return Started')" id='order-status'>
+                            <option value="Return Rejected">Return Rejected</option>
+                            <option value="Being Returned">Being Returned</option>
+                            <option value="Refunded">Refunded</option>
                         </select>
                         <p v-else>{{ order.status }}</p>
                     </div>
@@ -105,22 +104,22 @@
                 <div id="number">
                     <div class="title">Return Method</div>
                     <div id="user_number">
-                        <select :disabled="order.status === 'Requested Return'" v-model="return_method">
+                        <select :disabled="order.status === 'Return Started'" v-model="return_method">
                             <option value="Delivery">Delivery</option>
                             <option value="Collection">Collection</option>
                         </select>
                     </div>
                 </div>
-                <div id="return_reason"  v-if="order.status !== 'Requested Return' || (order.status === 'Requested Return' && order.return_reason !== '')">
+                <div id="return_reason"  v-if="order.status !== 'Return Started' || (order.status === 'Return Started' && order.return_reason !== '')">
                     <div class="title">Return Reason (optional)</div>
                     <div id="user_number">
-                        <textarea :disabled="order.status === 'Requested Return'" v-model="return_reason" placeholder="Enter reason for return"></textarea>
+                        <textarea :disabled="order.status === 'Return Started'" v-model="return_reason" placeholder="Enter reason for return"></textarea>
                     </div>
                 </div>
                 <div id="buttons">
                     <button :disabled="making_change" v-if="(user.mode == 'buyer') && order.status === 'Complete'" @click="submit_return(order, false)">Submit</button>
-                    <button :disabled="making_change" id="cancel" v-if="(user.mode == 'buyer') && order.status === 'Requested Return'" @click="submit_return(order, true)">Cancel</button>
-                    <button :disabled="making_change" id="message_seller" v-if="(order.seller !== order.buyer) && order.status === 'Requested Return'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
+                    <button :disabled="making_change" id="cancel" v-if="(user.mode == 'buyer') && order.status === 'Return Started'" @click="submit_return(order, true)">Cancel</button>
+                    <button :disabled="making_change" id="message_seller" v-if="(order.seller !== order.buyer) && order.status === 'Return Started'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
                 </div>
             </div>
         </div>
@@ -135,7 +134,7 @@
 
 <script lang="ts">
     import { useUserStore } from '@/stores/user';
-    import { defineComponent } from 'vue';
+    import { defineComponent, nextTick } from 'vue';
     import type { Order, OrderResource, Resource, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import { useUsersStore } from '@/stores/users';
@@ -150,7 +149,7 @@ import { useURLStore } from '@/stores/url';
             return_reason: string,
             making_change: boolean,
             placed_order: boolean,
-            status: 'Placed' | 'Requested Return' | 'Processing' | 'Return Rejected' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Being Returned' | 'Refunded',
+            status: 'Placed' | 'Processing' | 'Return Received' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Return Started' | 'Refunded',
             error: string,
             phone_number: string,
             changing_number: boolean,
@@ -161,7 +160,7 @@ import { useURLStore } from '@/stores/url';
             mode: 'buyer',
             return_method: 'Delivery',
             placed_order: false,
-            status: 'Requested Return',
+            status: 'Return Started',
             select_item_error: '',
             phone_number: '',
             return_reason: '',
@@ -548,6 +547,16 @@ import { useURLStore } from '@/stores/url';
             })
         },
         watch: {
+            select_item_error(): void {
+                if (this.select_item_error !== '') {
+                    nextTick(() => {
+                        const content = document.getElementById('content')
+                        if (content) {
+                            content.scrollTo({top: 0})
+                        }
+                    })
+                }
+            },
             async all_resources(): Promise<void> {
                 for (const resource of useResourcesStore().resources) {
                     resource.price = await this.listedprice(resource)
@@ -588,7 +597,7 @@ import { useURLStore } from '@/stores/url';
         width: 12rem;
         background-color: white;
         border-radius: 0.5rem;
-        font-size: 1.3rem;
+        font-size: 1.1rem;
     }
 
     #dark #user_number input, #dark select, #dark textarea {
@@ -775,7 +784,7 @@ import { useURLStore } from '@/stores/url';
 
     #payment div, #number div, #return_reason div, #address div {
         gap: 0.8rem;
-        font-size: 1.3rem;
+        font-size: 1.1rem;
     }
 
     #header {
@@ -785,7 +794,7 @@ import { useURLStore } from '@/stores/url';
     }
 
     #header div, .title, button {
-        font-size: 1.3rem;
+        font-size: 1.1rem;
     }
 
     #number, #payment, #address, #return_reason {
@@ -867,7 +876,7 @@ import { useURLStore } from '@/stores/url';
     }
 
     #user_number p {
-        font-size: 1.3rem;
+        font-size: 1.1rem;
     }
 
     #number_container button i, #address_lines button i {
@@ -1012,7 +1021,7 @@ import { useURLStore } from '@/stores/url';
 
     select, #return_reason textarea {
         border: none;
-        font-size: 1.3rem;
+        font-size: 1.1rem;
     }
 
     #return_reason textarea {

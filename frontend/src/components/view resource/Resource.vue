@@ -1132,6 +1132,15 @@ import { useURLStore } from '@/stores/url';
             async resource(resource: Resource): Promise<void> {
                 this.fill_stars()
                 resource.price = await this.listedprice(resource)
+                fetch(`${useURLStore().url}/api/semantic-search/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type' : 'application/json',
+                        'X-CSRFToken' : useUserStore().csrf
+                    },
+                    body: JSON.stringify(resource.name)
+                })
             },
             sort_by() {
                 this.get_all_reviews()
@@ -1224,19 +1233,6 @@ import { useURLStore } from '@/stores/url';
             }
         },
         mounted(): void {
-            const resource: Resource | undefined = useResourcesStore().resources.find(resource => resource.id === parseInt(window.location.href.split('/').pop()))
-            if (resource) {
-                console.log(resource.name)
-                fetch(`${useURLStore().url}/api/semantic-search/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
-                    method: 'PUT',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type' : 'application/json',
-                        'X-CSRFToken' : useUserStore().csrf
-                    },
-                    body: JSON.stringify(resource.name)
-                })
-            } 
             this.fill_stars()
             this.get_all_reviews()
             this.buying_now = false

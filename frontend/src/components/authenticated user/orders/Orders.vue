@@ -89,8 +89,7 @@
             mode: 'buyer' | 'seller',
             mounted: boolean,
             order: 'new' | 'old' | string
-            status: 'all' | 'Placed' | 'Processing' | 'Return Rejected' | 'Dispatched' 
-                    | 'Cancelled' | 'Complete' | 'Being Returned' | 'Refunded' | string
+            status: 'all' | 'Placed' | 'Processing' | 'Return Received' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Return Started' | 'Refunded',
             current_page: number,
             total_pages: number,
             search: string,
@@ -227,7 +226,7 @@
             }
             if (window_location.length > 4) {
                 // reset settings
-                this.status = window_location[5].replace('%20', ' ')
+                this.status = window_location[5].replace('%20', ' ') as 'all' | 'Placed' | 'Requested Return' | 'Processing' | 'Return Rejected' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Return Started' | 'Refunded'
                 this.order = window_location[6]
                 this.current_page = parseInt(window_location[7])
                 nextTick(() => {
@@ -452,7 +451,7 @@
     }
 
     #pagination p {
-        font-size: 1.3rem;
+        font-size: 1.1rem;
     }
 
     #pagination select, #pagination i {
