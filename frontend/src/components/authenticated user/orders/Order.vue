@@ -57,24 +57,22 @@
                 <div id="number">
                     <div class="title">Status</div>
                     <div id="user_number">
-                        <select @click="update_status" v-if="(mode==='seller') && (order.status !== 'Cancelled') && (order.status !== 'Refunded') && (order.status !== 'Return Rejected') && (order.status !== 'Complete')" id='order-status' v-model="status">
+                        <select @input="update_status" v-if="(mode==='seller') && (order.status !== 'Cancelled') && (order.status !== 'Refunded') && (order.status !== 'Complete')" id='order-status' v-model="status">
                             <option style="display: none;" value="Placed" disabled>Placed</option>
-                            <option @click="update_status" v-if="(order.status === 'Placed') || (order.status === 'Processing')" value="Processing">Processing</option>
-                            <option @click="update_status" v-if="(order.status === 'Processing') || (order.status === 'Placed') || (order.status === 'Dispatched')" value="Dispatched">Dispatched</option>
-                            <option @click="update_status" v-if="(order.status === 'Processing') || (order.status === 'Placed') || (order.status === 'Dispatched')" value="Complete">Complete</option>
-                            <option v-if="(order.status !== 'Being Returned')" style="display: none;" value="Requested Return" disabled>Requested Return</option>
-                            <option @click="update_status" v-if="(order.status === 'Requested Return')" value="Return Rejected">Return Rejected</option>
-                            <option @click="update_status" v-if="(order.status === 'Requested Return') || (order.status === 'Being Returned')" value="Being Returned">Being Returned</option>
-                            <option @click="update_status" v-if="(order.status === 'Being Returned')" value="Refunded">Refunded</option>
+                            <option v-if="(order.status === 'Placed') || (order.status === 'Processing')" value="Processing">Processing</option>
+                            <option v-if="(order.status === 'Processing') || (order.status === 'Placed') || (order.status === 'Dispatched')" value="Dispatched">Dispatched</option>
+                            <option v-if="(order.status === 'Processing') || (order.status === 'Placed') || (order.status === 'Dispatched')" value="Complete">Complete</option>
+                            <option style="display: none;" v-if="(order.status === 'Return Started')" value="Return Started">Return Started</option>
+                            <option v-if="(order.status === 'Return Started')" value="Return Received">Return Received</option>
                         </select>
                         <p v-else>{{ order.status }}</p>
                     </div>
                 </div>
                 <div id="buttons">
-                    <button v-if="(user.mode == 'buyer') && returnable && order.status === 'Complete'" @click="start_return(order)">Start Return</button>
-                    <button id="cancel" v-if="returnable && order.status === 'Requested Return'" @click="start_return(order)">{{ mode === 'buyer' ? 'Cancel' : 'View' }} Return</button>
-                    <button id="message_seller" v-if="(order.seller !== order.buyer) && returnable && order.status === 'Requested Return'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
-                    <button id="cancel" v-if="(user.mode == 'buyer') && order.status === 'Placed'" @click="cancel_order">Cancel</button>
+                    <button :disabled="making_change" v-if="(user.mode == 'buyer') && returnable && order.status === 'Complete'" @click="start_return(order)">Start Return</button>
+                    <button :disabled="making_change" id="cancel" v-if="returnable && order.status === 'Return Started'" @click="start_return(order)">{{ mode === 'buyer' ? 'Cancel' : 'View' }} Return</button>
+                    <button :disabled="making_change" id="message_seller" v-if="(order.seller !== order.buyer) && returnable && order.status === 'Return Started'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
+                    <button :disabled="making_change" id="cancel" v-if="(user.mode == 'buyer') && order.status === 'Placed'" @click="cancel_order">Cancel</button>
                 </div>
             </div>
         </div>
@@ -102,12 +100,14 @@ import { useURLStore } from '@/stores/url';
             mode: 'buyer' | 'seller',
             total: number,
             placed_order: boolean,
+            making_change: boolean,
             error: string,
             status: 'Placed' | 'Processing' | 'Return Received' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Return Started' | 'Refunded',
         } { return {
             status: 'Processing',
             mode: 'buyer',
             placed_order: false,
+            making_change: false,
             total: 0,
             error: ''
         }},
@@ -118,14 +118,17 @@ import { useURLStore } from '@/stores/url';
                     this.error = 'Error updating status. Please try again'
                     return
                 }
+                if (this.order.status === status.value) return
+                this.making_change = true
                 let userResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/order/`, {
-                        method: 'PUT',
-                        credentials: 'include',
-                        headers: {
-                            'X-CSRFToken' : useUserStore().csrf
-                        },
-                        body: JSON.stringify({'id': this.order.id, status: status.value})
-                    })
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf
+                    },
+                    body: JSON.stringify({'id': this.order.id, status: status.value})
+                })
+                this.making_change = false
                 if (!userResponse.ok) {
                     this.error = 'Error updating status. Please try again'
                     return
@@ -137,8 +140,30 @@ import { useURLStore } from '@/stores/url';
             message_seller(seller_id: number): void {
                 window.location.href = `/message/${this.user.id}/${seller_id}`
             },
-            start_return(order: Order): void {
+            async start_return(order: Order): Promise<void> {
                 const window_location: string[] = window.location.href.split('/')
+                if (order.status === 'Return Started') {
+                    this.making_change = true
+                    let returnResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/return/${this.order.id}/`, {
+                        method: 'PUT',
+                        credentials: 'include',
+                        headers: {
+                            'X-CSRFToken' : useUserStore().csrf,
+                            'Content-Type' : 'application/json',
+                        },
+                        body: JSON.stringify({cancel: 'true', return_reason: this.order.return_reason, return_method: this.order.return_method})
+                    })
+                    this.making_change = false
+                    if (!returnResponse.ok) {
+                        this.error = 'Error cancelling return. Please try again.'
+                        return
+                    }
+                    let data: {user: User, resources: Resource[]} = await returnResponse.json()
+                    useUserStore().saveUser(data.user)
+                    useUsersStore().updateUser(data.user)
+                    useResourcesStore().saveResources(data.resources)
+                    return
+                }
                 if (window_location.length === 5) {
                     window.location.href = `/${this.mode === 'buyer' ? 'return' : 'sold-return'}/${order.id}`
                 } else {
@@ -165,14 +190,16 @@ import { useURLStore } from '@/stores/url';
                 return resource.reviews.find(review => review.user === this.user.id && review.resource === resource.id) ? false : true
             },
             async cancel_order(): Promise<void> {
+                this.making_change = true
                 let userResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/order/`, {
-                        method: 'DELETE',
-                        credentials: 'include',
-                        headers: {
-                            'X-CSRFToken' : useUserStore().csrf
-                        },
-                        body: JSON.stringify(this.order.id)
-                    })
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf
+                    },
+                    body: JSON.stringify(this.order.id)
+                })
+                this.making_change = false
                 if (!userResponse.ok) {
                     this.error = 'Error cancelling order. Please try again'
                     return
@@ -640,6 +667,11 @@ import { useURLStore } from '@/stores/url';
 
     #cancel:hover {
         background-color: darkred !important;
+    }
+
+    button:disabled, button:disabled:hover {
+        background-color: darkgray !important;
+        cursor: not-allowed !important;
     }
 
     /* Responsive Design */

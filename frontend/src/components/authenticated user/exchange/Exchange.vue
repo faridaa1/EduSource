@@ -27,7 +27,8 @@
                         <div class="label">Status</div>
                     </div>
                     <div class="select">
-                        <select id="selected_resource" v-model="selected_resource" @input="set_resource('resource')">
+                        <select id="selected_resource" :v-model="selected_resource" @input="set_resource('resource')">
+                            <option style="display: none;" selected>Select</option>
                             <option :value="resource.id" v-for="resource in resources">{{ resource.name }}</option>
                         </select>
                         <select id="status" v-model="status" @input="set_resource('status')">
@@ -64,8 +65,8 @@
             </div>
         </div>
         <div id="button">
-            <button id="cancel" v-if="(user.id === exchange.user1) && (user.id === exchange.user1 ? exchange.status1 : exchange.status2) !== 'Pending'" @click="cancel">Cancel</button>
-            <button id="submit" v-if="(exchange.status1 === 'Accepted') && (exchange.status2 === 'Accepted') && (exchange.resource1_number > 0) && (exchange.resource2_number > 0)" @click="submit">Place Order</button>
+            <button :disabled="api_call" id="cancel" v-if="(user.id === exchange.user1) && (user.id === exchange.user1 ? exchange.status1 : exchange.status2) !== 'Pending'" @click="cancel">Cancel</button>
+            <button :disabled="api_call" id="submit" v-if="(exchange.status1 === 'Accepted') && (exchange.status2 === 'Accepted') && (exchange.resource1_number > 0) && (exchange.resource2_number > 0)" @click="submit">Place Order</button>
         </div>
         <div v-if="error !== ''">
             <Error :message="error" @close-error="error=''" />
@@ -80,20 +81,22 @@
     import Error from '@/components/user experience/error/Error.vue';
     import Loading from '@/components/user experience/loading/Loading.vue';
     import { useResourcesStore } from '@/stores/resources';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     import { useUserStore } from '@/stores/user';
     import { useUsersStore } from '@/stores/users';
     import type { Exchange, User, Resource } from '@/types';
-    import { defineComponent, nextTick } from 'vue';
+    import { defineComponent } from 'vue';
     export default defineComponent({
         components: { Error, Loading },
         data(): { 
             exchange: Exchange, 
             error: string, 
             selected_resource: number, 
+            api_call: boolean,
             status: 'Pending' | 'Rejected' | 'Accepted',
          } { return {
             exchange: {} as Exchange,
+            api_call: false,
             error: '',
             selected_resource: -1,
             status: 'Pending',
@@ -124,14 +127,16 @@ import { useURLStore } from '@/stores/url';
                 return false
             },
             async submit(): Promise<void> {
+                this.api_call = true
                 const submitResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/order/`, {
-                        method: 'POST',
-                        credentials: 'include',
-                        headers: {
-                            'X-CSRFToken' : useUserStore().csrf
-                        },
-                        body: JSON.stringify({'exchange_id': this.exchange.id})
-                    })
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf
+                    },
+                    body: JSON.stringify({'exchange_id': this.exchange.id})
+                })
+                this.api_call = false
                 if (!submitResponse.ok) { 
                     this.error = 'Error submitting. Please try again.'
                     return 
@@ -144,6 +149,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async cancel(): Promise<void> {
+                this.api_call = true
                 const exchangeResponse: Response = await fetch(`${useURLStore().url}/api/exchange/user/${this.user.id}/seller/${this.user2.id}/resource/${this.exchange.id}/`, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -151,6 +157,7 @@ import { useURLStore } from '@/stores/url';
                         'X-CSRFToken' : useUserStore().csrf,
                     },
                 })
+                this.api_call = false
                 if (!exchangeResponse.ok) { 
                     this.error = 'Error deleting. Please try again.'
                     return 
@@ -162,6 +169,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async set_resource(field: string, number?: number): Promise<void> {
+                this.api_call = true
                 const exchangeResponse: Response = await fetch(`${useURLStore().url}/api/exchange/user/${this.user.id}/seller/${this.user2.id}/resource/${this.exchange.id}/`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -170,9 +178,10 @@ import { useURLStore } from '@/stores/url';
                         'Content-Type' : 'application/json',
                     },
                     body: JSON.stringify({'field': field, data: field === 'resource' ? (document.getElementById('selected_resource') as HTMLSelectElement).value 
-                                            : field === 'status' ? (document.getElementById('status') as HTMLSelectElement).value : number
-                                        })
+                        : field === 'status' ? (document.getElementById('status') as HTMLSelectElement).value : number
+                    })
                 })
+                this.api_call = false
                 if (!exchangeResponse.ok) { 
                     this.error = 'Error saving change. Please try again.'
                     return 
@@ -199,11 +208,13 @@ import { useURLStore } from '@/stores/url';
                 return useUsersStore().users.find(user => user.id === (this.user.id === this.exchange.user2 ? this.exchange.user1 : this.exchange.user2)) || {} as User
             },
             resources(): Resource[] {
-                return useResourcesStore().resources.filter(resource => resource.user === this.user.id)
+                const resources: Resource[] = useResourcesStore().resources.filter(resource => resource.user === this.user.id)
+                return resources
             }
         },
         async mounted(): Promise<void> {
             const window_location = window.location.href.split('/')
+            this.api_call = true
             const exchangeResponse: Response = await fetch(`${useURLStore().url}/api/exchange/user/${this.user.id}/seller/0/resource/${window_location[window_location.length-1]}/`, {
                 method: 'GET',
                 credentials: 'include',
@@ -211,6 +222,7 @@ import { useURLStore } from '@/stores/url';
                     'X-CSRFToken' : useUserStore().csrf,
                 },
             })
+            this.api_call = false
             if (!exchangeResponse.ok) { 
                 this.error = 'Error retrieving exchange. Please refresh page.'
                 return 
@@ -481,6 +493,11 @@ import { useURLStore } from '@/stores/url';
 
     #resnum {
         margin: auto;
+    }
+
+    button:disabled, button:disabled:hover {
+        background-color: darkgray !important;
+        cursor: not-allowed !important;
     }
 
     /* Responsive Design */

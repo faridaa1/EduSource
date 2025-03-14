@@ -422,7 +422,7 @@
                         if (parent && (parent.id === 'textbooks') && (this.textbooks.length > 0)) {
                             (display as HTMLDivElement).style.setProperty('height', 'auto', 'important')
                         } else if (parent && (parent.id === 'textbooks') && (this.textbooks.length === 0)){
-                            (display as HTMLDivElement).style.setProperty('height', '100%', 'important')
+                            (display as HTMLDivElement).style.setProperty('height', '70%', 'important')
                         } if (parent && (parent.id === 'notes') && (this.notes.length > 0)) {
                             (display as HTMLDivElement).style.setProperty('height', 'auto', 'important')
                         } else if (parent && (parent.id === 'notes') && (this.notes.length === 0)){
@@ -585,6 +585,7 @@
     }
 
     img {
+        margin-top: 0.4rem;
         height: 7rem;
         width: 7rem;
         object-fit: contain;
@@ -608,7 +609,7 @@
     .displays {
         display: flex;
         gap: 3rem;
-        overflow-x: scroll;
+        overflow-x: auto;
         padding-bottom: 1rem;
         height: 70%;
     }
@@ -821,7 +822,7 @@
 
     @media (max-width: 546px) {
         .viewing-buttons {
-            margin-top: 0.5rem;
+            margin-top: 0.1rem;
         }
 
         #textbooks, #notes, #stationery {

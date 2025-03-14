@@ -2,7 +2,7 @@
     <div id="orders-view" v-if="(user && (mode === 'buyer') &&  user.placed_orders) || (user && (mode === 'seller') &&  user.sold_orders)">
         <div id="header">
             <div id="header1">
-                <p>My Orders</p>
+                <p>{{ user.mode === 'buyer' ? 'My' : 'Sold' }} Orders</p>
             <div id="search">
                 <input @input="clear_error" v-model="search" id="order-search" type="text" @click="remove_focus" placeholder="Enter resource name">
                 <i id="x" @click="handle_x_click" :class="search.trim() !== '' ? 'bi bi-x' : ''"></i>
@@ -26,9 +26,8 @@
                         <option value="Dispatched">Dispatched</option>
                         <option value="Cancelled">Cancelled</option>
                         <option value="Complete">Complete</option>
-                        <option value="Requested Return">Requested Return</option>
-                        <option value="Return Rejected">Return Rejected</option>
-                        <option value="Being Returned">Being Returned</option>
+                        <option value="Return Started">Return Started</option>
+                        <option value="Return Received">Return Received</option>
                         <option value="Refunded">Refunded</option>
                     </select>
                 </div>
@@ -36,9 +35,10 @@
         </div>
         <div id="resources">
             <div v-if="!searching" class="orders-item" @click="view_item(order.id)" v-for="order in filtered_orders">
-                <div class="item-one">
+                <div class="item-one" v-if="order.resources[0]">
                     <div class="item-image">
-                        <img :src="`${url}${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`">
+                        <img v-if="order.resources[0]" :src="`${url}${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`">
+                        <img v-else>
                         <p id="number_of_items">{{ order_total(order) }}</p>
                     </div>
                     <div class="details">
@@ -226,7 +226,7 @@
             }
             if (window_location.length > 4) {
                 // reset settings
-                this.status = window_location[5].replace('%20', ' ') as 'all' | 'Placed' | 'Requested Return' | 'Processing' | 'Return Rejected' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Return Started' | 'Refunded'
+                this.status = window_location[5].replace('%20', ' ') as 'all' | 'Placed' | 'Processing' | 'Return Received' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Return Started' | 'Refunded'
                 this.order = window_location[6]
                 this.current_page = parseInt(window_location[7])
                 nextTick(() => {

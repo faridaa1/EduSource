@@ -49,13 +49,8 @@
                     <div>Seller Phone Number</div>
                     <div id="user_number">
                         <div id="number_container">
-                            <div><input id="number_input" type="text" v-model="phone_number" :disabled="mode === 'buyer'" @input="changing_number=true; clear_number_error()"></div>
-                            <div class="edit-buttons" v-if="changing_number">
-                                <button :disabled="making_change" class="save" @click="change_phone_number"><i class="bi bi-floppy-fill"></i></button>
-                                <button :disabled="making_change" class="clockwise" @click="cancel_edit(0)"><i class="bi bi-arrow-counterclockwise"></i></button>
-                            </div>
+                            <div><input id="number_input" type="text" v-model="phone_number" disabled="true" @input="changing_number=true; clear_number_error()"></div>
                         </div>
-                        <div v-if="mode === 'seller' && !changing_number" class="change_text" @click="changing_number = true">Change Phone Number</div>
                     </div>
                 </div>
             </div>
@@ -63,10 +58,9 @@
                 <div id="number">
                     <div class="title">Status</div>
                     <div id="user_number">
-                        <select @input="update_status" v-model="status" v-if="(mode==='seller') && (order.status !== 'Refunded') && (order.status !== 'Return Started')" id='order-status'>
-                            <option value="Return Rejected">Return Rejected</option>
-                            <option value="Being Returned">Being Returned</option>
-                            <option value="Refunded">Refunded</option>
+                        <select @input="update_status" v-model="status" v-if="(mode==='seller') && (order.status === 'Return Started')" id='order-status'>
+                            <option style="display: none;" value="Return Started">Return Started</option>
+                            <option value="Return Received">Return Received</option>
                         </select>
                         <p v-else>{{ order.status }}</p>
                     </div>
@@ -78,7 +72,6 @@
                         <div v-if="seller.address_second_line && !changing_address">{{ mode === 'buyer' ? seller.address_second_line : user.address_second_line }}</div>
                         <div v-if="!changing_address">{{ mode === 'buyer' ? seller.city : user.city }}</div>
                         <div v-if="!changing_address">{{ mode === 'buyer' ? seller.postcode : user.postcode }}</div>
-                        <div v-if="mode === 'seller' && !changing_address" class="change_text" @click="changing_address = true">Change Address</div>
                         <div v-if="changing_address" class="input">
                             <label>First Line</label>
                             <input id="address1" type="text" :value="user.address_line_one" @input="clear_address_error">
@@ -95,19 +88,16 @@
                             <label class="header">Postcode</label>
                             <input id="postcode" type="text" :value="user.postcode" @input="clear_address_error">
                         </div>
-                        <div v-if="changing_address" class="edit-buttons header">
-                            <button :disabled="making_change" class="save" @click="change_address"><i class="bi bi-floppy-fill"></i></button>
-                            <button :disabled="making_change" class="clockwise" @click="cancel_edit(1)"><i class="bi bi-arrow-counterclockwise"></i></button>
-                        </div>
                     </div>
                 </div>
                 <div id="number">
                     <div class="title">Return Method</div>
                     <div id="user_number">
-                        <select :disabled="order.status === 'Return Started'" v-model="return_method">
+                        <select v-if="order.status === 'Complete'" v-model="return_method">
                             <option value="Delivery">Delivery</option>
                             <option value="Collection">Collection</option>
                         </select>
+                        <div v-else>{{ order.return_method }}</div>
                     </div>
                 </div>
                 <div id="return_reason"  v-if="order.status !== 'Return Started' || (order.status === 'Return Started' && order.return_reason !== '')">
@@ -177,6 +167,8 @@ import { useURLStore } from '@/stores/url';
                     this.error = 'Error updating status. Please try again'
                     return
                 }
+                if (this.order.status === status.value) return
+                console.log(this.order.status, status.value)
                 this.making_change = true
                 let userResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/order/`, {
                         method: 'PUT',
@@ -248,126 +240,6 @@ import { useURLStore } from '@/stores/url';
                 if (!numberElement) return
                 numberElement.setCustomValidity('')
             },
-            async change_address(): Promise<void> {
-                const address1Element: HTMLInputElement = document.getElementById('address1') as HTMLInputElement
-                const address2Element: HTMLInputElement = document.getElementById('address2') as HTMLInputElement
-                const cityElement: HTMLInputElement = document.getElementById('city') as HTMLInputElement
-                const postcodeElement: HTMLInputElement = document.getElementById('postcode') as HTMLInputElement
-                if (!address1Element || !address2Element || !cityElement || !postcodeElement) return
-
-                // validate address line 1 
-                const address1Input = address1Element.value
-                if (address1Input.length === 0) {
-                    address1Element.setCustomValidity('Cannot be empty')
-                    address1Element.reportValidity()
-                    return
-                } else if (!(/^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/.test(address1Input))) {
-                    address1Element.setCustomValidity('No special characters allowed')
-                    address1Element.reportValidity()
-                    return
-                }
-
-                // validate address line 2
-                const address2Input = address2Element.value
-                if (address2Input.length !== 0 && !(/^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/.test(address2Input))) {
-                    address2Element.setCustomValidity('No special characters allowed')
-                    address2Element.reportValidity()
-                    return
-                }
-
-                // validate city
-                const cityInput = cityElement.value
-                if (cityInput.length === 0) {
-                    cityElement.setCustomValidity('Cannot be empty')
-                    cityElement.reportValidity()
-                    return
-                } else if (!(/^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/.test(cityInput))) {                     
-                    cityElement.setCustomValidity('No special characters allowed')
-                    cityElement.reportValidity()
-                    return
-                }
-
-                // validate postcode
-                const postcodeInput = postcodeElement.value
-                if (postcodeInput.length === 0) {
-                    postcodeElement.setCustomValidity('Cannot be empty')
-                    postcodeElement.reportValidity()
-                    return
-                } else if (!(/^[A-Za-z0-9]{5,7}$/.test(postcodeInput))) {
-                    postcodeElement.setCustomValidity('Enter 5-7 character postcode without spaces')
-                    postcodeElement.reportValidity()
-                    return
-                }
-                this.changing_address = false
-                await this.update_address('address_line_one', address1Input)
-                await this.update_address('address_line_two', address2Input)
-                await this.update_address('city', cityInput)
-                await this.update_address('postcode', postcodeInput)
-            },
-            async update_address(attribute: string, data: string): Promise<void> {
-                this.making_change = true
-                let userResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/${attribute}/`, {
-                    method: 'PUT',
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRFToken' : useUserStore().csrf,
-                        'Content-Type' : 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                })
-                if (userResponse.ok) {
-                    this.making_change = false
-                    const user: User = await userResponse.json()
-                    useUsersStore().updateUser(user)
-                    useUserStore().saveUser(user)
-                } else {
-                    this.making_change = false
-                    this.error = 'Error updating address. Please try again'
-                }
-            },
-            async change_phone_number(): Promise<void> {
-                const numberElement: HTMLInputElement = document.getElementById('number_input') as HTMLInputElement
-                if (!numberElement) return
-                const input = numberElement.value
-                if (input.length === 0) {
-                    numberElement.setCustomValidity('Phone number cannot be empty')
-                    numberElement.reportValidity()
-                    return
-                } else if (!(/^07(\d{8,9})$/.test(input))) {
-                    numberElement.setCustomValidity('Must be 10 or 11 digit number starting with 07')
-                    numberElement.reportValidity()
-                    return
-                }
-                
-                this.making_change = true
-                let correctNumber: boolean = this.attribute_existence(input)
-                if (correctNumber) {
-                    numberElement.setCustomValidity('Account already exists with this phone number')
-                    numberElement.reportValidity()
-                    return
-                } 
-                this.making_change = true
-                let userResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/number/`, {
-                    method: 'PUT',
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRFToken' : useUserStore().csrf,
-                        'Content-Type' : 'application/json',
-                    },
-                    body: JSON.stringify(input)
-                })
-                if (userResponse.ok) {
-                    this.making_change = false
-                    const user: User = await userResponse.json()
-                    useUsersStore().updateUser(user)
-                    useUserStore().saveUser(user)
-                    this.changing_number = false
-                    numberElement.blur()
-                } else {
-                    this.making_change = false
-                    this.error = 'Error updating number. Please try again.'
-                }
-            },
             async submit_return(order: Order, cancel: boolean): Promise<void> {
                 let selected_item = false
                 for (const order_resource of order.resources) {
@@ -392,7 +264,7 @@ import { useURLStore } from '@/stores/url';
                     })
                 if (!returnResponse.ok) {
                     this.making_change = false
-                    this.error = 'Error submitting return. Please try again.'
+                    this.error = 'Error updating return status. Please try again.'
                     return
                 }
                 this.making_change = false
@@ -512,37 +384,6 @@ import { useURLStore } from '@/stores/url';
                 if (this.error != '') {
                     event.preventDefault()
                     return
-                }
-                if ((event.key === 'ArrowDown' || event.key === 'Enter') && this.changing_address) {
-                    const input: HTMLInputElement = event.target as HTMLInputElement
-                    if (!input) return
-                    if (input.id === 'address1') {
-                        const input2: HTMLInputElement = document.getElementById('address2') as HTMLInputElement
-                        if (input2) input2.focus()
-                    } else if (input.id === 'address2') {
-                        const input2: HTMLInputElement = document.getElementById('city') as HTMLInputElement
-                        if (input2) input2.focus()
-                    } else if (input.id === 'city') {
-                        const input2: HTMLInputElement = document.getElementById('postcode') as HTMLInputElement
-                        if (input2) input2.focus()
-                    } else if (input.id === 'postcode') {
-                        this.change_address()
-                    }
-                } else if (event.key === 'ArrowUp' && this.changing_address) {
-                    const input: HTMLInputElement = event.target as HTMLInputElement
-                    if (!input) return
-                    if (input.id === 'address2') {
-                        const input2: HTMLInputElement = document.getElementById('address1') as HTMLInputElement
-                        if (input2) input2.focus()
-                    } else if (input.id === 'city') {
-                        const input2: HTMLInputElement = document.getElementById('address2') as HTMLInputElement
-                        if (input2) input2.focus()
-                    } else if (input.id === 'postcode') {
-                        const input2: HTMLInputElement = document.getElementById('city') as HTMLInputElement
-                        if (input2) input2.focus()
-                    }
-                } else if (event.key === 'Enter' && this.changing_number) {
-                    this.change_phone_number()
                 }
             })
         },
@@ -831,6 +672,10 @@ import { useURLStore } from '@/stores/url';
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
+    }
+
+    #dark option {
+        color: black;
     }
 
     #buttons {

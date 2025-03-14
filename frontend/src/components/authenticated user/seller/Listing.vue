@@ -17,6 +17,10 @@
                     <input type="checkbox" :checked="self_made" @click="self_made = !self_made">
                 </div>
                 <p v-if="self_made">Author will show up as your username, <span>{{ user.username }}</span></p>
+                <div id="author-div">
+                    <label>Resource is unique</label>
+                    <input type="checkbox" :checked="unique" @click="unique = !unique">
+                </div>
             </div>
             <div class="form-item">
                 <label>Name <span class="required">*</span></label>
@@ -254,6 +258,7 @@ import { useURLStore } from '@/stores/url';
             description: string,
             height: number,
             confirm: string,
+            unique: boolean,
             error: string,
             width: number,
             weight: number,
@@ -308,6 +313,7 @@ import { useURLStore } from '@/stores/url';
             weight_unit: 'lb',
             dimension_unit: 'cm',
             type: 'Textbook',
+            unique: true,
             subject: '',
             colour: 'Black',
             subject_select: '',
@@ -551,7 +557,7 @@ import { useURLStore } from '@/stores/url';
                 data.append('is_draft', is_draft.toString())
                 data.append('source', this.source)
                 data.append('condition', this.condition)
-                data.append('unique', (!this.exists_resource).toString())
+                data.append('unique', this.unique.toString())
                 let postListingResponse: Response
                 if (!this.isPriorListing) {
                     postListingResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/new-listing/`, {
@@ -647,7 +653,7 @@ import { useURLStore } from '@/stores/url';
             duplicated_resource(compared_resource: Resource): boolean {
                 // if it is a shared resource user cannot duplicate it unless they change the author
                 const potential_duplicates: Resource | undefined = this.resources.find(resource => resource.user === this.user.id && !resource.unique && resource.name === compared_resource.name && resource.author === this.author)
-                return potential_duplicates === undefined ? false : true
+                return potential_duplicates === undefined ? false : potential_duplicates.id === this.resource.id ? false : true
             },
             duplicate_resource_checks(): void {
                 for (let resource of this.resources) {
@@ -697,6 +703,7 @@ import { useURLStore } from '@/stores/url';
         watch: {
             isPriorListing(): void {
                 if (this.isPriorListing) {
+                    this.unique = this.resource.unique
                     this.currency = this.resource.price_currency
                     this.name = this.resource.name
                     this.description = this.resource.description

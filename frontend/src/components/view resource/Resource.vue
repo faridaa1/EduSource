@@ -399,7 +399,8 @@ import { useURLStore } from '@/stores/url';
         methods: {
             has_resources(): boolean {
                 const resources = useResourcesStore().resources.filter(resource => resource.user === this.user.id)
-                return resources.length > 0
+                const own_resource = this.allResources.find(resource => resource.user !== this.user.id) ? false : true
+                return (resources.length > 0) && (!own_resource)
             },
             check_all_reviews(): void {
                 this.both_reviews = this.me_reviews && this.my_reviews 
@@ -418,6 +419,7 @@ import { useURLStore } from '@/stores/url';
                 }
                 if ((this.allResources.find(resource => resource.id === this.seller) as Resource).user === this.user.id) {
                     this.error = 'You cannot exchange resources with yourself. Change the seller if you can.'
+                    this.viewing_sellers = true
                     return
                 }
                 if (Object.keys(this.resource).length > 0) {

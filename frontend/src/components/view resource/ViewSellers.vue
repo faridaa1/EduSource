@@ -29,6 +29,10 @@
                 </div>
                 <div id="data">
                     <div class="data-item">
+                        <label>Author</label>
+                        <p>{{ resource.author }}</p>
+                    </div>
+                    <div class="data-item">
                         <label>Price</label>
                         <p>{{ Object.keys(user).length === 0 ? unauth_currency(resource as Resource) : '' }}{{ resource.price }}</p>
                     </div>
@@ -208,7 +212,6 @@ import { useURLStore } from '@/stores/url';
             document.addEventListener('click', (event) => {
                 const container: HTMLDivElement = event.target as HTMLDivElement
                 if (container.id === 'view-sellers-container') {
-                // if (container.id !== 'view-sellers') {
                     this.$emit('close-view')
                 }
             })
