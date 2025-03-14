@@ -496,12 +496,19 @@ import { useURLStore } from '@/stores/url';
                 inputs.forEach(input => {
                     const element = input as HTMLInputElement | HTMLTextAreaElement
                     element.setCustomValidity('')
-                    if (element.reportValidity()) {
+                })
+                let error = false;
+                inputs.forEach(input => {
+                    const element = input as HTMLInputElement | HTMLTextAreaElement
+                    if (element.validity.valid === false) {
                         element.reportValidity()
+                        error = true
                         return
                     }
                 })
-                this.post_listing(is_draft)
+                if (!error) {
+                    this.post_listing(is_draft)
+                }
             },
             async post_listing(is_draft: boolean): Promise<void> {
                 const data: FormData = new FormData()
