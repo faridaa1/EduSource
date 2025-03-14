@@ -893,7 +893,7 @@ def order_return(request: HttpRequest, user: id, order: id, resource: id) -> Jso
         else:
             resource.for_return = False
         resource.save()
-        return JsonResponse({'user': user.as_dict(), 'resource': resource.as_dict()})
+        return JsonResponse({'user': user.as_dict(), 'resource': resource.resource.as_dict()})
     return JsonResponse({})
 
 
