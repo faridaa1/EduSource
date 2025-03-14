@@ -423,15 +423,12 @@ import { useURLStore } from '@/stores/url';
             },
             getResource(resource_id: number): Resource {
                 const resource: Resource | undefined = useResourcesStore().resources.find(resource => resource.id === resource_id)
-                console.log(resource_id, 'i am', resource?.allow_return, resource, useResourcesStore().resources)
                 if (resource) return resource
                 return {} as Resource
             },
             async listedprice(resource: Resource): Promise<number> {
                 if (resource === undefined) return 0
                 this.making_change = true
-                console.log(this.user.currency, resource, resource.price_currency)
-                return 2
                 let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
