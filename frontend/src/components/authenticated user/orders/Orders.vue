@@ -38,7 +38,7 @@
             <div v-if="!searching" class="orders-item" @click="view_item(order.id)" v-for="order in filtered_orders">
                 <div class="item-one">
                     <div class="item-image">
-                        <img :src="`${useURLStore().url}${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`">
+                        <img :src="`${url}${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`">
                         <p id="number_of_items">{{ order_total(order) }}</p>
                     </div>
                     <div class="details">
@@ -82,7 +82,7 @@
     import type { Order, Resource, User, } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import Loading from '@/components/user experience/loading/Loading.vue';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Loading },
         data(): {
@@ -173,6 +173,9 @@ import { useURLStore } from '@/stores/url';
             }
         },
         computed: {
+            url(): string {
+                return useURLStore().url
+            },
             filtered_orders(): Order[] {
                 let temp_orders;
                 if (this.mode === 'buyer') {

@@ -234,7 +234,7 @@
                     </div>
                     <div v-if="!editing || editing && editing_review !== review.id" class="review-media">
                         <img class="review-image" @click="image_full_url=`${url}${review.image}`, image_full=true" v-if="review.image" :src="`${url}${review.image}`" alt="image">
-                        <video class="review-video" @click="video_full_url=`${url}${review.video}`; video_full=true" v-if="review.video" :src="`${url}${review.video}`" controls></video>
+                        <video class="review-video" @click="video_full_url=`${url}${review.video}`; video_full=true" v-if="review.video" :src="`${url}${review.video}`"></video>
                     </div>
                 </div>
                 <div v-if="editing && editing_review === review.id">
@@ -285,11 +285,11 @@
             </div>
             <div v-if="image_full || video_full" id="border" @click="image_full_url='',image_full=false,video_full=false,video_full_url=''">
                 <div class="full_media" v-if="image_full && (image_full_url!=='')">
-                    <i id="x" class="bi bi-x-lg"></i>
+                    <i id="x" class="bi bi-x-lg big-x"></i>
                     <img :src="image_full_url">
                 </div>
                 <div class="full_media" v-if="video_full && (video_full_url!=='')">
-                    <i id="x" class="bi bi-x-lg"></i>
+                    <i id="x" class="bi bi-x-lg big-x"></i>
                     <video :src="video_full_url" controls></video>
                 </div>
             </div>
@@ -1220,6 +1220,19 @@ import { useURLStore } from '@/stores/url';
             }
         },
         mounted(): void {
+            const resource: Resource = useResourcesStore().resources.find(resource => resource.id === parseInt(window.location.href.split('/').pop()))
+            if (resource) {
+                console.log(resource.name)
+                fetch(`${useURLStore().url}/api/semantic-search/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type' : 'application/json',
+                        'X-CSRFToken' : useUserStore().csrf
+                    },
+                    body: JSON.stringify(resource.name)
+                })
+            } 
             this.fill_stars()
             this.get_all_reviews()
             this.buying_now = false
@@ -1242,7 +1255,7 @@ import { useURLStore } from '@/stores/url';
         padding-bottom: 1rem;
         padding-left: 1rem;
         gap: 3rem;
-        height: 85.7vh;
+        height: 90.9vh;
         overflow-y: auto;
         padding-right: 1rem;
         position: relative;
@@ -2048,6 +2061,10 @@ import { useURLStore } from '@/stores/url';
     #x:hover {
         cursor: pointer;
         color: darkred;
+    }
+
+    .big-x {
+        z-index: 2;
     }
 
     /* Responsive design */
