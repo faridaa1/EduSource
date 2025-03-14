@@ -11,7 +11,7 @@
                     <div id="border">
                         <div id="body">
                             <div class="resource" v-for="resource in user.cart.resources.filter(resource => valid(resource))">
-                                <div id="image"><img :src="`http://localhost:8000/${getResource(resource.resource).image1}`"></div>
+                                <div id="image"><img :src="`${url}/${getResource(resource.resource).image1}`"></div>
                                 <div class="name">
                                     <div>{{ getResource(resource.resource).name }}</div>
                                     <div id="toggle">
@@ -102,6 +102,7 @@
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
     import Confirm from '@/components/user experience/confirm/Confirm.vue';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error, Confirm },
         data(): {
@@ -140,7 +141,7 @@
                     const resource: number | undefined = this.user.cart.resources.find(resource => resource.resource === id)?.id
                     if (!resource) return
                     this.updating_detail = true
-                    userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
+                    userResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/order/`, {
                         method: 'POST',
                         credentials: 'include',
                         headers: {
@@ -150,7 +151,7 @@
                     })
                 } else {
                     this.updating_detail = true
-                    userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
+                    userResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/order/`, {
                         method: 'GET',
                         credentials: 'include',
                         headers: {
@@ -253,7 +254,7 @@
                 this.updating_detail = false
             },
             async update_address(attribute: string, data: string): Promise<void> {
-                let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/${attribute}/`, {
+                let userResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/${attribute}/`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -291,7 +292,7 @@
                     return
                 } 
                 this.updating_detail = true
-                let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/number/`, {
+                let userResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/number/`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -330,7 +331,7 @@
                     this.confirm = ''
                 }
                 this.updating_detail = true
-                const putCartItem: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
+                const putCartItem: Response = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
                     method: resource.number === 1 ? 'DELETE' : 'PUT',
                     credentials: 'include',
                     headers: {
@@ -352,7 +353,7 @@
             },
             async add_to_cart(resource: CartResource): Promise<void> {
                 this.updating_detail = true
-                const putCartItem: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
+                const putCartItem: Response = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -379,7 +380,7 @@
             },
             async listedprice(resource: Resource): Promise<number> {
                 if (resource === undefined) return 0
-                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -403,6 +404,9 @@
             }
         },
         computed: {
+            url(): string {
+                return useURLStore().url
+            },
             currency(): string {
                 return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
             },

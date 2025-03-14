@@ -18,7 +18,7 @@
                         <div id="body">
                             <div class="resource" v-for="resource in order.resources" @click="(event) => view_resource(event, getResource(resource.resource).id)">
                                 <div id="image">
-                                    <img :src="`http://localhost:8000/${getResource(resource.resource).image1}`">
+                                    <img :src="`${url}/${getResource(resource.resource).image1}`">
                                     <div id="resnum">{{ resource.number }}</div>
                                 </div>
                                 <div class="name">
@@ -95,6 +95,7 @@
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
     import Loading from '@/components/user experience/loading/Loading.vue';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error, Loading }, 
         data(): {
@@ -117,7 +118,7 @@
                     this.error = 'Error updating status. Please try again'
                     return
                 }
-                let userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
+                let userResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/order/`, {
                         method: 'PUT',
                         credentials: 'include',
                         headers: {
@@ -164,7 +165,7 @@
                 return resource.reviews.find(review => review.user === this.user.id && review.resource === resource.id) ? false : true
             },
             async cancel_order(): Promise<void> {
-                let userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
+                let userResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/order/`, {
                         method: 'DELETE',
                         credentials: 'include',
                         headers: {
@@ -198,7 +199,7 @@
             },
             async listedprice(resource: Resource): Promise<number> {
                 if (resource === undefined) return 0
-                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -222,6 +223,9 @@
             }
         },
         computed: {
+            url(): string {
+                return useURLStore().url
+            },
             returnable(): boolean {
                 for(const resource of this.order.resources) {
                     const res = this.getResource(resource.resource)

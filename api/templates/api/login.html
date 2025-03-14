@@ -71,7 +71,11 @@
     passwordHideButton.addEventListener('click', togglePasswordVisibility)
 
     function home() {
-        window.location.href = 'http://localhost:5173/'
+        if (window.location.href.includes('localhost')) {
+            window.location.href = 'http://localhost:5173/'
+        } else {
+            window.location.href = 'https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/'
+        }
     }
     document.getElementById('logo').addEventListener('click', home)
     document.getElementById('home').addEventListener('click', home)

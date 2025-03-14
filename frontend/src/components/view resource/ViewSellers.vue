@@ -68,25 +68,25 @@
                     <button v-if="resource.user !== user.id" @click="message(resource.user)">Message</button>
                 </div>
                 <div id="media">
-                    <img class="hoverable" :src="`http://localhost:8000${resource.image1}`" alt="Image1" @click="media_clicked=`${resource.id}image1`">
-                    <img class="hoverable" :src="`http://localhost:8000${resource.image2}`" alt="Image1" @click="media_clicked=`${resource.id}image2`">
-                    <video class="hoverable" :src="`http://localhost:8000${resource.video}`" @click="media_clicked=`${resource.id}video`"></video>
+                    <img class="hoverable" :src="`${url}${resource.image1}`" alt="Image1" @click="media_clicked=`${resource.id}image1`">
+                    <img class="hoverable" :src="`${url}${resource.image2}`" alt="Image1" @click="media_clicked=`${resource.id}image2`">
+                    <video class="hoverable" :src="`${url}${resource.video}`" @click="media_clicked=`${resource.id}video`"></video>
                     <div @click="media_clicked=''" class="large-media" v-if="media_clicked === `${resource.id}video`">
                         <div class="big-media" v-if="media_clicked === `${resource.id}video`">
                             <i class="bi bi-x-lg"></i>
-                            <video :src="`http://localhost:8000${resource.video}`" controls @click="media_clicked=`${resource.id}video`"></video>
+                            <video :src="`${url}${resource.video}`" controls @click="media_clicked=`${resource.id}video`"></video>
                         </div>
                     </div>
                     <div @click="media_clicked=''" class="large-media" v-if="media_clicked === `${resource.id}image1`">
                         <div class="big-media">
                             <i class="bi bi-x-lg"></i>
-                            <img :src="`http://localhost:8000${resource.image1}`">
+                            <img :src="`${url}${resource.image1}`">
                         </div>
                     </div>
                     <div @click="media_clicked=''" class="large-media" v-if="media_clicked === `${resource.id}image2`">
                         <div class="big-media" v-if="media_clicked === `${resource.id}image2`">
                             <i class="bi bi-x-lg"></i>
-                            <img :src="`http://localhost:8000${resource.image2}`">
+                            <img :src="`${url}${resource.image2}`">
                         </div>
                     </div>
                 </div>
@@ -101,6 +101,7 @@
     import { defineComponent, type PropType } from 'vue';
     import type { Resource, Review, User } from '@/types';
     import { useUsersStore } from '@/stores/users';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
         emits: ['close-view', 'update_seller'],
         props: {
@@ -151,7 +152,7 @@
             async listedprice(resource: Resource): Promise<number> {
                 if (Object.keys(this.user).length === 0) return resource.price
                 if (resource === undefined) return 0
-                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -164,6 +165,9 @@
             },
         },
         computed: {
+            url(): string {
+                return useURLStore().url
+            },
             user(): User {
                 const users: User = useUserStore().user
                 return users

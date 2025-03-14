@@ -53,7 +53,7 @@
                 </div>
                 <div v-for="listing in textbooks">
                     <div class="listed" @click="showResourcePage(listing.id)">
-                        <img :src="`http://localhost:8000${listing.image1}`" alt="Textbook">
+                        <img :src="`${url}${listing.image1}`" alt="Textbook">
                         {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
@@ -84,7 +84,7 @@
                 </div>
                 <div v-for="listing in notes">
                     <div class="listed" @click="showResourcePage(listing.id)">
-                        <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
+                        <img :src="`${url}${listing.image1}`" alt="Note">
                         {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
@@ -115,7 +115,7 @@
                 </div>
                 <div v-for="listing in stationery">
                     <div class="listed" @click="showResourcePage(listing.id)">
-                        <img :src="`http://localhost:8000${listing.image1}`" alt="Stationery">
+                        <img :src="`${url}${listing.image1}`" alt="Stationery">
                         {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
@@ -132,6 +132,7 @@
     import { defineComponent, nextTick } from 'vue';
     import type { Resource, User } from '@/types';
     import { useUsersStore } from '@/stores/users';
+    import { useURLStore } from '@/stores/url';
     import Error from './user experience/error/Error.vue';
     export default defineComponent({
         components: { Error },
@@ -228,7 +229,7 @@
             },
             async listedprice(resource: Resource): Promise<number> {
                 if (resource === undefined) return 0
-                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -255,7 +256,7 @@
                 const revertButton: HTMLButtonElement = document.getElementById('revert') as HTMLButtonElement
                 revertButton.disabled = true
                 this.making_change = true
-                let updateDecriptionResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/description/`, {
+                let updateDecriptionResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/description/`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -306,6 +307,9 @@
             }
         },
         computed: {
+            url(): string {
+                return useURLStore().url
+            },
             currency(): string {
                 return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
             },

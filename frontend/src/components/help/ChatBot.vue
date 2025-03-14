@@ -49,6 +49,7 @@
     import type { User } from '@/types';
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error },
         data(): {
@@ -97,7 +98,7 @@
                 this.scroll()
                 message.value = ''
                 this.chatbot_responding = true
-                let messageResponse: Response = await fetch(`http://localhost:8000/api/chatbot/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
+                let messageResponse: Response = await fetch(`${useURLStore().url}/api/chatbot/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {

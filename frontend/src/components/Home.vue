@@ -7,7 +7,7 @@
             <div class="displays">
                 <div v-for="listing in recommendations">
                     <div class="listed" v-if="listing.type === 'Textbook'" @click="showResourcePage(listing)">
-                        <img :src="`http://localhost:8000${listing.image1}`" alt="Textbook">
+                        <img :src="`${url}${listing.image1}`" alt="Textbook">
                         {{ currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
@@ -23,7 +23,7 @@
             <div class="displays">
                 <div v-for="listing in textbooks">
                     <div class="listed" v-if="listing.type === 'Textbook'" @click="showResourcePage(listing)">
-                        <img :src="`http://localhost:8000${listing.image1}`" alt="Textbook">
+                        <img :src="`${url}${listing.image1}`" alt="Textbook">
                         {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
@@ -39,7 +39,7 @@
             <div class="displays">
                 <div v-for="listing in notes">
                     <div class="listed" @click="showResourcePage(listing)">
-                        <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
+                        <img :src="`${url}${listing.image1}`" alt="Note">
                         {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
@@ -55,7 +55,7 @@
             <div class="displays">
                 <div v-for="listing in stationery">
                     <div class="listed" @click="showResourcePage(listing)">
-                        <img :src="`http://localhost:8000${listing.image1}`" alt="Note">
+                        <img :src="`${url}${listing.image1}`" alt="Note">
                         {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
@@ -72,6 +72,7 @@
     import { defineComponent, nextTick } from 'vue';
     import type { Resource, User } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         data(): {
             recommendations: Resource[]
@@ -88,7 +89,7 @@
         }},
         methods: {
             async get_recommendations(): Promise<void> {
-                const personalised_recommendations: Response = await fetch(`http://localhost:8000/api/recommendations/${useUserStore().user.id}/`, {
+                const personalised_recommendations: Response = await fetch(`${useURLStore().url}/api/recommendations/${useUserStore().user.id}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -107,7 +108,7 @@
                     return resource.price
                 }
                 if (resource === undefined) return 0
-                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -126,6 +127,9 @@
             },
         },
         computed: {
+            url(): string {
+                return useURLStore().url
+            },
             currency(): string {
                 return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
             },

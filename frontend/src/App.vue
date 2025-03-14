@@ -72,6 +72,7 @@
   import { useResourcesStore } from './stores/resources';
   import { useUsersStore } from './stores/users';
   import Loading from './components/user experience/loading/Loading.vue';
+import { useURLStore } from './stores/url';
   export default defineComponent({
     components: { RouterView, Loading },
     data(): { searching: boolean, authenticated: boolean, search_results: Resource[], clicked_profile: boolean, mobile_menu: boolean, complete: boolean, clicked_profile_mobile: boolean } { return {
@@ -111,8 +112,12 @@
           this.search_results = []
         }
       })
-      if (window.location.p)
-      let usersResponse: Response = await fetch('http://localhost:8000/api/users/', {
+      if (window.location.href.includes('localhost')) {
+        useURLStore().saveURL('localhost')
+      } else {
+        useURLStore().saveURL('deploy')
+      }
+      let usersResponse: Response = await fetch(`${useURLStore().url}/api/users/`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -122,7 +127,7 @@
       let usersData: User[] = await usersResponse.json()
       useUsersStore().updateUsers(usersData)
 
-      let userResponse: Response = await fetch('http://localhost:8000/api/user/', {
+      let userResponse: Response = await fetch(`${useURLStore().url}/api/user/`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -148,7 +153,7 @@
         useUserStore().saveUser(userData.user)
         this.toggle_theme()
       }
-      let getResourcesStore: Response = await fetch(`http://localhost:8000/api/resources/`, {
+      let getResourcesStore: Response = await fetch(`${useURLStore().url}/api/resources/`, {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -219,7 +224,7 @@
           return
         }
         this.searching = true
-        const searchResults: Response = await fetch(`http://localhost:8000/api/semantic-search/${this.user.id}/`, {
+        const searchResults: Response = await fetch(`${useURLStore().url}/api/semantic-search/${this.user.id}/`, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -238,7 +243,7 @@
         window.location.href = Object.keys(this.user).length === 0 || this.user.mode === 'buyer' ? '/' : '/listings'
       },
       async sign_out(): Promise<void> {
-        await fetch(`http://localhost:8000/signout/`, {
+        await fetch(`${useURLStore().url}/signout/`, {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -249,7 +254,7 @@
         window.location.href = '/'
       },
       async sign_in(): Promise<void> {
-        window.location.href = 'http://localhost:8000/login'
+        window.location.href = `${useURLStore().url}/login`
       },
     }
   })

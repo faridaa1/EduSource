@@ -38,7 +38,7 @@
             <div v-if="!searching" class="orders-item" @click="view_item(order.id)" v-for="order in filtered_orders">
                 <div class="item-one">
                     <div class="item-image">
-                        <img :src="`http://localhost:8000${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`">
+                        <img :src="`${useURLStore().url}${(allResources.find(res => res.id === order.resources[0].resource) as Resource)?.image1}`">
                         <p id="number_of_items">{{ order_total(order) }}</p>
                     </div>
                     <div class="details">
@@ -82,6 +82,7 @@
     import type { Order, Resource, User, } from '@/types';
     import { useResourcesStore } from '@/stores/resources';
     import Loading from '@/components/user experience/loading/Loading.vue';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Loading },
         data(): {
@@ -134,7 +135,7 @@
                     this.clear_error()
                 }
                 this.searching = true
-                const searchResults: Response = await fetch(`http://localhost:8000/api/semantic-search-orders/${this.user.id}/${this.search}/buyer/`, {
+                const searchResults: Response = await fetch(`${useURLStore().url}/api/semantic-search-orders/${this.user.id}/${this.search}/buyer/`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {

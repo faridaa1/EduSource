@@ -29,11 +29,11 @@
                 <div class="item" id="images">
                     <div class="data header"></div>
                     <div class="data image">
-                        <img class="img" v-if="Object.keys(resource1).length > 0" :src="`http://localhost:8000${resource1.image1}`">
+                        <img class="img" v-if="Object.keys(resource1).length > 0" :src="`${url}${resource1.image1}`">
                         <div v-else class="img"><i class="bi bi-file-image"></i></div>
                     </div>
                     <div class="data image">
-                        <img class="img" v-if="Object.keys(resource2).length > 0" :src="`http://localhost:8000${resource2.image1}`">
+                        <img class="img" v-if="Object.keys(resource2).length > 0" :src="`${url}${resource2.image1}`">
                         <div v-else class="img"><i class="bi bi-file-image"></i></div>
                     </div>
                 </div>
@@ -228,6 +228,7 @@
     import type { Resource, User } from '@/types';
     import { useUsersStore } from '@/stores/users';
     import Error from '../user experience/error/Error.vue';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error },
         data(): {
@@ -277,7 +278,7 @@
                     }
                 }
             }
-            const searchResponse = await fetch(`http://localhost:8000/api/semantic-search/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
+            const searchResponse = await fetch(`${useURLStore().url}/api/semantic-search/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
                 method: 'PUT',
                 credentials: 'include',
                 headers: {
@@ -397,7 +398,7 @@
             },
             async listedprice(resource: Resource): Promise<number> {
                 if (resource === undefined) return 0
-                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -410,6 +411,9 @@
             },
         },
         computed: {
+            url(): string {
+                return useURLStore().url
+            },
             currency(): string {
                 return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
             },

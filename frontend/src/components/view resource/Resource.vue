@@ -4,7 +4,7 @@
             <p>{{ (resource as Resource).name }}</p>
         </div>
         <div id="resource">
-            <img id="resource-image" :src="`http://localhost:8000/${(resource as Resource).image1}`" :alt="`${(resource as Resource).type}`">
+            <img id="resource-image" :src="`${url}/${(resource as Resource).image1}`" :alt="`${(resource as Resource).type}`">
             <div id="resource-price-and-rating">
                 <div>{{ Object.keys(user).length === 0 ? unauth_currency(resource as Resource) : '' }}{{ (resource as Resource).price }}</div>
                 <div id="rating" @click="scrollReviewsIntoView()">
@@ -233,8 +233,8 @@
                         </div>
                     </div>
                     <div v-if="!editing || editing && editing_review !== review.id" class="review-media">
-                        <img class="review-image" @click="image_full_url=`http://localhost:8000${review.image}`, image_full=true" v-if="review.image" :src="`http://localhost:8000${review.image}`" alt="image">
-                        <video class="review-video" @click="video_full_url=`http://localhost:8000${review.video}`; video_full=true" v-if="review.video" :src="`http://localhost:8000${review.video}`" controls></video>
+                        <img class="review-image" @click="image_full_url=`${url}${review.image}`, image_full=true" v-if="review.image" :src="`${url}${review.image}`" alt="image">
+                        <video class="review-video" @click="video_full_url=`${url}${review.video}`; video_full=true" v-if="review.video" :src="`${url}${review.video}`" controls></video>
                     </div>
                 </div>
                 <div v-if="editing && editing_review === review.id">
@@ -259,7 +259,7 @@
                         <input :disabled="api" id="image1" type="file" accept=".png" @change="show_image">
                         <label for="image1" class="media-square">
                             <i v-if="image.name === ''" class="bi bi-plus-lg"></i>
-                            <img id="img" alt="image1" :src="`http://localhost:8000${review.image}`">
+                            <img id="img" alt="image1" :src="`${url}${review.image}`">
                             <button :disabled="api" v-if="!(image.name === '')" @click="remove_image"><i class="bi bi-x-lg delete"></i></button>
                         </label>
                     </div>
@@ -268,7 +268,7 @@
                         <input :disabled="api" id="video1" type="file" accept=".mp4" @change="(event: Event) => show_video(event,1)">
                         <label for="video1" class="media-square">
                             <i v-if="video.name === ''" class="bi bi-plus-lg"></i>
-                            <video controls id="vid1" :src="`http://localhost:8000${review.video}`"></video>
+                            <video controls id="vid1" :src="`${url}${review.video}`"></video>
                             <button :disabled="api" v-if="!(video.name === '')" @click="(event: Event) => remove_video(event,1)"><i class="bi bi-x-lg delete"></i></button>
                         </label>
                     </div>
@@ -306,6 +306,7 @@
     import Stars from './Stars.vue';
     import { useUsersStore } from '@/stores/users';
     import Error from '../user experience/error/Error.vue';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Stars, ViewSellers, Error },
         data(): {
@@ -421,7 +422,7 @@
                         this.error = 'Error finding resource. Please try again.'
                         return
                     }
-                    const exchangeResponse: Response = await fetch(`http://localhost:8000/api/exchange/user/${this.user.id}/seller/${resource.user}/resource/${this.seller}/`, {
+                    const exchangeResponse: Response = await fetch(`${useURLStore().url}/api/exchange/user/${this.user.id}/seller/${resource.user}/resource/${this.seller}/`, {
                         method: 'POST',
                         credentials: 'include',
                         headers: {
@@ -461,7 +462,7 @@
                 if (this.cart_resource.number !== 0) {
                     await this.update_cart_db('DELETE', this.cart_resource.id, -1)
                 }
-                const editWishlistResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/wishlist/`, {
+                const editWishlistResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/wishlist/`, {
                     method: this.in_wishlist ? 'DELETE' : 'POST',
                     credentials: 'include',
                     headers: {
@@ -497,7 +498,7 @@
                 }
             },
             async get_cart(): Promise<void> {
-                const cart: Response = await fetch(`http://localhost:8000/api/cart/${this.user.id}/`, {
+                const cart: Response = await fetch(`${useURLStore().url}/api/cart/${this.user.id}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -525,7 +526,7 @@
                 useUserStore().updateCart(data)
             },
             async update_cart_db(method: string, cart_number: number, resource: number): Promise<void> {
-                const updateCart: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${cart_number}/resource/${resource}/`, {
+                const updateCart: Response = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/${cart_number}/resource/${resource}/`, {
                     method: method,
                     credentials: 'include',
                     headers: {
@@ -613,7 +614,7 @@
             },
             async delete_review(review: Review) {
                 this.api = true
-                const response: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/review/${review.id}/`, {
+                const response: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/review/${review.id}/`, {
                     method: 'DELETE',
                     credentials: 'include',
                     headers: {
@@ -749,7 +750,7 @@
                 data.append('video', this.video)
                 data.append('old_resource', review.resource.toString())
                 this.api = true
-                let savedReview: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/edit-review/${review.id}/${seller}/`, {
+                let savedReview: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/edit-review/${review.id}/${seller}/`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
@@ -810,7 +811,7 @@
                 data.append('image', this.image)
                 data.append('video', this.video)
                 this.api = true
-                let savedReview: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/review/${seller}/`, {
+                let savedReview: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/review/${seller}/`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
@@ -843,7 +844,7 @@
             async listedprice(resource: Resource): Promise<number> {
                 if (resource === undefined) return 0
                 if (Object.keys(this.user).length === 0) return resource.price
-                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -955,11 +956,14 @@
             }
         },
         computed: {
+            url(): string {
+                return useURLStore().url
+            },
             users(): User[] {
                 return useUsersStore().users
             },
             async resource_sentiment(): Promise<{[key: number] : number}> {
-                const response: Response = await fetch(`http://localhost:8000/api/sentiment/${this.allResources[0].name}/`, {
+                const response: Response = await fetch(`${useURLStore().url}/api/sentiment/${this.allResources[0].name}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {

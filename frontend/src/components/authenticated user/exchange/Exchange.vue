@@ -12,7 +12,7 @@
                 <div class="resource">
                     <div class="name">Me</div>
                     <div class="image">
-                        <img v-if="(user.id === exchange.user1 && (Object.keys(get_resource(exchange.resource1)).length > 0) && get_resource(exchange.resource1).image1) || (user.id === exchange.user2 && (Object.keys(get_resource(exchange.resource2)).length > 0) && get_resource(exchange.resource2).image1)" :src="user.id === exchange.user1 ? `http://localhost:8000/${get_resource(exchange.resource1).image1}` : `http://localhost:8000/${get_resource(exchange.resource2).image1}`">
+                        <img v-if="(user.id === exchange.user1 && (Object.keys(get_resource(exchange.resource1)).length > 0) && get_resource(exchange.resource1).image1) || (user.id === exchange.user2 && (Object.keys(get_resource(exchange.resource2)).length > 0) && get_resource(exchange.resource2).image1)" :src="user.id === exchange.user1 ? `${url}/${get_resource(exchange.resource1).image1}` : `${url}/${get_resource(exchange.resource2).image1}`">
                     </div>
                     <div id="toggle">
                         <div id="resnum">{{ user.id === exchange.user1 ? exchange.resource1_number : exchange.resource2_number }}</div>
@@ -42,7 +42,7 @@
                 <div class="resource">
                     <div class="name">{{ user2.username }}</div>
                     <div class="image clickable" @click="view">
-                        <img v-if="(user.id === exchange.user1 && get_resource(exchange.resource2).image1) || (user.id === exchange.user2 && get_resource(exchange.resource1).image1)" :src="user.id === exchange.user1 ? get_resource(exchange.resource2).image1 ? `http://localhost:8000/${get_resource(exchange.resource2).image1}` : '' : get_resource(exchange.resource1).image1 ? `http://localhost:8000/${get_resource(exchange.resource1).image1}` : ''">
+                        <img v-if="(user.id === exchange.user1 && get_resource(exchange.resource2).image1) || (user.id === exchange.user2 && get_resource(exchange.resource1).image1)" :src="user.id === exchange.user1 ? get_resource(exchange.resource2).image1 ? `${url}/${get_resource(exchange.resource2).image1}` : '' : get_resource(exchange.resource1).image1 ? `${url}/${get_resource(exchange.resource1).image1}` : ''">
                     </div>
                     <div id="toggle">
                         <div id="resnum">{{ user.id === exchange.user1 ? exchange.resource2_number : exchange.resource1_number }}</div>
@@ -80,6 +80,7 @@
     import Error from '@/components/user experience/error/Error.vue';
     import Loading from '@/components/user experience/loading/Loading.vue';
     import { useResourcesStore } from '@/stores/resources';
+import { useURLStore } from '@/stores/url';
     import { useUserStore } from '@/stores/user';
     import { useUsersStore } from '@/stores/users';
     import type { Exchange, User, Resource } from '@/types';
@@ -123,7 +124,7 @@
                 return false
             },
             async submit(): Promise<void> {
-                const submitResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
+                const submitResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/order/`, {
                         method: 'POST',
                         credentials: 'include',
                         headers: {
@@ -143,7 +144,7 @@
                 }
             },
             async cancel(): Promise<void> {
-                const exchangeResponse: Response = await fetch(`http://localhost:8000/api/exchange/user/${this.user.id}/seller/${this.user2.id}/resource/${this.exchange.id}/`, {
+                const exchangeResponse: Response = await fetch(`${useURLStore().url}/api/exchange/user/${this.user.id}/seller/${this.user2.id}/resource/${this.exchange.id}/`, {
                     method: 'DELETE',
                     credentials: 'include',
                     headers: {
@@ -161,7 +162,7 @@
                 }
             },
             async set_resource(field: string, number?: number): Promise<void> {
-                const exchangeResponse: Response = await fetch(`http://localhost:8000/api/exchange/user/${this.user.id}/seller/${this.user2.id}/resource/${this.exchange.id}/`, {
+                const exchangeResponse: Response = await fetch(`${useURLStore().url}/api/exchange/user/${this.user.id}/seller/${this.user2.id}/resource/${this.exchange.id}/`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -188,6 +189,9 @@
             }
         },
         computed: {
+            url(): string {
+                return useURLStore().url
+            },
             user(): User {
                 return useUserStore().user || {} as User
             },
@@ -200,7 +204,7 @@
         },
         async mounted(): Promise<void> {
             const window_location = window.location.href.split('/')
-            const exchangeResponse: Response = await fetch(`http://localhost:8000/api/exchange/user/${this.user.id}/seller/0/resource/${window_location[window_location.length-1]}/`, {
+            const exchangeResponse: Response = await fetch(`${useURLStore().url}/api/exchange/user/${this.user.id}/seller/0/resource/${window_location[window_location.length-1]}/`, {
                 method: 'GET',
                 credentials: 'include',
                 headers: {

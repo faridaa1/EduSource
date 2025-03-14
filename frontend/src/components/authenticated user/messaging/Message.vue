@@ -40,6 +40,7 @@
     import { useUsersStore } from '@/stores/users';
     import Loading from '@/components/user experience/loading/Loading.vue';
     import Error from '@/components/user experience/error/Error.vue';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Loading, Error },
         data(): {
@@ -100,7 +101,7 @@
             async update_last_seen(): Promise<void> {
                 this.get_unread_message_index()
                 this.sending_message = true
-                let messageResponse: Response = await fetch(`http://localhost:8000/api/message/${this.messages.id}/${this.user.id}/`, {
+                let messageResponse: Response = await fetch(`${useURLStore().url}/api/message/${this.messages.id}/${this.user.id}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -146,7 +147,7 @@
                 const message_value = message.value
                 message.value = ''
                 this.sending_message = true
-                let messageResponse: Response = await fetch(`http://localhost:8000/api/message/${this.messages.id}/${this.user.id}/`, {
+                let messageResponse: Response = await fetch(`${useURLStore().url}/api/message/${this.messages.id}/${this.user.id}/`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
@@ -173,7 +174,7 @@
             async create_messages(): Promise<void> {
                 if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
                 this.sending_message = true
-                let messagesResponse: Response = await fetch(`http://localhost:8000/api/messages/${this.user.id}/${this.other_user.id}/`, {
+                let messagesResponse: Response = await fetch(`${useURLStore().url}/api/messages/${this.user.id}/${this.other_user.id}/`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {

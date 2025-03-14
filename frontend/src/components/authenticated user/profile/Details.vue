@@ -163,6 +163,7 @@
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
     import Confirm from '@/components/user experience/confirm/Confirm.vue';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error, Confirm },
         data(): {
@@ -235,7 +236,7 @@
         methods: {
             async delete_account(): Promise<void> {
                 this.confirm = ''
-                const delete_account_response: Response = await fetch(`http://localhost:8000/delete-account/${this.user.id}/`, {
+                const delete_account_response: Response = await fetch(`${useURLStore().url}/delete-account/${this.user.id}/`, {
                     method: 'DELETE',
                     credentials: 'include',
                     headers: {
@@ -296,7 +297,7 @@
                 }
             },
             async delete_subject(id: number): Promise<void> {
-                const response: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/subjects/`, {
+                const response: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/subjects/`, {
                     method: 'DELETE',
                     credentials: 'include',
                     headers: {
@@ -335,7 +336,7 @@
                 }
                 this.show_subjects = true
                 this.subject = search.value
-                const searchResults: Response = await fetch(`http://localhost:8000/api/semantic-search-subjects/`, {
+                const searchResults: Response = await fetch(`${useURLStore().url}/api/semantic-search-subjects/`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
@@ -762,7 +763,7 @@
                 if (cancelButton) {
                     cancelButton.disabled = true
                 }
-                let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/check/${attribute}/`, {
+                let userResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/check/${attribute}/`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -812,7 +813,7 @@
                 if (cancelButton) {
                     cancelButton.disabled = true
                 }
-                let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/${attribute}/`, {
+                let userResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/${attribute}/`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {

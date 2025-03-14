@@ -245,6 +245,7 @@
     import { useUsersStore } from '@/stores/users';
     import Confirm from '@/components/user experience/confirm/Confirm.vue';
     import Error from '@/components/user experience/error/Error.vue';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Confirm, Error },
         data(): {
@@ -336,7 +337,7 @@
         }},
         methods: {
             async delete_listing(): Promise<void> {
-                let deleteListingResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/new-listing/`, {
+                let deleteListingResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/new-listing/`, {
                     method: 'DELETE',
                     credentials: 'include',
                     headers: {
@@ -540,7 +541,7 @@
                 data.append('unique', (!this.exists_resource).toString())
                 let postListingResponse: Response
                 if (!this.isPriorListing) {
-                    postListingResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/new-listing/`, {
+                    postListingResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/new-listing/`, {
                         method: 'POST',
                         credentials: 'include',
                         headers: {
@@ -549,7 +550,7 @@
                         body: data
                     }) 
                 } else {
-                    postListingResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/new-listing/`, {
+                    postListingResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/new-listing/`, {
                         method: 'POST',
                         credentials: 'include',
                         headers: {
@@ -711,15 +712,15 @@
                     this.estimated_delivery_number = parseFloat(this.resource.estimated_delivery_time.toString())
                     this.estimated_delivery_units = this.resource.estimated_delivery_units
                     const image1: HTMLImageElement = document.getElementById('img1') as HTMLImageElement
-                    image1.src = `http://localhost:8000${this.resource.image1}`
+                    image1.src = `${useURLStore().url}${this.resource.image1}`
                     image1.style.display = 'block'
                     this.image1 = new File([], image1.src)
                     const image2: HTMLImageElement = document.getElementById('img2') as HTMLImageElement
-                    image2.src = `http://localhost:8000${this.resource.image2}`
+                    image2.src = `${useURLStore().url}${this.resource.image2}`
                     this.image2 = new File([], image2.src)
                     image2.style.display = 'block'
                     const vid: HTMLImageElement = document.getElementById('vid1') as HTMLImageElement
-                    vid.src = `http://localhost:8000${this.resource.video}`
+                    vid.src = `${useURLStore().url}${this.resource.video}`
                     vid.style.display = 'block'
                     this.video1 = new File([], vid.src)
                 }
@@ -756,15 +757,15 @@
             //     this.estimated_delivery_number = parseFloat(new_resource.estimated_delivery_time.toString())
             //     this.estimated_delivery_units = new_resource.estimated_delivery_units
             //     const image1: HTMLImageElement = document.getElementById('img1') as HTMLImageElement
-            //     image1.src = `http://localhost:8000${new_resource.image1}`
+            //     image1.src = `${useURLStore().url}${new_resource.image1}`
             //     image1.style.display = 'block'
             //     this.image1 = new File([], image1.src)
             //     const image2: HTMLImageElement = document.getElementById('img2') as HTMLImageElement
-            //     image2.src = `http://localhost:8000${new_resource.image2}`
+            //     image2.src = `${useURLStore().url}${new_resource.image2}`
             //     this.image2 = new File([], image2.src)
             //     image2.style.display = 'block'
             //     const vid: HTMLImageElement = document.getElementById('vid1') as HTMLImageElement
-            //     vid.src = `http://localhost:8000${new_resource.video}`
+            //     vid.src = `${useURLStore().url}${new_resource.video}`
             //     vid.style.display = 'block'
             //     this.video1 = new File([], vid.src)
             // },

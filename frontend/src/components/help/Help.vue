@@ -102,6 +102,7 @@
     import { defineComponent } from 'vue';
     import type { User } from '@/types';
     import Error from '../user experience/error/Error.vue';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error },
         data(): {
@@ -129,7 +130,7 @@
             },
             async submit_feedback(): Promise<void> {
                 this.feedback_sent = false
-                let send_feedback: Response = await fetch(`http://localhost:8000/api/feedback/`, {
+                let send_feedback: Response = await fetch(`${useURLStore().url}/api/feedback/`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {

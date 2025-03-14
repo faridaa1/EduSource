@@ -230,7 +230,7 @@
                 <div id="row1">
                     <div id="col1" @click="showResourcePage(resource.id)">
                         <div id="search-picture">
-                            <img :src="`http://localhost:8000${resource.image1}`">
+                            <img :src="`${url}${resource.image1}`">
                         </div>
                         <div id="search-data">
                             <p id="resource-name">{{ resource.name }}</p>
@@ -299,6 +299,7 @@
     import type { Cart, CartResource, Resource, User, Wishlist } from '@/types';
     import { useUsersStore } from '@/stores/users';
     import Error from '../user experience/error/Error.vue';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error },
         data(): {
@@ -410,7 +411,7 @@
                     }
                 }
             }
-            const searchResponse = await fetch(`http://localhost:8000/api/semantic-search/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
+            const searchResponse = await fetch(`${useURLStore().url}/api/semantic-search/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
                 method: 'PUT',
                 credentials: 'include',
                 headers: {
@@ -443,7 +444,7 @@
             async add_to_wishlist(resource: Resource): Promise<void> {
                 if (Object.keys(this.cart_resource(resource)).length > 0) {
                     // move from cart to wishlist
-                    const moveToWishlist: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/cart-to-wishlist/`, {
+                    const moveToWishlist: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/cart-to-wishlist/`, {
                         method: 'PUT',
                         credentials: 'include',
                         headers: {
@@ -462,7 +463,7 @@
                     useUsersStore().updateUser(this.user)
                 } else {
                     // add to wishlist
-                    const editWishlistResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/wishlist/`, {
+                    const editWishlistResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/wishlist/`, {
                         method: 'POST',
                         credentials: 'include',
                         headers: {
@@ -479,7 +480,7 @@
                 }
             },
             async remove_from_wishlist(resource: Resource): Promise<void> {
-                const editWishlistResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/wishlist/`, {
+                const editWishlistResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/wishlist/`, {
                     method: 'DELETE',
                     credentials: 'include',
                     headers: {
@@ -499,7 +500,7 @@
             },
             async remove_from_cart(resource: Resource): Promise<void> {
                 const del: boolean = (this.cart_resource(resource).number === 1) ? true : false
-                const putCartItem: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${this.cart_resource(resource).id}/resource/${resource.id}/`, {
+                const putCartItem: Response = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/${this.cart_resource(resource).id}/resource/${resource.id}/`, {
                     method: del ? 'DELETE' : 'PUT',
                     credentials: 'include',
                     headers: {
@@ -521,7 +522,7 @@
                 let putCartItem: Response
                 if (Object.keys(this.cart_resource(resource)).length === 0) {
                     // create cart resource
-                    putCartItem = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/-1/resource/${resource.id}/`, {
+                    putCartItem = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/-1/resource/${resource.id}/`, {
                         method: 'POST',
                         credentials: 'include',
                         headers: {
@@ -529,7 +530,7 @@
                         },
                     })
                 } else {
-                    putCartItem = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${this.cart_resource(resource).id}/resource/${resource.id}/`, {
+                    putCartItem = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/${this.cart_resource(resource).id}/resource/${resource.id}/`, {
                         method: 'PUT',
                         credentials: 'include',
                         headers: {
@@ -722,7 +723,7 @@
             },
             async listedprice(resource: Resource): Promise<number> {
                 if (resource === undefined) return 0
-                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -879,6 +880,9 @@
             }
         },
         computed: {
+            url(): string {
+                return useURLStore().url
+            },
             subjects(): string[] {
                 // return top 5 most common subjects for filtering
                 let subjects_map: {[key: string] : number} = {}

@@ -19,7 +19,7 @@
                             <div id="select_item_error" v-if="select_item_error !== ''">{{ select_item_error }}</div>
                             <div class="resource" v-for="resource in order.resources.filter(resource => getResource(resource.resource).allow_return)">
                                 <div id="image">
-                                    <img :src="`http://localhost:8000/${getResource(resource.resource).image1}`">
+                                    <img :src="`${url}/${getResource(resource.resource).image1}`">
                                     <div v-if="order.status === 'Requested Return'" id="resnum">{{ resource.number_for_return }}</div>
                                 </div>
                                 <div class="name">
@@ -141,6 +141,7 @@
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
     import Loading from '@/components/user experience/loading/Loading.vue';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error, Loading },
         data(): {
@@ -178,7 +179,7 @@
                     return
                 }
                 this.making_change = true
-                let userResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/order/`, {
+                let userResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/order/`, {
                         method: 'PUT',
                         credentials: 'include',
                         headers: {
@@ -202,7 +203,7 @@
             },
             async return_item(return_number: number, resource_id: number): Promise<void> {
                 this.making_change = true
-                let returnItemResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/return/${this.order.id}/${resource_id}/`, {
+                let returnItemResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/return/${this.order.id}/${resource_id}/`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -306,7 +307,7 @@
             },
             async update_address(attribute: string, data: string): Promise<void> {
                 this.making_change = true
-                let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/${attribute}/`, {
+                let userResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/${attribute}/`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -347,7 +348,7 @@
                     return
                 } 
                 this.making_change = true
-                let userResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/number/`, {
+                let userResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/number/`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -381,7 +382,7 @@
                     return
                 }
                 this.making_change = true
-                let returnResponse = await fetch(`http://localhost:8000/api/user/${this.user.id}/return/${this.order.id}/`, {
+                let returnResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/return/${this.order.id}/`, {
                         method: 'PUT',
                         credentials: 'include',
                         headers: {
@@ -428,7 +429,7 @@
             async listedprice(resource: Resource): Promise<number> {
                 if (resource === undefined) return 0
                 this.making_change = true
-                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -462,6 +463,9 @@
             },
         },
         computed: {
+            url(): string {
+                return useURLStore().url
+            },
             currency(): string {
                 return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
             },

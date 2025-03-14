@@ -65,7 +65,7 @@
       },
       methods: {
         async update_setting(called_by: string, data: string): Promise<void> {
-            let updateResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/${called_by}/`, {
+            let updateResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/${called_by}/`, {
                 method: 'PUT',
                 credentials: 'include',
                 headers: {

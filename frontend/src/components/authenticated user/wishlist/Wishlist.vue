@@ -8,7 +8,7 @@
             <div class="cart-item" v-for="resource in user.wishlist.resources">
                 <div class="item-one">
                     <div class="item-image">
-                        <img @click="view_item((allResources.find(res => res.id === resource.resource) as Resource)?.id)" :src="`http://localhost:8000${(allResources.find(res => res.id === resource.resource) as Resource)?.image1}`">
+                        <img @click="view_item((allResources.find(res => res.id === resource.resource) as Resource)?.id)" :src="`${url}${(allResources.find(res => res.id === resource.resource) as Resource)?.image1}`">
                     </div>
                     <div class="details">
                         <p>{{ (allResources.find(res => res.id === resource.resource) as Resource)?.name }}</p>
@@ -43,6 +43,7 @@
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
     import Confirm from '@/components/user experience/confirm/Confirm.vue';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error, Confirm },
         data(): {
@@ -71,7 +72,7 @@
                 }
             },
             async move_to_cart(resource: WishlistResource): Promise<void> {
-                const moveToCartResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/wishlist/`, {
+                const moveToCartResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/wishlist/`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -90,7 +91,7 @@
                 useUsersStore().updateUser(this.user)
             },
             async delete_wishlist_item(resource: WishlistResource): Promise<void> {
-                const deleteWishlistItemResponse: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/wishlist/`, {
+                const deleteWishlistItemResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/wishlist/`, {
                     method: 'DELETE',
                     credentials: 'include',
                     headers: {
@@ -121,7 +122,7 @@
             },
             async listedprice(resource: Resource): Promise<number> {
                 if (resource === undefined) return 0
-                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -134,6 +135,9 @@
             },
         },
         computed: {
+            url(): string { 
+                return useURLStore().url
+            },
             currency(): string {
                 return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
             },

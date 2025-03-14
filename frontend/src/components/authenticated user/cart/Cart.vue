@@ -9,7 +9,7 @@
             <div class="cart-item" v-for="resource in user.cart.resources">
                 <div class="item-one">
                     <div class="item-image">
-                        <img :src="`http://localhost:8000${(allResources.find(res => res.id === resource.resource) as Resource)?.image1}`"  @click="view_item((allResources.find(res => res.id === resource.resource) as Resource)?.id)">
+                        <img :src="`${url}${(allResources.find(res => res.id === resource.resource) as Resource)?.image1}`"  @click="view_item((allResources.find(res => res.id === resource.resource) as Resource)?.id)">
                     </div>
                     <div class="details">
                         <p>{{ (allResources.find(res => res.id === resource.resource) as Resource)?.name }}</p>
@@ -59,6 +59,7 @@
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
     import Confirm from '@/components/user experience/confirm/Confirm.vue';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error, Confirm },
         data(): {
@@ -89,7 +90,7 @@
                 this.confirm_caller = ''
             },
             async checkout(): Promise<void> {
-                const validate_cart: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/-1/resource/-1/`, {
+                const validate_cart: Response = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/-1/resource/-1/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -111,7 +112,7 @@
                 }
             },
             async move_to_wishlist(resource: CartResource): Promise<void> {
-                const moveToWishlist: Response = await fetch(`http://localhost:8000/api/user/${this.user.id}/cart-to-wishlist/`, {
+                const moveToWishlist: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/cart-to-wishlist/`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -140,7 +141,7 @@
                 }
             },
             async delete_cart_item(resource: CartResource): Promise<void> {
-                const deleteCartItem: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
+                const deleteCartItem: Response = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
                     method: 'DELETE',
                     credentials: 'include',
                     headers: {
@@ -157,7 +158,7 @@
                 useUsersStore().updateUser(this.user)
             },
             async edit_cart_item(resource: CartResource, value: number): Promise<void> {
-                const putCartItem: Response = await fetch(`http://localhost:8000/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
+                const putCartItem: Response = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -197,7 +198,7 @@
             },
             async listedprice(resource: Resource): Promise<number> {
                 if (resource === undefined) return 0
-                let convertedPrice: Response = await fetch(`http://localhost:8000/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -226,6 +227,9 @@
             }
         },
         computed: {
+            url(): string {
+                return useURLStore().url
+            },
             currency(): string {
                 return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
             },
