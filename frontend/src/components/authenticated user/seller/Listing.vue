@@ -195,7 +195,7 @@
                     <div class="image_input" id="image">
                         <input id="image1" type="file" accept=".png" @change="(event) => show_image(event, 1)">
                         <label for="image1" class="input-square">
-                            <i v-if="image1.name === ''" class="bi bi-plus-lg"></i>
+                            <i v-if="image1.name === ''" class="bi bi-plus-lg plus"></i>
                             <img id="img1" alt="image1">
                             <button v-if="!(image1.name === '')" @click="(event) => remove_image(event, 1)"><i class="bi bi-x-lg"></i></button>
                         </label>
@@ -203,7 +203,7 @@
                     <div class="image_input" id="image_2">
                         <input id="image2" type="file" accept=".png" @change="(event) => show_image(event, 2)">
                         <label for="image2" class="input-square">
-                            <i v-if="image2.name === ''" class="bi bi-plus-lg"></i>
+                            <i v-if="image2.name === ''" class="bi bi-plus-lg plus"></i>
                             <img id="img2" alt="image2">
                             <button v-if="!(image2.name === '')" @click="(event) => remove_image(event, 2)"><i class="bi bi-x-lg"></i></button>
                         </label>
@@ -216,7 +216,7 @@
                 <div class="video_input" id="video_1">
                     <input id="video1" type="file" accept=".mp4" @change="show_video">
                     <label for="video1" class="video-square">
-                        <i v-if="video1.name === ''" class="bi bi-plus-lg"></i>
+                        <i v-if="video1.name === ''" class="bi bi-plus-lg plus"></i>
                         <video controls id="vid1"></video>
                         <button v-if="!(video1.name === '')" @click="remove_video"><i class="bi bi-x-lg"></i></button>
                     </label>
@@ -1002,6 +1002,10 @@ import { useURLStore } from '@/stores/url';
         max-height: 100%;
         width: 100%;
         background-color: yellow;
+    }
+
+    #dark .plus {
+        color: black;
     }
 
     #header {
