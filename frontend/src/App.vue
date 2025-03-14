@@ -179,7 +179,7 @@ import { useURLStore } from './stores/url';
     },
     methods: {
       has_resources(): boolean {
-        const resources = useResourcesStore().resources.filter(resource => resource.id === this.user.id)
+        const resources = useResourcesStore().resources.filter(resource => resource.user === this.user.id)
         return resources.length > 0
       },
       toggle_profile_view(): void {

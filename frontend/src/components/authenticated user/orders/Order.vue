@@ -473,6 +473,15 @@ import { useURLStore } from '@/stores/url';
         gap: 3rem;
     }
 
+    #dark select {
+        background-color: transparent !important;
+        color: white;
+    }
+
+    #dark option {
+        color: black;
+    }
+
     #payment {
         display: fl;
     }

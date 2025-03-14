@@ -617,6 +617,8 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
         order: Order = get_object_or_404(Order, id=json.loads(request.body))
         order.status = 'Cancelled'
         order.save()
+        send_mail(f'Order {order.id}: Update', f'Hi {order.buyer.first_name},\n\nThis is to confirm that the status of your order {order.id} is now {order.status}. \n\nThank you for shopping with EduSource.', 'edusource9325@gmail.com', [user.email])
+        send_mail(f'Order {order.id}: Update', f'Hi {order.seller.first_name},\n\nThis is to inform you that you that the status of order {order.id} is now {order.status}.\n\nEduSource', 'edusource9325@gmail.com', [order.seller.email])
         return JsonResponse(user.as_dict())
     elif request.method == 'PUT': 
         user: User = get_object_or_404(User, id=user)
@@ -624,6 +626,8 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
         order: Order = get_object_or_404(Order, id=data['id'])
         order.status = data['status']
         order.save()
+        send_mail(f'Order {order.id}: Update', f'Hi {order.buyer.first_name},\n\nThis is to inform you that you that the status of your order {order.id} is now {order.status}. \n\nThank you for shopping with EduSource.', 'edusource9325@gmail.com', [user.email])
+        send_mail(f'Order {order.id}: Update', f'Hi {order.seller.first_name},\n\nThis is to inform you that you that the status of order {order.id} is now {order.status}.\n\nEduSource', 'edusource9325@gmail.com', [order.seller.email])
         return JsonResponse(user.as_dict())
     return JsonResponse({})
 

@@ -211,7 +211,7 @@
                 </div>
             </div>
             <div class="form-item" id="video-container">
-                <label>Videos (.mp4) <span class="required">*</span></label>
+                <label>Video (.mp4) <span class="required">*</span></label>
                 <p id="videos-label" v-if="video_error">{{ video_error }}</p>
                 <div class="video_input" id="video_1">
                     <input id="video1" type="file" accept=".mp4" @change="show_video">

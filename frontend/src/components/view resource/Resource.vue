@@ -44,7 +44,7 @@
         <div id="view-sellers">
             <p @click="show_sellers">View Sellers</p>
             <p id="buynow" @click=buy_now v-if="Object.keys(user).length > 0">Buy Now</p>
-            <p id="exchange" @click=exchange() v-if="Object.keys(user).length > 0">Exchange</p>
+            <p id="exchange" @click=exchange() v-if="(Object.keys(user).length > 0) && has_resources()">Exchange</p>
         </div>
         <ViewSellers :resources="allResources" :seller="seller" v-if="viewing_sellers" @close-view="viewing_sellers = false" @update_seller="update_seller" />
         <div id="resource-details">
@@ -397,6 +397,10 @@ import { useURLStore } from '@/stores/url';
             image: new File([''], ''),
         }},
         methods: {
+            has_resources(): boolean {
+                const resources = useResourcesStore().resources.filter(resource => resource.user === this.user.id)
+                return resources.length > 0
+            },
             check_all_reviews(): void {
                 this.both_reviews = this.me_reviews && this.my_reviews 
             },
@@ -1220,7 +1224,7 @@ import { useURLStore } from '@/stores/url';
             }
         },
         mounted(): void {
-            const resource: Resource = useResourcesStore().resources.find(resource => resource.id === parseInt(window.location.href.split('/').pop()))
+            const resource: Resource | undefined = useResourcesStore().resources.find(resource => resource.id === parseInt(window.location.href.split('/').pop()))
             if (resource) {
                 console.log(resource.name)
                 fetch(`${useURLStore().url}/api/semantic-search/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
@@ -2206,4 +2210,4 @@ import { useURLStore } from '@/stores/url';
             gap: 1rem;
         }
     }
-</style>
+</style> 
