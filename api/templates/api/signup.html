@@ -74,7 +74,7 @@
 <script>
     const usernameElement = document.querySelector('[name="username"]')
     usernameElement.setAttribute('autocomplete', 'username')
-    /*Toggling whether password is shown or not*/
+    {% comment %} Toggling whether password is shown or not {% endcomment %}
     const passwordElement = document.querySelector('[name="password"]')
     passwordElement.type = 'password'
     passwordElement.setAttribute('autocomplete', 'new-password')
@@ -115,8 +115,8 @@
     reEnterPasswordShowButton.addEventListener('click', toggleReEnterPasswordVisibility)
     reEnterPasswordHideButton.addEventListener('click', toggleReEnterPasswordVisibility)
     
-    /* Adding an event listener to ensure a description about the user is only requested
-       if they want to be a seller */
+    {% comment %} Adding an event listener to ensure a description about the user is only requested
+    if they want to be a seller {% endcomment %}
     const mode = document.querySelector('[name="mode"]')
     const descriptionInput = document.querySelector('[name="description"]')
     descriptionInput.placeholder = 'Enter a description about yourself, and what you sell'
@@ -135,7 +135,7 @@
     }
     mode.addEventListener('change', toggleDescriptionVisibility) 
     
-    /* Allows users to see result of changing themes */
+    {% comment %} Allows users to see result of changing themes {% endcomment %}
     const theme = document.querySelector('[name="theme_preference"]')
     function toggleSignupTheme() {
         const body = document.querySelector('body')
@@ -147,6 +147,7 @@
     toggleSignupTheme()
     theme.addEventListener('change', toggleSignupTheme) 
 
+    {% comment %} Back button that takes a user home {% endcomment %}
     function home() {
         if (window.location.href.includes('localhost')) {
             window.location.href = 'http://localhost:5173/'
@@ -270,7 +271,7 @@
         margin-top: 0.7rem;
     }
 
-    /* Removing placeholder for aesthetics */
+    {% comment %} Removing placeholder for aesthetics {% endcomment %}
     #signup input::placeholder {
         visibility: hidden;
     }
@@ -335,7 +336,7 @@
         gap: 0.4rem;
     }
 
-    /* Responsive Design */
+    {% comment %} Responsive Design {% endcomment %}
     @media (max-width: 499px) {
         #signup {
             width: 25rem;
@@ -348,13 +349,14 @@
         }
     }
 
-    /* Responsive Design */
+    {% comment %} Responsive Design {% endcomment %}
     @media (max-width: 400px) {
         #signup {
             width: 20rem;
         }
     }
 
+    {% comment %} Styling scrollbar {% endcomment %}
     ::-webkit-scrollbar {
         width: 0.5rem;
         height: 0.5rem;

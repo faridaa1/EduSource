@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import Cart, CartResource, Exchange, Messages, Order, OrderResource, Resource, Review, SearchHistory, SearchHistoryItem, Subject, User, Address, Message
 from django.forms import BaseInlineFormSet, ValidationError
 
+# File defining the display of models on django admin
 
 class AddressInlineFormSet(BaseInlineFormSet):
     """Ensures user enters Address"""

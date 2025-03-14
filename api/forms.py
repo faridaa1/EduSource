@@ -4,7 +4,9 @@ from django.forms import ModelForm, ValidationError
 from django.core.validators import validate_email
 from api.models import User, Address
 
+
 class AddressForm(ModelForm):
+    """Defining Address attributes to be used in signup form"""
     class Meta:
         model: Address = Address
         fields: list[str, str] = [
@@ -24,7 +26,7 @@ class AddressForm(ModelForm):
             )
 
 class SignupForm(ModelForm):
-    """Form used for signing up a user"""
+    """Defining attributes used in signup form"""
     reenter_password = forms.CharField(max_length=15, required=True)
     class Meta:
         model: User = User
@@ -93,6 +95,7 @@ class SignupForm(ModelForm):
     
 
 class LoginForm(ModelForm):
+    """Defining attributes used in login form"""
     """Form used for logging in a user"""
     user = forms.CharField(max_length=150, required=True)
     

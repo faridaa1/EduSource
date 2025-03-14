@@ -16,17 +16,16 @@ from transformers import pipeline
 from sentence_transformers import SentenceTransformer
 from transformers import BlenderbotTokenizer, BlenderbotForConditionalGeneration
 
+# Initialising models to be used
 sentiment_analysis_bert = pipeline("text-classification", model="nlptown/bert-base-multilingual-uncased-sentiment")
-semantic_search_model = SentenceTransformer("all-MiniLM-L6-v2") # loading model
+semantic_search_model = SentenceTransformer("all-MiniLM-L6-v2") 
 bert = pipeline("text-classification", model="nlptown/bert-base-multilingual-uncased-sentiment", max_length=512, truncation=True)
-
-# https://huggingface.co/docs/transformers/en/model_doc/blenderbot
 chatbot_tokeniser = BlenderbotTokenizer.from_pretrained("facebook/blenderbot-400M-distill") 
 chatbot_model = BlenderbotForConditionalGeneration.from_pretrained("facebook/blenderbot-400M-distill")
 
 
 def frontend(request: HttpRequest) -> HttpResponse:
-    """Used to ensure frontend routing"""
+    """Ensures frontend routing when URLs is not captured by api URLS"""
     return render(request, 'api/index.html')
 
 
@@ -61,7 +60,6 @@ def signup(request: HttpRequest) -> HttpResponse:
             )
             send_mail('EduSource - Account Created',
             f'Hi {user.first_name}, Welcome to EduSource!\n\nThanks for signing up.\n\nThis is to confirm we have the correct email registered to your account. There is no need to take action.\n\nEnjoy EduSource!', 'edusource9325@gmail.com', [user.email])
-            # log in user
             authenticated_user: User | None = authenticate(request, username=signup_data['username'], password=signup_data['password'])
             if authenticated_user:
                 auth.login(request, authenticated_user)
@@ -108,23 +106,33 @@ def signout(request: HttpRequest) -> JsonResponse:
         pass
     return JsonResponse({})
 
-def currency_conversion(request: HttpRequest, id: int, from_currency: str, to_currency: float) -> JsonResponse:
-    resource: Resource = get_object_or_404(Resource, id=id)
-    initial_value: Money = Money(resource.price, to_currency)
-    return JsonResponse({'new_price': str(convert_money(initial_value, from_currency))})
-
 
 def user(request: HttpRequest) -> JsonResponse:
+    """Return user details if user is authenticated"""
     if request.user.is_authenticated:
         return JsonResponse({'user' : User.objects.get(username=request.user.username).as_dict()})
     return JsonResponse({'user' : 'unauthenticated'})
 
 
 def users(request: HttpRequest) -> JsonResponse:
+    """Return all database users"""
     return JsonResponse([user.as_dict() for user in User.objects.all()], safe=False)
 
 
+def resources(request: HttpRequest) -> JsonResponse:
+    """Returning all database resources"""
+    return JsonResponse([resource.as_dict() for resource in Resource.objects.all()], safe=False)
+
+
+def currency_conversion(request: HttpRequest, id: int, from_currency: str, to_currency: float) -> JsonResponse:
+    """Implementing currency conversion"""
+    resource: Resource = get_object_or_404(Resource, id=id)
+    initial_value: Money = Money(resource.price, to_currency)
+    return JsonResponse({'new_price': str(convert_money(initial_value, from_currency))})
+
+
 def set_resource_rating(resource_id: int) -> float:
+    """Update resource rating based on average sentiment"""
     average_rating = Review.objects.filter(resource=resource_id).aggregate(Avg('rating'))['rating__avg']
     return average_rating if average_rating else 0.0
 
@@ -132,18 +140,18 @@ def set_resource_rating(resource_id: int) -> float:
 def update_seller_rating(user: User) -> None:
     """Ensuring seller rating is defined based on sentiment of reviews"""
     reviews = list(Review.objects.filter(resource__user__id=user.id).values_list('review', flat=True))
-    # https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment
     stars = list(int(review['label'][0]) for review in bert(reviews))
     if len(stars) == 0:
         user.rating = 0
     else:
-        average = round(sum(stars) / len(stars), 1)
-        user.rating = average
+        user.rating = round(sum(stars) / len(stars), 1)
     user.save()
 
 
 def review(request: HttpRequest, user: int, resource: int) -> JsonResponse:
+    """Handling review creation and deltion"""
     if request.method == 'POST':
+        """Creating new Review object"""
         resource: Resource = Resource.objects.get(id=resource)
         media = request.FILES
         data = request.POST
@@ -163,6 +171,7 @@ def review(request: HttpRequest, user: int, resource: int) -> JsonResponse:
         return JsonResponse({'resource': resource.as_dict(),
                             'users': [user.as_dict() for user in User.objects.all()]})
     if request.method == 'DELETE':
+        """Deleting review"""
         review: Review = Review.objects.get(id=resource)
         resource: Resource = Resource.objects.get(id=review.resource.id)
         review.delete()
@@ -175,6 +184,7 @@ def review(request: HttpRequest, user: int, resource: int) -> JsonResponse:
 
 
 def edit_review(request: HttpRequest, user: int, id: int, resource: int) -> JsonResponse:
+    """Implementing review editing"""
     if request.method == 'POST':
         media = request.FILES
         data = request.POST
@@ -207,14 +217,20 @@ def edit_review(request: HttpRequest, user: int, id: int, resource: int) -> Json
     return JsonResponse({})
 
 
-def resources(request: HttpRequest) -> JsonResponse:
-    return JsonResponse([resource.as_dict() for resource in Resource.objects.all()], safe=False)
-
+def delete_account(request: HttpRequest, user: int) -> JsonResponse:
+    """Facilitating account deletion"""
+    if request.method == 'DELETE':
+        user: User = get_object_or_404(User, id=user)
+        send_mail('EduSource - Account Deletion',
+            f'Hi {user.first_name},\n\nThis is to confirm your account deletion.\n\nThanks for using EduSource!', 'edusource9325@gmail.com', [user.email])
+        user.delete()
+    return JsonResponse({})
 
 def user_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse | Http404:
-    """Defining PUT and DELETE request handling"""
+    """Defining PUT and DELETE request handling of user details"""
     user: User | Http404 = get_object_or_404(User, id=id)
     if request.method == 'PUT':
+        """Update user details"""
         address: Address | Http404 = get_object_or_404(Address, user=user)
         if attribute == 'theme':
             user.theme_preference = json.loads(request.body)
@@ -257,6 +273,7 @@ def user_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse 
                 auth.login(request, user)
         return JsonResponse(user.as_dict())
     elif request.method == 'DELETE':
+        """Delete user preferred subject"""
         if attribute == 'subjects':
             Subject.objects.get(id=json.loads(request.body)).delete()
         return JsonResponse(user.as_dict())
@@ -264,7 +281,7 @@ def user_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse 
 
 
 def check_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse:
-    """Defining PUT request handling"""
+    """Checking whether user exists to ensure unique IDs, and ensuring new password matches old password"""
     if request.method == 'PUT':
         if attribute == 'email':
             return JsonResponse(User.objects.filter(email=json.loads(request.body)).exists(), safe=False)
@@ -279,14 +296,16 @@ def check_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse
 
 
 def new_listing(request: HttpRequest, id: int) -> JsonResponse:
-    """Defining POST, PUT and DELETE request handling"""
+    """Defining POST, PUT and DELETE request handling for Listing"""
     data: dict[str, any] = request.POST
     media_data: dict[str, any] = request.FILES
     user: User = get_object_or_404(User, id=id)
     if request.method == 'DELETE':
+        """Deleting listing"""
         resource: Resource = get_object_or_404(Resource, id=json.loads(request.body))
         resource.delete()
     if request.method == 'POST' and not data.get('id'):
+        """Creating new listing"""
         resource: Resource = Resource.objects.create(
             name=data.get('name'),
             description=data.get('description'),
@@ -323,6 +342,7 @@ def new_listing(request: HttpRequest, id: int) -> JsonResponse:
         )
         return JsonResponse(resource.as_dict())
     if request.method == 'POST' and data.get('id'):
+        """Editing prior listing"""
         resource: Resource = get_object_or_404(Resource, id=data.get('id'))
         resource.name=data.get('name')
         resource.description=data.get('description')
@@ -366,24 +386,30 @@ def new_listing(request: HttpRequest, id: int) -> JsonResponse:
 
 
 def sentiment_analysis(request: HttpRequest, resource: str) -> JsonResponse:
-    resources = Resource.objects.filter(name=resource)
-    reviews = list(Review.objects.filter(resource__in=resources).values_list('review', flat=True))
-    reviews_ids = list(Review.objects.filter(resource__in=resources).values_list('id', flat=True))
-    # https://huggingface.co/nlptown/bert-base-multilingual-uncased-sentiment
-    scores = list(review['score'] for review in sentiment_analysis_bert(reviews))
-    reviews_scores = dict(zip(reviews_ids, scores))
-    return JsonResponse(reviews_scores, safe=False)
+    if request.method == 'GET':
+        """Returning resource review sentiment to allow ordering based on resource sentiment"""
+        resources = Resource.objects.filter(name=resource)
+        reviews = list(Review.objects.filter(resource__in=resources).values_list('review', flat=True))
+        reviews_ids = list(Review.objects.filter(resource__in=resources).values_list('id', flat=True))
+        scores = list(review['score'] for review in sentiment_analysis_bert(reviews))
+        reviews_scores = dict(zip(reviews_ids, scores))
+        return JsonResponse(reviews_scores, safe=False)
+    return JsonResponse({})
 
 
 def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> JsonResponse:
+    """Implementing GET, POST, PUT and DELETE for Cart object"""
     user: User = get_object_or_404(User, id=user)
     if request.method == 'GET':
+        """Returning cart"""
         for cart_resource in user.cart.cart_resource.all():
+            # remove item from cart if resource is a draft or the user has added too much of the item to their basket
             resource_to_check: Resource = cart_resource.resource
             if resource_to_check.is_draft or (resource_to_check.stock < cart_resource.number):
                 cart_resource.delete()
         return JsonResponse(user.cart.as_dict())
     elif request.method == 'POST':
+        """Adding new item to cart"""
         resource: Resource = get_object_or_404(Resource, id=resource)
         cartResource: CartResource = CartResource.objects.create(
             resource=resource,
@@ -398,6 +424,7 @@ def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> Js
             user.wishlist.save()
         return JsonResponse({'resource': cartResource.as_dict(), 'cart': user.cart.as_dict(), 'wishlist': user.wishlist.as_dict()})
     elif request.method == 'PUT':
+        """Updating number of items of a particular resource in cart"""
         cartResource: CartResource = get_object_or_404(CartResource, id=cart)
         if cartResource.resource.id != int(resource):
             cartResource.resource = Resource.objects.get(id=resource)
@@ -410,6 +437,7 @@ def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> Js
         user.cart.save()
         return JsonResponse({'resource': cartResource.as_dict(), 'cart': user.cart.as_dict(), 'wishlist': user.wishlist.as_dict()})
     elif request.method == 'DELETE':
+        """Deleting item from cart"""
         resource: CartResource = get_object_or_404(CartResource, id=cart)
         resource.delete()
         user.cart.items = user.cart.cart_resource.all().aggregate(Sum('number'))['number__sum'] if user.cart.cart_resource.all().aggregate(Sum('number'))['number__sum'] else 0
@@ -419,14 +447,18 @@ def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> Js
 
 
 def get_cart(request: HttpRequest, user: int) -> JsonResponse:
-    user: User = get_object_or_404(User, id=user)
-    return JsonResponse(user.cart.as_dict())
+    if request.method == 'GET':
+        """Returning user cart"""
+        user: User = get_object_or_404(User, id=user)
+        return JsonResponse(user.cart.as_dict())
+    return JsonResponse({})
 
 
 def update_wishlist(request: HttpRequest, user: int) -> JsonResponse:
-    """Defining POST, PUT and DELETE handling"""
+    """Defining POST, PUT and DELETE handling for user wishlist"""
     resource_id = json.loads(request.body)
     if request.method == 'POST':
+        """Adding item to wishlist"""
         user: User = User.objects.get(id=user)
         WishlistResource.objects.create(
             resource = Resource.objects.get(id=resource_id),
@@ -436,6 +468,7 @@ def update_wishlist(request: HttpRequest, user: int) -> JsonResponse:
         user.wishlist.save()
         return JsonResponse({ 'wishlist': user.wishlist.as_dict() }) 
     elif request.method == 'DELETE':
+        """Removing item from wishlist"""
         user: User = User.objects.get(id=user)
         resource: WishlistResource = get_object_or_404(WishlistResource, resource=Resource.objects.get(id=resource_id))
         user.wishlist.items -= 1
@@ -443,10 +476,10 @@ def update_wishlist(request: HttpRequest, user: int) -> JsonResponse:
         resource.delete()
         return JsonResponse({ 'wishlist': user.wishlist.as_dict() }) 
     elif request.method == 'PUT':
-        """Defining move from cart to wishlist"""
+        """Defining move of item from wishlist to cart"""
         user: User = User.objects.get(id=user)
         wishlist_resource: WishlistResource = get_object_or_404(WishlistResource, id=resource_id)
-        cartResource: CartResource = CartResource.objects.create(
+        CartResource.objects.create(
             resource=wishlist_resource.resource,
             number=1,
             cart=user.cart,
@@ -478,14 +511,14 @@ def cart_to_wishlist(request: HttpRequest, user: int) -> JsonResponse:
     
 
 def order(request: HttpRequest, user: int) -> JsonResponse:
-    """Defining order GET, POST, PUT, and DELETE"""
+    """Defining order GET, POST, PUT, and DELETE for Order object"""
     if request.method == 'GET':
         """Creating and returning order"""
         user: User = get_object_or_404(User, id=user)
         all_cart_resources = user.cart.cart_resource.all()
-        # Order is between one buyer and one seller, so there may be multiple 
         seller_ids = {}
         for cart_resource in all_cart_resources:
+            # Ensuring there is a new order for one buyer and each seller
             resource: Resource = cart_resource.resource
             if not resource.user.id in seller_ids:
                 current_date = datetime.datetime.now()
@@ -530,6 +563,7 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
         user: User = get_object_or_404(User, id=user)
         current_date = datetime.datetime.now()
         if (not isinstance(data, int)) and data.get('exchange_id'):
+            """Defining order caused by resource exchange"""
             exchange: Exchange = get_object_or_404(Exchange, id=data.get('exchange_id'))
             resource1: Resource = exchange.resource1
             if resource1.estimated_delivery_units == 'day':
@@ -589,6 +623,7 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
             send_mail('Exchange Confirmation', f'Hi {order.buyer.first_name}!\n\nThis is to confirm that the exchange between you and {order.seller.first_name} has been accepted, and an order has been placed.\n\nThank you for shopping with EduSource.', 'edusource9325@gmail.com', [order.buyer.email])
             send_mail('Exchange Confirmation', f'Hi {order.seller.first_name}!\n\nThis is to confirm that the exchange between you and {order.buyer.first_name} has been accepted, and an order has been placed.\n\nThank you for shopping with EduSource.', 'edusource9325@gmail.com', [order.seller.email])
         else:
+            """Defining order caused by 'Buy Now' shortcut"""
             cart_resource: CartResource = get_object_or_404(CartResource, id=json.loads(request.body))
             resource: Resource = cart_resource.resource
             if resource.estimated_delivery_units == 'day':
@@ -621,6 +656,7 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
             send_mail('Order Placed', f'Hi {order.seller.first_name}!\n\nPlease check your account - a new order has been placed.\n\nEduSource', 'edusource9325@gmail.com', [order.seller.email])
         return JsonResponse({'user': user.as_dict(), 'resources': [resource.as_dict() for resource in Resource.objects.all()]})
     elif request.method == 'DELETE':
+        """Deleting order"""
         user: User = get_object_or_404(User, id=user)
         order: Order = get_object_or_404(Order, id=json.loads(request.body))
         order.status = 'Cancelled'
@@ -629,6 +665,7 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
         send_mail(f'Order {order.id} Update', f'Hi {order.seller.first_name},\n\nThis is to inform you that you that the status of order {order.id} is now {order.status}.\n\nEduSource', 'edusource9325@gmail.com', [order.seller.email])
         return JsonResponse(user.as_dict())
     elif request.method == 'PUT': 
+        """Updating order status"""
         user: User = get_object_or_404(User, id=user)
         data = json.loads(request.body)
         order: Order = get_object_or_404(Order, id=data['id'])
@@ -648,6 +685,7 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
 
 
 def messages(request: HttpRequest, user1: int, user2: int) -> JsonResponse:
+    """Create message between two users"""
     if request.method == 'POST':
         user1: User = get_object_or_404(User, id=user1)
         user2: User = get_object_or_404(User, id=user2)
@@ -655,12 +693,13 @@ def messages(request: HttpRequest, user1: int, user2: int) -> JsonResponse:
             user1=user1,
             user2=user2,
         )
-        return users(request)
+        return users(request) # return all users
     return JsonResponse({})
 
 
 def message(request: HttpRequest, id: int, sender: int) -> JsonResponse:
     if request.method == 'POST':
+        """Sending message"""
         messages: Messages = get_object_or_404(Messages, id=id)
         user: User = get_object_or_404(User, id=sender)
         Message.objects.create(
@@ -674,8 +713,9 @@ def message(request: HttpRequest, id: int, sender: int) -> JsonResponse:
             messages.user2_seen = timezone.now()
         messages.last_edited = timezone.now()
         messages.save()
-        return users(request)
+        return users(request) # return all users
     elif request.method == 'GET':
+        """Updating last seen each time user checks messages"""
         messages: Messages = get_object_or_404(Messages, id=id)
         user: User = get_object_or_404(User, id=sender)
         if messages.user1 == user:
@@ -683,13 +723,13 @@ def message(request: HttpRequest, id: int, sender: int) -> JsonResponse:
         else:
             messages.user2_seen = timezone.now()
         messages.save()
-        return users(request)
+        return users(request) # return all users
     return JsonResponse({})
 
 
 def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
     """Defining semantic search used to return relevant search results to user"""
-    # https://huggingface.co/sentence-transformers
+    # guide to perform semantic search: https://huggingface.co/sentence-transformers
     dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
 
     # data preprocessing
@@ -710,7 +750,6 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
         embeddings = semantic_search_model.encode(new_dataset)
         search: str = json.loads(request.body)
         search_embeddings = semantic_search_model.encode(search)
-
 
         # generate similairty matrix
         similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
@@ -749,30 +788,30 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
                     search_history=user.search_history
                 )
 
-        search_embeddings = semantic_search_model.encode(search)
+            search_embeddings = semantic_search_model.encode(search)
 
-        # generate similairty matrix
-        similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
-        
-        # convert tensor to dictionary sorted on values (similarity)
-        list_similarity_matrix = similarity_matrix.tolist()[0]
-        search_dict = dict(zip(dataset_resources, list_similarity_matrix))
-        sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
+            # generate similairty matrix
+            similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
+            
+            # convert tensor to dictionary sorted on values (similarity)
+            list_similarity_matrix = similarity_matrix.tolist()[0]
+            search_dict = dict(zip(dataset_resources, list_similarity_matrix))
+            sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
 
-        # only keeping results at least 45% similar
-        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.4]
-        resources: list = []
-        # using iteration to preserve order of resources
-        for key in keys:
-            resource = Resource.objects.get(id=key)
-            resources.append(resource.as_dict())
-        return JsonResponse(resources, safe=False)
+            # only keeping results at least 45% similar
+            keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.4]
+            resources: list = []
+            # using iteration to preserve order of resources
+            for key in keys:
+                resource = Resource.objects.get(id=key)
+                resources.append(resource.as_dict())
+            return JsonResponse(resources, safe=False)
     return JsonResponse({})
 
 
 def semantic_search_subjects(request: HttpRequest) -> JsonResponse:
     """Defining semantic search used to return relevant subjects to user"""
-    # https://huggingface.co/sentence-transformers
+    # guide to perform semantic search: https://huggingface.co/sentence-transformers
     dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
 
     # data preprocessing
@@ -815,9 +854,10 @@ def semantic_search_subjects(request: HttpRequest) -> JsonResponse:
 
 def semantic_search_orders(request: HttpRequest, id: int, search: str, mode: str) -> JsonResponse:
     """Defining semantic search used to return relevant orders to user"""
+    # guide to perform semantic search: https://huggingface.co/sentence-transformers
     if request.method == 'POST':
         """ logic: map each order to a corresponding id i.e. a dict
-            check if any resources sold match search with > 70%
+            check if any resources ordered match search with > 70%
             store orderid:boolean pair to determine whether to keep showing order """
         user: User = get_object_or_404(User, id=id)
         matching_orders = []
@@ -845,14 +885,16 @@ def semantic_search_orders(request: HttpRequest, id: int, search: str, mode: str
         return JsonResponse(matching_orders, safe=False)
     return JsonResponse({})
 
+
 def order_data(item: tuple):
-    return item[1] # sort based on values
+    """Sort dictionary based on values by returning index of element which stores similarity"""
+    return item[1] 
 
 
 def recommendations(request: HttpRequest, user: int) -> JsonResponse:
     user: User = get_object_or_404(User, id=user)
     """Defining semantic search used to return personalised recommendations"""
-    # https://huggingface.co/sentence-transformers
+    # guide to perform semantic search: https://huggingface.co/sentence-transformers
     dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
 
     # data preprocessing - consider resource, name, subject and description
@@ -897,7 +939,7 @@ def recommendations(request: HttpRequest, user: int) -> JsonResponse:
 
 
 def order_return(request: HttpRequest, user: id, order: id, resource: id) -> JsonResponse:
-    """Defining PUT and POST for return"""
+    """Allowing user to edit the number of items they want to return"""
     user: User = get_object_or_404(User, id=user)
     order: Order = get_object_or_404(Order, id=order)
     resource: OrderResource = get_object_or_404(OrderResource, id=resource)
@@ -913,7 +955,7 @@ def order_return(request: HttpRequest, user: id, order: id, resource: id) -> Jso
 
 
 def submit_return(request: HttpRequest, user: id, order: id) -> JsonResponse:
-    """Defining PUT and POST for return"""
+    """Implementing submitting or cancellation of return"""
     user: User = get_object_or_404(User, id=user)
     order: Order = get_object_or_404(Order, id=order)
     if request.method == 'PUT':
@@ -942,7 +984,7 @@ def submit_return(request: HttpRequest, user: id, order: id) -> JsonResponse:
 
 
 def exchange(request: HttpRequest, user: int, seller: int, resource: int) -> JsonResponse:
-    """Defining GET, PUT, and POST for Exchange"""
+    """Defining GET, PUT, and POST for Exchange object"""
     if request.method == 'GET':
         # Return Exchange instance
         return JsonResponse(get_object_or_404(Exchange, id=resource).as_dict())
@@ -992,6 +1034,7 @@ def exchange(request: HttpRequest, user: int, seller: int, resource: int) -> Jso
         user_to_send: User = get_object_or_404(User, id=user)
         return JsonResponse({'user': user_to_send.as_dict(), 'exchange': exchange.as_dict()})
     elif request.method == 'DELETE':
+        # Deleting exchange instance
         exchange: Exchange = get_object_or_404(Exchange, id=resource)
         exchange.delete()
         user = get_object_or_404(User, id=user)
@@ -1000,21 +1043,14 @@ def exchange(request: HttpRequest, user: int, seller: int, resource: int) -> Jso
 
 
 def feedback(request: HttpRequest) -> JsonResponse:
+    """Allowing users to send feedback - email is sent to myself with user feedback as the content"""
     if request.method == 'POST':
         feedback = json.loads(request.body)
         send_mail('Feedback submitted', feedback, 'edusource9325@gmail.com', ['edusource9325@gmail.com'])
     return JsonResponse({})
 
 
-def delete_account(request: HttpRequest, user: int) -> JsonResponse:
-    if request.method == 'DELETE':
-        user: User = get_object_or_404(User, id=user)
-        send_mail('EduSource - Account Deletion',
-            f'Hi {user.first_name},\n\nThis is to confirm your account deletion.\n\nThanks for using EduSource!', 'edusource9325@gmail.com', [user.email])
-        user.delete()
-    return JsonResponse({})
-
-
+# Dictionary of known questions and answers - can be quickly returned by chatbot
 known_questions_and_answers = {
     'How do I place an order?' : '''There are two ways to do this:\n
     The first way is as follows:
@@ -1064,6 +1100,9 @@ known_questions_and_answers = {
 }
 
 def chatbot(request: HttpRequest, user: int) -> JsonResponse:
+    """Defining chatbot implementation"""
+    # guide to perform semantic search: https://huggingface.co/sentence-transformers
+
     user_input: str = json.loads(request.body)
     
     # providing responses to known questions
@@ -1110,6 +1149,7 @@ def chatbot(request: HttpRequest, user: int) -> JsonResponse:
                 return JsonResponse('Sorry, I cannot do that as you do not have any personalised recommendations yet.\nAs you search through the app and add subjects preferences to your profile, this will update.', safe=False)
             return JsonResponse(response_string, safe=False)
         elif sorted_search_dict[0][0] == 'Can you provide resource recommendations for':
+            """Generating resource recommendations based on input"""
             recommendation_query_list: list = (user_input.lower().split('can you provide resource recommendations for'))
             if len(recommendation_query_list) == 1 or recommendation_query_list[1].strip() == '':
                 return JsonResponse('Please repeat the statement with a recommendation.', safe=False)
@@ -1160,9 +1200,11 @@ def chatbot(request: HttpRequest, user: int) -> JsonResponse:
         return JsonResponse(known_questions_and_answers[sorted_search_dict[0][0]], safe=False)
 
     try:
+        # guide to implement chatbot: https://huggingface.co/docs/transformers/en/model_doc/blenderbot
         tokenised_input = chatbot_tokeniser([user_input], return_tensors='pt')
         model_output = chatbot_model.generate(**tokenised_input)
         response = chatbot_tokeniser.decode(model_output[0], temperature=0.8, max_length=1000, skip_special_tokens=True)
         return JsonResponse(response, safe=False)
     except:
+        # accounting for the input limitations of the chatbot
         return JsonResponse("I'm having trouble processing this. Could you make your request shorter?", safe=False)
