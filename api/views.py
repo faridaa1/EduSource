@@ -65,7 +65,9 @@ def signup(request: HttpRequest) -> HttpResponse:
             authenticated_user: User | None = authenticate(request, username=signup_data['username'], password=signup_data['password'])
             if authenticated_user:
                 auth.login(request, authenticated_user)
-            return redirect('http://localhost:5173/details')
+            if 'localhost' in request.build_absolute_uri():
+                return redirect('http://localhost:5173/details')
+            return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/details')
         return render(request, 'api/signup.html', {'signup_form' : signup_form, 'address_form' : address_form})
     return render(request, 'api/signup.html', {'signup_form' : SignupForm(), 'address_form' : AddressForm()})
 
@@ -87,8 +89,12 @@ def login(request: HttpRequest) -> HttpResponse:
             if authenticated_user:
                 auth.login(request, authenticated_user)
                 if authenticated_user.mode == 'buyer':
-                    return redirect('http://localhost:5173/')
-                return redirect('http://localhost:5173/listings')
+                    if 'localhost' in request.build_absolute_uri():
+                        return redirect('http://localhost:5173/')
+                    return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/')
+                if 'localhost' in request.build_absolute_uri():
+                    return redirect('http://localhost:5173/listings')
+                return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/listings')
             login_form.add_error(None, 'Invalid email or password' if '@' in login_data['user'] else 'Invalid username or password')
         return render(request, 'api/login.html', {'login_form' : login_form})
     return render(request, 'api/login.html', {'login_form' : LoginForm()})
@@ -914,7 +920,6 @@ def submit_return(request: HttpRequest, user: id, order: id) -> JsonResponse:
         data = json.loads(request.body)
         order.status = 'Complete' if data['cancel'] == 'true' else 'Return Started'
         order.save()
-        print(order.status)
         if order.status == 'Return Started':
             send_mail(f'Order {order.id} Update', f'Hi {order.buyer.first_name},\n\nThis is to inform you that you that a return has been started for your order {order.id}.\n\nEduSource', 'edusource9325@gmail.com', [order.buyer.email])
             send_mail(f'Order {order.id} Update', f'Hi {order.seller.first_name},\n\nThis is to inform you that you that a request has been made for the return of order {order.id}.\n\nEduSource', 'edusource9325@gmail.com', [order.seller.email])
