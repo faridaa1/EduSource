@@ -482,6 +482,12 @@ import { useURLStore } from '@/stores/url';
                     stockInput.reportValidity()
                     stockInput.scrollIntoView()
                     return
+                } else if (this.stock > 9999) {
+                    const stockInput: HTMLInputElement = document.getElementById('stock-field') as HTMLInputElement
+                    stockInput.setCustomValidity('Stock cannot be greater than 9999.')
+                    stockInput.reportValidity()
+                    stockInput.scrollIntoView()
+                    return
                 }
 
                 // built in validation
