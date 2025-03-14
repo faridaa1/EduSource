@@ -27,7 +27,8 @@ chatbot_model = BlenderbotForConditionalGeneration.from_pretrained("facebook/ble
 
 def frontend(request: HttpRequest) -> HttpResponse:
     """Used to ensure frontend routing"""
-    return render(request, 'api/templates/api/index.html')
+    return render(request, 'api/index.html')
+
 
 def signup(request: HttpRequest) -> HttpResponse:
     """Handling user sign up"""
