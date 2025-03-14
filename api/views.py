@@ -982,6 +982,8 @@ def feedback(request: HttpRequest) -> JsonResponse:
 def delete_account(request: HttpRequest, user: int) -> JsonResponse:
     if request.method == 'DELETE':
         user: User = get_object_or_404(User, id=user)
+        send_mail('EduSource - Account Deletion',
+            f'Hi {user.first_name},\n\nThis is to confirm your account deletion.\n\nThanks for using EduSource!', 'edusource9325@gmail.com', [user.email])
         user.delete()
     return JsonResponse({})
 
