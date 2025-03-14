@@ -40,6 +40,7 @@
     import { useUsersStore } from '@/stores/users';
     import Loading from '@/components/user experience/loading/Loading.vue';
     import Error from '@/components/user experience/error/Error.vue';
+import { useURLStore } from '@/stores/url';
     export default defineComponent({
       components: { Loading, Error },
       data(): { currency_setting: string, mode_setting: string, error: boolean } { return {
