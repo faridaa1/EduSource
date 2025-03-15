@@ -36,4 +36,4 @@ urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [
     path('api/update-cart/user/<int:user>/cart/<str:cart>/resource/<str:resource>/', update_cart, name='update cart'),
     path('api/cart/<int:user>/', get_cart, name='get cart'),
     path('', frontend, name='frontend'),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+] 
