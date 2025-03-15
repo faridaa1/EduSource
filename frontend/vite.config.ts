@@ -17,5 +17,5 @@ export default defineConfig({
     emptyOutDir: true,
     outDir: '../api/static/api/',
   },
-  base: '/static/api/'
+  base: '/'
 })
