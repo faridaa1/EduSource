@@ -21,6 +21,9 @@
         </div>
         <div id="search-div">
           <input id="search" @click="semantic_search" @input="semantic_search" @keydown.enter="conduct_search()" type="text" placeholder="Search">
+          <div id="clear-search">
+            <i v-if="searching" class="bi bi-x-lg" @click="clear_search"></i>
+          </div>
           <div id="search-results" v-if="searching && search_results.length > 0">
             <div class="search-result" v-for="resource in search_results" @click="conduct_search(resource)">
               {{ resource.name }}
@@ -211,6 +214,13 @@
         // Determine when hamburger menu items show
         this.clicked_profile_mobile = !this.clicked_profile_mobile
       },
+      clear_search(): void {
+        const search: HTMLInputElement = document.getElementById('search') as HTMLInputElement
+        if (search) {
+          search.value = ''
+        }
+        this.searching = false
+      },
       toggle_theme(): void {
         // Update theme to match user preference
         if (Object.keys(this.user).length === 0) return
@@ -384,6 +394,19 @@
 
   #app-vue #search-div {
     display: flex;
+    position: relative;
+  }
+
+  #clear-search {
+    color: red;
+    position: absolute;
+    top: 0.3rem;
+    right: 1.8rem;
+  }
+
+  #clear-search:hover {
+    cursor: pointer;
+    color: darkred;
   }
 
   #app-vue input {
@@ -393,6 +416,7 @@
     border: none;
     padding: 0.3rem;
     width: 100%;
+    padding-right: 1.5rem;
   }
 
   #app-vue input:focus {
