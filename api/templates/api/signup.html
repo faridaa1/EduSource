@@ -3,7 +3,7 @@
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" href="{% static 'icon/logo.ico' %}">
+        <link rel="icon" href="{% static 'api/logo.ico' %}">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
         <title>Sign Up</title>
     </head>
@@ -13,7 +13,7 @@
             <p>Home</p>
         </div>
         <div id='signup' class='signup-light'>
-            <img id='logo' src="{% static 'logo-light.svg' %}" alt="EduSource" width="125" height="125" />
+            <img id='logo' src="{% static 'api/logo-light.svg' %}" alt="EduSource" width="125" height="125" />
             <form method='post' action='/signup/' id='signup-form'>
                 {% csrf_token %}
                 <div id='fields'>
@@ -141,7 +141,7 @@
         const body = document.querySelector('body')
         const signup = document.getElementById('signup')
         body.style.background = theme.value === 'dark' ? '#807E7E' : '#FFFFFF'
-        document.querySelector('img').src = theme.value === 'dark' ? "{% static 'logo-dark.svg' %}" : "{% static 'logo-light.svg' %}"
+        document.querySelector('img').src = theme.value === 'dark' ? "{% static 'api/logo-dark.svg' %}" : "{% static 'api/logo-light.svg' %}"
         signup.classList.replace(theme.value === 'dark' ? 'signup-light' : 'signup-dark', theme.value === 'dark' ? 'signup-dark' : 'signup-light')
     }
     toggleSignupTheme()
