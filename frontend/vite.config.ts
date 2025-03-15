@@ -15,7 +15,8 @@ export default defineConfig({
   },
   build: {
     emptyOutDir: true,
-    outDir: '../static/'
+    outDir: '../static/',
+    assetsDir: 'assets'
   },
   base: '/static/'
 })
