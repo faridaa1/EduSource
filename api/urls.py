@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path
+from django.urls import path, re_path
 from .views import order, frontend, delete_account, chatbot, order_return, feedback, signout, exchange, recommendations, submit_return, semantic_search_orders, semantic_search_subjects, semantic_search, message, messages, signup, login, users, edit_review, currency_conversion, cart_to_wishlist, user, review, resources, user_details, check_details, update_wishlist, new_listing, sentiment_analysis, update_cart, get_cart
 
 """Defining routing"""
@@ -35,6 +35,6 @@ urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [
     path('api/sentiment/<str:resource>/', sentiment_analysis, name='sentiment analysis'),
     path('api/update-cart/user/<int:user>/cart/<str:cart>/resource/<str:resource>/', update_cart, name='update cart'),
     path('api/cart/<int:user>/', get_cart, name='get cart'),
-    path(r'.*', frontend, name='frontend'),
+    re_path(r'.*', frontend, name='frontend'),
 ]
 # + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
