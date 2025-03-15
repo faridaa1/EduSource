@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
-import type { Cart, Resource, User, Wishlist, WishlistResource } from '../types';
+import type { Cart, Resource, User, Wishlist } from '../types';
+
+// Global store to access data and methods relating to authenticated user
 
 export const useUserStore = defineStore('user', {
     state: (): { user: User, csrf: string} => ({
@@ -14,6 +16,7 @@ export const useUserStore = defineStore('user', {
             this.csrf = csrf
         },
         addListing(listing: Resource): void {
+            // Add sold resource
             this.user.listings.push(listing)
         },
         updateListing(new_listing: Resource): void {

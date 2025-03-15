@@ -169,12 +169,15 @@
         }},
         methods: {
             message(userID: number): void {
+                // Take user to message page between themselves and the other user
                 window.location.href = `/message/${this.user.id}/${userID}`
             },
             unauth_currency(resource: Resource): string {
+                // Set currency to price currency when user is unauthenticated - do not get currency conversion as we would need to store such a detail
                 return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
             },
             updateStationeryMessage(clickedByFirstButton: boolean): void {
+                // Toggle message based on what user is currently viewing
                 if (clickedByFirstButton) {
                     if (this.stationeryMessage === 'All') {
                         this.stationeryMessage = 'Sold'
@@ -190,6 +193,7 @@
                 }
             },
             updateNotesMessage(clickedByFirstButton: boolean): void {
+                // Toggle message based on what user is currently viewing
                 if (clickedByFirstButton) {
                     if (this.notesMessage === 'All') {
                         this.notesMessage = 'Sold'
@@ -205,6 +209,7 @@
                 }
             },
             updateTextbookMessage(clickedByFirstButton: boolean): void {
+                // Toggle message based on what user is currently viewing
                 if (clickedByFirstButton) {
                     if (this.textbookMessage === 'All') {
                         this.textbookMessage = 'Sold'
@@ -220,14 +225,17 @@
                 }
             },
             showResourcePage(resourceId: number): void {
+                // Show page of resource
                 window.location.href = this.viewing_profile ? `/view/${resourceId}` : `/resource/${resourceId}`
             },
             clear(): void {
+                // Remove previous error message
                 const textarea: HTMLTextAreaElement = document.getElementById('desc') as HTMLTextAreaElement
                 textarea.setCustomValidity('')
                 textarea.reportValidity()
             },
             async listedprice(resource: Resource): Promise<number> {
+                // Performing currency conversion
                 if (resource === undefined) return 0
                 let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
@@ -241,6 +249,7 @@
                 return returnedPrice.new_price
             },
             async saveDescription(): Promise<void> {
+                // Update description
                 const textarea: HTMLTextAreaElement = document.getElementById('desc') as HTMLTextAreaElement
                 if (textarea.value.length === 0) {
                     textarea.setCustomValidity('Cannot be empty')
@@ -251,6 +260,7 @@
                     textarea.reportValidity()
                     return
                 }
+                // Disable buttons when API call is being made
                 const saveButton: HTMLButtonElement = document.getElementById('save') as HTMLButtonElement
                 saveButton.disabled = true
                 const revertButton: HTMLButtonElement = document.getElementById('revert') as HTMLButtonElement
@@ -278,6 +288,7 @@
                 }
             },
             revert(): void {
+                // Revert description change to original
                 const textarea: HTMLTextAreaElement = document.getElementById('desc') as HTMLTextAreaElement
                 if (textarea) {
                     textarea.value = this.user.description
@@ -285,9 +296,11 @@
                 }
             },
             new_listing(url: string): void {
+                // Allow user to create new listing
                 window.location.href = `/new-listing/${url}`
             },
             fill_stars(): void {
+                // Fill seller stars
                 nextTick(() => {
                     const star1: HTMLElement = document.getElementById('one') as HTMLElement
                     const star2: HTMLElement = document.getElementById('two') as HTMLElement
@@ -344,6 +357,7 @@
                 } else if (this.textbookMessage === 'Drafted') {
                     textbooks = this.user.listings.filter(listing => listing.type === 'Textbook' && listing.is_draft)
                 }
+                // Textbook ordering
                 textbooks = textbooks.sort((a, b) => {
                     if (this.textbook_filter === 'edit-new') {
                         return new Date(b.last_edited).getTime() - new Date(a.last_edited).getTime() 
@@ -356,6 +370,7 @@
                     }
                 })
                 if (this.viewing_profile) {
+                    // Only show in stock, undrafted textbooks when viewing profile
                     textbooks = textbooks.filter(listing => !listing.is_draft && listing.stock > 0)
                 }
                 return textbooks
@@ -368,6 +383,7 @@
                 } else if (this.notesMessage === 'Drafted') {
                     notes = this.user.listings.filter(listing => listing.type === 'Notes' && listing.is_draft)
                 }
+                // Notes ordering
                 notes = notes.sort((a, b) => {
                     if (this.notes_filter === 'edit-new') {
                         return new Date(b.last_edited).getTime() - new Date(a.last_edited).getTime() 
@@ -380,6 +396,7 @@
                     }
                 })
                 if (this.viewing_profile) {
+                    // Only show in stock, undrafted notes when viewing profile
                     notes = notes.filter(listing => !listing.is_draft  && listing.stock > 0)
                 }
                 return notes
@@ -392,6 +409,7 @@
                 } else if (this.stationeryMessage === 'Drafted') {
                     stationery = this.user.listings.filter(listing => listing.type === 'Stationery' && listing.is_draft)
                 }
+                // Stationery ordering
                 stationery = stationery.sort((a, b) => {
                     if (this.stat_filter === 'edit-new') {
                         return new Date(b.last_edited).getTime() - new Date(a.last_edited).getTime() 
@@ -404,6 +422,7 @@
                     }
                 })
                 if (this.viewing_profile) {
+                    // Only show in stock, undrafted stationery when viewing profile
                     stationery = stationery.filter(listing => !listing.is_draft && listing.stock > 0)
                 }
                 return stationery
@@ -418,6 +437,7 @@
                     const displays = Array.from(document.getElementsByClassName('displays'))
                     if (!displays) return
                     for (const display of displays) {
+                        // Generate styles based on whether user is viewing profile
                         const parent: HTMLDivElement = (display as HTMLDivElement).parentElement as HTMLDivElement
                         if (parent && (parent.id === 'textbooks') && (this.textbooks.length > 0)) {
                             (display as HTMLDivElement).style.setProperty('height', 'auto', 'important')

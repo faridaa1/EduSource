@@ -93,7 +93,7 @@
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
     import Loading from '@/components/user experience/loading/Loading.vue';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error, Loading }, 
         data(): {
@@ -113,6 +113,7 @@ import { useURLStore } from '@/stores/url';
         }},
         methods: {
             async update_status(): Promise<void> {
+                // Update order status
                 const status: HTMLSelectElement = document.getElementById('order-status') as HTMLSelectElement
                 if (!status) {
                     this.error = 'Error updating status. Please try again'
@@ -138,9 +139,11 @@ import { useURLStore } from '@/stores/url';
                 useUsersStore().updateUser(user)
             },
             message_seller(seller_id: number): void {
+                // Allow user to message buyer/seller
                 window.location.href = `/message/${this.user.id}/${seller_id}`
             },
             async start_return(order: Order): Promise<void> {
+                // Cancelling return
                 const window_location: string[] = window.location.href.split('/')
                 if (order.status === 'Return Started') {
                     this.making_change = true
@@ -171,6 +174,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             view_resource(event: Event, id: number): void {
+                // Allow user to view resource
                 if (event.target && (event.target as HTMLDivElement).id === 'add-review') {
                     const resource: Resource = this.all_resources.find(resource => resource.id === id) as Resource
                     this.add_review(resource)
@@ -179,6 +183,7 @@ import { useURLStore } from '@/stores/url';
                 window.location.href = `/view/${id}`
             },
             add_review(resource: Resource): void {
+                // Take user to add review page of resource
                 if (this.can_review(resource)) {
                     window.location.href = `/view/${resource.id}/add-review`
                 } else {
@@ -186,10 +191,12 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             can_review(resource: Resource): boolean {
+                // Check if user has reviewed the resource before
                 if (!resource.reviews || resource.reviews.length === 0) return true
                 return resource.reviews.find(review => review.user === this.user.id && review.resource === resource.id) ? false : true
             },
             async cancel_order(): Promise<void> {
+                // Allow user to cancel order
                 this.making_change = true
                 let userResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/order/`, {
                     method: 'DELETE',
@@ -209,6 +216,7 @@ import { useURLStore } from '@/stores/url';
                 useUsersStore().updateUser(user)
             },
             back(): void {
+                // Allow user to go back to Orders page
                 const window_location: string[] = window.location.href.split('/')
                 if (window_location.length === 5) {
                     window.location.href = `/${this.mode === 'buyer' ? 'orders' : 'sold-orders'}`
@@ -216,15 +224,14 @@ import { useURLStore } from '@/stores/url';
                     window.location.href = `/${this.mode === 'buyer' ? 'orders' : 'sold-orders'}/${this.order.id}/${window_location[5]}/${window_location[6]}/${window_location[7]}`
                 }
             },
-            home(): void {
-                window.location.href = '/cart'
-            },
             getResource(resource_id: number): Resource {
+                // Allow resource retrieval given an ID
                 const resource: Resource | undefined = this.all_resources.find(resource => resource.id === resource_id)
                 if (resource) return resource
                 return {} as Resource
             },
             async listedprice(resource: Resource): Promise<number> {
+                // Performing currency conversion
                 if (resource === undefined) return 0
                 let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
@@ -238,6 +245,7 @@ import { useURLStore } from '@/stores/url';
                 return returnedPrice.new_price
             },
             get_total(): void {
+                // Calculating return total
                 this.total = 0
                 if (!this.order || !this.order.resources || this.order.resources.length === 0 || this.order.is_exchange) return
                 for (let item of this.order.resources) {
@@ -256,7 +264,7 @@ import { useURLStore } from '@/stores/url';
             returnable(): boolean {
                 for(const resource of this.order.resources) {
                     const res = this.getResource(resource.resource)
-                    // can return 30 days within purchase date
+                    // Can return 30 days within purchase date
                     const purchase_days: number = (new Date().getTime() - new Date(this.order.date).getTime())/1000/3600/24
                     if (res.allow_return && purchase_days <= 30) return true
                 }
@@ -275,6 +283,7 @@ import { useURLStore } from '@/stores/url';
                 return useResourcesStore().resources
             },
             order(): Order {
+                // Order to filter thtough depends on user mode
                 if (!this.user || ((this.mode === 'buyer') && !this.user.placed_orders) || ((this.mode === 'seller') && !this.user.sold_orders)) return {} as Order
                 const window_location: string[] = window.location.href.split('/')
                 const id: number = parseInt(window_location[4])

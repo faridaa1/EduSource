@@ -249,7 +249,7 @@
     import { useUsersStore } from '@/stores/users';
     import Confirm from '@/components/user experience/confirm/Confirm.vue';
     import Error from '@/components/user experience/error/Error.vue';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Confirm, Error },
         data(): {
@@ -343,6 +343,7 @@ import { useURLStore } from '@/stores/url';
         }},
         methods: {
             async delete_listing(): Promise<void> {
+                // Delete listing
                 let deleteListingResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/new-listing/`, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -361,6 +362,7 @@ import { useURLStore } from '@/stores/url';
                 window.location.href = '/listings'
             },
             clear_errors(): void {
+                // Clear errors
                 const form: HTMLDivElement = document.getElementById('new-listing') as HTMLDivElement
                 const inputs = form.querySelectorAll('input, textarea, select')
                 inputs.forEach(input => {
@@ -371,8 +373,9 @@ import { useURLStore } from '@/stores/url';
                 this.video_error = ''
             },
             submit(is_draft: boolean) {
+                // Validating input
                 this.clear_errors()
-                // name valiadtion
+                // Name valiadtion
                 const nameInputField: HTMLInputElement = document.getElementById('name') as HTMLInputElement
                 if (this.name.length === 0) {
                     nameInputField.setCustomValidity('Cannot be empty')
@@ -388,7 +391,7 @@ import { useURLStore } from '@/stores/url';
                     return
                 }
                 
-                // description validation
+                // Description validation
                 const descriptionInputField: HTMLInputElement = document.getElementById('description') as HTMLInputElement
                 if (this.description.length === 0) {
                     descriptionInputField.setCustomValidity('Cannot be empty')
@@ -400,7 +403,7 @@ import { useURLStore } from '@/stores/url';
                     return
                 }
 
-                // subject validation
+                // Subject validation
                 const subjectInputField: HTMLInputElement = document.getElementById('subject') as HTMLInputElement
                 if (this.subject.length === 0) {
                     subjectInputField.setCustomValidity('Cannot be empty')
@@ -424,7 +427,7 @@ import { useURLStore } from '@/stores/url';
                     return
                 }
 
-                // author validation
+                // Author validation
                 const authorInputField: HTMLInputElement = document.getElementById('author-field') as HTMLInputElement
                 if (this.self_made) {
                 } else if (this.author.length === 0) {
@@ -449,7 +452,7 @@ import { useURLStore } from '@/stores/url';
                     return
                 }
 
-                // ensuring images are uploaded
+                // Ensuring images are uploaded
                 if (this.image1.name === '' && this.image2.name === '') {
                     this.image_error = 'Upload 2 supporting images'
                     nextTick(() => {
@@ -462,7 +465,7 @@ import { useURLStore } from '@/stores/url';
                     imageInputField.scrollIntoView()
                 }
 
-                // ensuring video is uploaded
+                // Ensuring video is uploaded
                 if (this.video1.name === '') {
                     this.video_error = 'Upload 1 supporting video'
                     nextTick(() => {
@@ -472,7 +475,7 @@ import { useURLStore } from '@/stores/url';
                     return
                 } 
 
-                // delivery validation 
+                // Delivery validation 
                 if (!is_draft && !this.allow_collection && !this.allow_delivery) {
                     const deliveryInput: HTMLInputElement = document.getElementById('allow_delivery') as HTMLInputElement
                     deliveryInput.setCustomValidity('Must choose at least delivery or collection')
@@ -481,7 +484,7 @@ import { useURLStore } from '@/stores/url';
                     return
                 }
 
-                // validating stock - to list you need at least one item
+                // Validating stock - to list you need at least one item
                 if (!is_draft && (this.stock < 1)) {
                     const stockInput: HTMLInputElement = document.getElementById('stock-field') as HTMLInputElement
                     stockInput.setCustomValidity('You need at least one item in stock to list this item.')
@@ -496,7 +499,7 @@ import { useURLStore } from '@/stores/url';
                     return
                 }
 
-                // built in validation
+                // Built-in input validation
                 const form: HTMLDivElement = document.getElementById('new-listing') as HTMLDivElement
                 const inputs = form.querySelectorAll('input, textarea, select')
                 inputs.forEach(input => {
@@ -517,6 +520,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async post_listing(is_draft: boolean): Promise<void> {
+                // Submit resource listing/update
                 const data: FormData = new FormData()
                 if (this.isPriorListing) {
                     data.append('id', this.resource.id.toString())
@@ -593,6 +597,7 @@ import { useURLStore } from '@/stores/url';
                 window.location.href = '/listings'
             },
             remove_video(event:Event): void {
+                // Remove uploeaded video
                 event.preventDefault()
                 const vid: HTMLImageElement = document.getElementById('vid1') as HTMLImageElement
                 const video: HTMLInputElement = document.getElementById('video1') as HTMLInputElement
@@ -604,6 +609,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             show_video(event: Event): void {
+                // Upload video
                 const inputElement: HTMLInputElement = event.target as HTMLInputElement
                 if (!inputElement.files) return
                 const video: File = inputElement.files[0]
@@ -616,6 +622,7 @@ import { useURLStore } from '@/stores/url';
                 this.videoChanged = true
             },
             remove_image(event: Event, image_number: number): void {
+                // Remove uploaded image
                 event.preventDefault()
                 const img: HTMLImageElement = document.getElementById(image_number === 1 ? 'img1' : 'img2') as HTMLImageElement
                 const image: HTMLInputElement = document.getElementById(image_number === 1 ? 'image1' : 'image2') as HTMLInputElement
@@ -631,6 +638,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             show_image(event: Event, image_number: number): void {
+                // Upload image
                 const inputElement: HTMLInputElement = event.target as HTMLInputElement
                 if (!inputElement.files) return
                 const image: File = inputElement.files[0]
@@ -647,15 +655,13 @@ import { useURLStore } from '@/stores/url';
                     this.image2Changed = true
                 }
             },
-            new_listing():void {
-                window.location.href = '/new-listing'
-            },
             duplicated_resource(compared_resource: Resource): boolean {
-                // if it is a shared resource user cannot duplicate it unless they change the author
+                // If it is a shared resource user cannot duplicate it unless they change the author
                 const potential_duplicates: Resource | undefined = this.resources.find(resource => resource.user === this.user.id && !resource.unique && resource.name === compared_resource.name && resource.author === this.author)
                 return potential_duplicates === undefined ? false : potential_duplicates.id === this.resource.id ? false : true
             },
             duplicate_resource_checks(): void {
+                // Check if listing is a duplicate to prevent user from listing duplicate resources
                 for (let resource of this.resources) {
                     if ((this.name !== resource.name) || resource.unique) continue
                     if (this.duplicated_resource(resource)) {
@@ -702,6 +708,7 @@ import { useURLStore } from '@/stores/url';
         },
         watch: {
             isPriorListing(): void {
+                // Automatically fill values if resource is exisitng (not new resource listing)
                 if (this.isPriorListing) {
                     this.unique = this.resource.unique
                     this.currency = this.resource.price_currency
@@ -791,6 +798,7 @@ import { useURLStore } from '@/stores/url';
             // },
             subject(new_subject: string): void {
                 if (this.resources.map(resource => resource.subject).includes(new_subject)) {
+                    // Allow select option to be entered value
                     this.subject_select = new_subject
                 } else {
                     this.subject_select = ''
@@ -807,6 +815,7 @@ import { useURLStore } from '@/stores/url';
             },
             self_made(new_self_made: boolean): void {
                 if (new_self_made) {
+                    // Resource is not duplicate if it is self made
                     this.author = this.user.username
                     this.existing_resource = {} as Resource
                     this.exists_resource = false
@@ -822,8 +831,9 @@ import { useURLStore } from '@/stores/url';
                 this.duplicate_resource_checks()
             },
             existing_resource(new_existing_resource: Resource): void {
+                // Automatically fill fields of shared resource
                 if (Object.keys(this.existing_resource).length > 0) {
-                    this.author = new_existing_resource.author
+                    this.author = new_existing_resource.author 
                     this.description = new_existing_resource.description
                     this.height = new_existing_resource.height
                     this.dimension_unit = new_existing_resource.height_unit
@@ -837,6 +847,7 @@ import { useURLStore } from '@/stores/url';
         },
         mounted(): void {
             this.currency = this.user.currency
+            // Set type based on URL
             if (window.location.href.includes('notes')) {
                 this.type = 'Notes'
             } else if (window.location.href.includes('stationery')) {
@@ -852,8 +863,6 @@ import { useURLStore } from '@/stores/url';
         height: 85vh;
         overflow-y: auto;
         width: 100vw;
-        /* padding-left: 3rem;
-        padding-right: 2rem; */
         margin-top: 2rem;
         padding-bottom: 3rem !important;
     }

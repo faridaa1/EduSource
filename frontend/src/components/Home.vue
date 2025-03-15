@@ -1,6 +1,7 @@
 <template>
     <div id="buyer-home">
         <div id="recommendations" v-if="Object.keys(user).length > 0">
+            <!-- Show recommendations to signed in users -->
             <div class="header">
                 <p>Recommended for you</p>
             </div>
@@ -89,6 +90,7 @@
         }},
         methods: {
             async get_recommendations(): Promise<void> {
+                // Retrieve personalised recommendations
                 const personalised_recommendations: Response = await fetch(`${useURLStore().url}/api/recommendations/${useUserStore().user.id}/`, {
                     method: 'GET',
                     credentials: 'include',
@@ -108,6 +110,7 @@
                     return resource.price
                 }
                 if (resource === undefined) return 0
+                // Performing currency conversion
                 let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
@@ -138,6 +141,7 @@
                     this.get_recommendations()
                 } else {
                     nextTick(() => {
+                        // Update style if guest user is signed in
                         let div: HTMLDivElement = document.getElementById('buyer-home') as HTMLDivElement
                         if (div) {
                             div.style.gridTemplateAreas = "'textbooks' 'notes' 'stationery'";
@@ -147,6 +151,7 @@
                 return useUserStore().user
             },
             resources(): Resource[] {
+                // Only show one of each unique item - if item is shared show the first one. Clicking it will show other sellers.
                 const allResources: Resource[] = useResourcesStore().resources
                 let generic_items = new Map()
                 let newAllResources = [] as Resource[]

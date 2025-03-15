@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 
+// Storing URL globally to be accessed by different components
+
 export const useURLStore = defineStore('URL', {
     state: (): { url: string } => ({
         url: '',

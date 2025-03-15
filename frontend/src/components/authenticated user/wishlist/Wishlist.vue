@@ -43,7 +43,7 @@
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
     import Confirm from '@/components/user experience/confirm/Confirm.vue';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error, Confirm },
         data(): {
@@ -57,6 +57,7 @@ import { useURLStore } from '@/stores/url';
         }},
         methods: {
             async clear_wishlist(): Promise<void> {
+                // Clear wishlist
                 if (this.confirm === '') {
                     this.confirm = 'Are you sure you want to clear your wishlist?'
                     return
@@ -67,11 +68,13 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async add_wishlist(): Promise<void> {
+                // Move wishlist items to cart
                 for (const wishlist_item of this.user.wishlist.resources) {
                     this.move_to_cart(wishlist_item)
                 }
             },
             async move_to_cart(resource: WishlistResource): Promise<void> {
+                // Move wishlist item to cart
                 const moveToCartResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/wishlist/`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -91,6 +94,7 @@ import { useURLStore } from '@/stores/url';
                 useUsersStore().updateUser(this.user)
             },
             async delete_wishlist_item(resource: WishlistResource): Promise<void> {
+                // Delete wishlist item
                 const deleteWishlistItemResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/wishlist/`, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -110,17 +114,21 @@ import { useURLStore } from '@/stores/url';
                 useUsersStore().updateUser(this.user)
             },
             remove_item(resource: WishlistResource): void {
+                // Delete wishlist item
                 this.delete_wishlist_item(resource)
             },
             view_item(id: number): void {
+                // View resource
                 window.location.href = `/view/${id}`
             },
             cart_price(resource: CartResource): number {
+                // Return resource price
                 const res = this.allResources.find(res => res.id === resource.resource)
                 if (res) return parseFloat(res.price.toString().replace('€','').replace('£','').replace('$',''))
                 return 0
             },
             async listedprice(resource: Resource): Promise<number> {
+                // Performing currency conversion
                 if (resource === undefined) return 0
                 let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
@@ -149,19 +157,13 @@ import { useURLStore } from '@/stores/url';
             },
             resource(): Resource | {} {
                 const window_location: string[] = window.location.href.split('/')
-                const name: string = window_location[window_location.length-1]
                 return this.allResources[0]
             },
         },
         watch: {
-            user(new_user: User): void {
-            },
             async resource(resource: Resource): Promise<void> {
                 resource.price = await this.listedprice(resource)
             },
-        },
-        mounted(): void {
-            
         },
     })
 </script>

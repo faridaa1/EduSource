@@ -228,7 +228,7 @@
     import type { Resource, User } from '@/types';
     import { useUsersStore } from '@/stores/users';
     import Error from '../user experience/error/Error.vue';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error },
         data(): {
@@ -255,6 +255,7 @@ import { useURLStore } from '@/stores/url';
         }},
         async mounted(): Promise<void> {
             document.addEventListener('click', (event) => {
+                // Close search results on click
                 if (!event.target) return
                 if (((event.target as HTMLDivElement).id !== 'item-search')) {
                     if (this.searching_resource1) this.searching_resource1 = false
@@ -270,7 +271,7 @@ import { useURLStore } from '@/stores/url';
                 this.search_value = search.value
             }
             if (!useUserStore().csrf) {
-                // unauth
+                // Store CSRF token of aunauthenticated user
                 for (let cookie of document.cookie.split(';')) {
                     const cookie_pair = cookie.split('=')
                     if (cookie_pair[0] === 'csrftoken') {
@@ -278,6 +279,7 @@ import { useURLStore } from '@/stores/url';
                     }
                 }
             }
+            // Perform semnatic search to generate comparable resources
             const searchResponse = await fetch(`${useURLStore().url}/api/semantic-search/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
                 method: 'PUT',
                 credentials: 'include',
@@ -294,23 +296,27 @@ import { useURLStore } from '@/stores/url';
         },
         methods: {
             back(): void {
+                // Take user to search page
                 window.location.href = `/search/${this.search_value}`
             },
             get_date(date: string): string {
+                // Formatting upload date
                 const current_time = new Date()
                 let date_format = new Date(date)
                 if (current_time.getDate() === date_format.getDate() && current_time.getMonth() === date_format.getMonth() && current_time.getFullYear() === date_format.getFullYear()) {
-                    // show time if the day is the same
+                    // Show time if the day is the same
                     return `${String(date_format.getHours()).padStart(2, '0')}:${String(date_format.getMinutes()).padStart(2, '0')}`
                 }
-                // show date if it happened more than one day ago
+                // Show date if it happened more than one day ago
                 return `${String(date_format.getDate()).padStart(2, '0')}/${String(date_format.getMonth()+1).padStart(2, '0')}/${String(date_format.getFullYear()).slice(-2)}`
             },
             unauth_currency(resource: Resource): string {
                 return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
             },
             update_search(resource: 'resource1' | 'resource2'): void {
+                // Update which search results are being shown
                 if (resource === 'resource1') {
+                    // Show resource 1 search results if its search bar has been clicked
                     if (this.resource1_search.trim() === '') {
                         this.searching_resource2 = false
                         this.searching_resource1 = false
@@ -321,6 +327,7 @@ import { useURLStore } from '@/stores/url';
                         this.searching_resource2 = false
                     }
                 } else {
+                    // Show resource 2 search results if its search bar has been clicked
                     if (this.resource2_search.trim() === '') {
                         this.searching_resource1 = false
                         this.searching_resource2 = false
@@ -333,7 +340,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async conduct_search(resource: 'resource1' | 'resource2'): Promise<void> {
-                // shop top 5 search results 
+                // Show top 5 search results 
                 if (resource === 'resource1') {
                     if (this.resource1_search.trim() === '') {
                         this.searching_resource1 = false
@@ -344,12 +351,12 @@ import { useURLStore } from '@/stores/url';
                     this.searching_resource2 = false
                     let temp_resources = this.resources
                     temp_resources = temp_resources.sort((resourceA, resourceB) => {
-                        // algorithm that places most alphabetically similar first
+                        // Algorithm that places most alphabetically similar first
                         if (resourceA.name === resourceB.name) return 0
                         const number_of_letters: number = this.resource1_search.length
                         let index:number = 0
                         while ((index < number_of_letters) && (resourceA.name.length >= number_of_letters) && (resourceB.name.length >= number_of_letters)) {
-                            /* go through each letter, comparing how far ASCII values deviate from search */
+                            /* Go through each letter, comparing how far ASCII values deviate from search */
                             const currentSearchLetterASCII = this.resource1_search.toLocaleLowerCase().charCodeAt(index)
                             const currentALetterDifferenceASCII = (resourceA.name.toLocaleLowerCase().charCodeAt(index)) - currentSearchLetterASCII
                             const currentBLetterDifferenceASCII = (resourceB.name.toLocaleLowerCase().charCodeAt(index)) - currentSearchLetterASCII
@@ -371,12 +378,12 @@ import { useURLStore } from '@/stores/url';
                     this.searching_resource1 = false
                     let temp_resources = this.resources
                     temp_resources = temp_resources.sort((resourceA, resourceB) => {
-                        // algorithm that places most alphabetically similar first
+                        // Algorithm that places most alphabetically similar first
                         if (resourceA.name === resourceB.name) return 0
                         const number_of_letters: number = this.resource2_search.length
                         let index:number = 0
                         while ((index < number_of_letters) && (resourceA.name.length >= number_of_letters) && (resourceB.name.length >= number_of_letters)) {
-                            /* go through each letter, comparing how far ASCII values deviate from search */
+                            /* Go through each letter, comparing how far ASCII values deviate from search */
                             const currentSearchLetterASCII = this.resource2_search.toLocaleLowerCase().charCodeAt(index)
                             const currentALetterDifferenceASCII = (resourceA.name.toLocaleLowerCase().charCodeAt(index)) - currentSearchLetterASCII
                             const currentBLetterDifferenceASCII = (resourceB.name.toLocaleLowerCase().charCodeAt(index)) - currentSearchLetterASCII
@@ -390,13 +397,8 @@ import { useURLStore } from '@/stores/url';
                     this.resource2_search_results = temp_resources.slice(0,5)
                 }
             },
-            message(userID: number): void {
-                window.location.href = `/message/${this.user.id}/${userID}`
-            },
-            showResourcePage(resourceId: number): void {
-                window.location.href = `/view/${resourceId}` 
-            },
             async listedprice(resource: Resource): Promise<number> {
+                // Performing currency conversion
                 if (resource === undefined) return 0
                 let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',

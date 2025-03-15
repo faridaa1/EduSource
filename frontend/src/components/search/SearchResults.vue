@@ -299,7 +299,7 @@
     import type { Cart, CartResource, Resource, User, Wishlist } from '@/types';
     import { useUsersStore } from '@/stores/users';
     import Error from '../user experience/error/Error.vue';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error },
         data(): {
@@ -397,13 +397,14 @@ import { useURLStore } from '@/stores/url';
         async mounted(): Promise<void> {
             const search: HTMLInputElement = document.getElementById('search') as HTMLInputElement
             if (search) {
+                // Store search result
                 const window_location: string[] = window.location.href.split('/')
                 const search_query: string = window_location[window_location.length-1]
                 search.value = search_query.replaceAll('%20', ' ');
                 this.search_value = search.value
             }
             if (!useUserStore().csrf) {
-                // unauth
+                // Generate CSRF token of unauthenticated user
                 for (let cookie of document.cookie.split(';')) {
                     const cookie_pair = cookie.split('=')
                     if (cookie_pair[0] === 'csrftoken') {
@@ -411,6 +412,7 @@ import { useURLStore } from '@/stores/url';
                     }
                 }
             }
+            // Find resources matching search result
             const searchResponse = await fetch(`${useURLStore().url}/api/semantic-search/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
                 method: 'PUT',
                 credentials: 'include',
@@ -427,7 +429,7 @@ import { useURLStore } from '@/stores/url';
             }
             document.addEventListener('click', (event) => {
                 if (this.filtering) {
-                    // closing filtering panel when click occurs outside of it
+                    // Closing filtering panel when click occurs outside of it
                     if (event.target && (((event.target as HTMLDivElement).id === 'backdrop')) || ((event.target as HTMLDivElement).id === 'profile-header') || ((event.target as HTMLDivElement).id === 'search')) {
                         this.filtering = false
                     }
@@ -436,14 +438,16 @@ import { useURLStore } from '@/stores/url';
         },
         methods: {
             compare_resources(): void {
+                // Take users to page to compare resources
                 window.location.href = `/compare/${this.search_value}`
             },
             update_page(new_page: number): void {
+                // Update page
                 this.current_page = this.current_page + new_page
             },
             async add_to_wishlist(resource: Resource): Promise<void> {
                 if (Object.keys(this.cart_resource(resource)).length > 0) {
-                    // move from cart to wishlist
+                    // Move from cart to wishlist
                     const moveToWishlist: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/cart-to-wishlist/`, {
                         method: 'PUT',
                         credentials: 'include',
@@ -462,7 +466,7 @@ import { useURLStore } from '@/stores/url';
                     useUserStore().updateWishlist(data.wishlist)
                     useUsersStore().updateUser(this.user)
                 } else {
-                    // add to wishlist
+                    // Add to wishlist
                     const editWishlistResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/wishlist/`, {
                         method: 'POST',
                         credentials: 'include',
@@ -480,6 +484,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async remove_from_wishlist(resource: Resource): Promise<void> {
+                // Remove resource from wishlist
                 const editWishlistResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/wishlist/`, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -496,9 +501,11 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             in_wishlist(resource: Resource): boolean {
+                // Returning whether resource is in wishlist
                 return this.user.wishlist.resources.find(wishlist_resource => wishlist_resource.resource === resource.id) ? true : false
             },
             async remove_from_cart(resource: Resource): Promise<void> {
+                // Editing number of resource in cart
                 const del: boolean = (this.cart_resource(resource).number === 1) ? true : false
                 const putCartItem: Response = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/${this.cart_resource(resource).id}/resource/${resource.id}/`, {
                     method: del ? 'DELETE' : 'PUT',
@@ -518,6 +525,7 @@ import { useURLStore } from '@/stores/url';
                 useUsersStore().updateUser(this.user)
             },
             async add_to_cart(resource: Resource): Promise<void> {
+                // Adding resource to cart
                 if (this.in_wishlist(resource)) this.remove_from_wishlist(resource)
                 let putCartItem: Response
                 if (Object.keys(this.cart_resource(resource)).length === 0) {
@@ -549,9 +557,11 @@ import { useURLStore } from '@/stores/url';
                 useUsersStore().updateUser(this.user)
             },
             get_resource(resource_id: number): Resource {
+                // Retrieve resource given an ID
                 return this.resources.find(resource => resource.id === resource_id) as Resource
             },
             cart_resource(resource: Resource): CartResource {
+                // Returning cart resource related to given resource
                 let cart_resource = this.user.cart.resources.find(cart_resource => cart_resource.resource === resource.id)
                 if (cart_resource === undefined) {
                     for (let resource of this.resources) {
@@ -564,33 +574,42 @@ import { useURLStore } from '@/stores/url';
                 return cart_resource || {} as CartResource
             },
             check_authors(): void {
+                // Determining whether 'All' is selected based on values of other filters
                 this.author_all = this.author_one && this.author_two && this.author_three && this.author_four && this.author_five
             },
             check_subjects(): void {
+                // Determining whether 'All' is selected based on values of other filters
                 this.subject_all = this.subject_one && this.subject_two && this.subject_three && this.subject_four && this.subject_five
             },
             check_colours(): void {
+                // Determining whether 'All' is selected based on values of other filters
                 this.colour_all = this.black && this.red && this.yellow && this.pink && this.purple && this.green && this.blue && this.white && this.orange && this.brown && this.grey
             },
             check_media(): void {
+                // Determining whether 'All' is selected based on values of other filters
                 this.media_all = this.online && this.paper
             },
             check_options(): void {
+                // Determining whether 'All' is selected based on values of other filters
                 this.options_all = this.delivery && this.collection
             },
             check_returns(): void {
+                // Determining whether 'All' is selected based on values of other filters
                 this.returns_all = this.returns && this.no_returns
             },
             check_source(): void {
+                // Determining whether 'All' is selected based on values of other filters
                 this.source_all = this.source_ai && this.source_internet && this.source_self
             },
             some_unique(): boolean {
+                // Return whether any resources are unique
                 for (let resource of this.resources) {
                     if (resource.unique) return true
                 }
                 return false
             },
             converted_weight(resource: Resource): number {
+                // Convert weight
                 if (
                     (resource.weight_unit === 'L' && this.weight_dimension === 'L')
                     || (resource.weight_unit === 'lb' && this.weight_dimension === 'lb')
@@ -672,7 +691,7 @@ import { useURLStore } from '@/stores/url';
                 }                 
             },
             converted_dimension(resource: Resource, dimension: string): number {
-                // convert dimension 
+                // Convert dimension (height or width)
                 if ((resource.height_unit === 'm' && this.dimension_unit === 'm') 
                     || (resource.height_unit === 'cm' && this.dimension_unit === 'cm')
                     || (resource.height_unit === 'in' && this.dimension_unit === 'in')) {
@@ -699,6 +718,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             check_all(): void {
+                // Determining whether 'All' is selected based on values of other filters
                 if (this.zero && this.one && this.two && this.three && this.four && this.five) {
                     this.rating_all = true
                 } else {
@@ -706,6 +726,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             check_type_all(): void {
+                // Determining whether 'All' is selected based on values of other filters
                 if (this.textbook && this.notes && this.stationery) {
                     this.type_all = true
                 } else {
@@ -713,6 +734,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             message(userID: number): void {
+                // Taking user to page where they can message the seller
                 window.location.href = `/message/${this.user.id}/${userID}`
             },
             unauth_currency(resource: Resource): string {
@@ -722,6 +744,7 @@ import { useURLStore } from '@/stores/url';
                 window.location.href = `/view/${resourceId}` 
             },
             async listedprice(resource: Resource): Promise<number> {
+                // Performing currency conversion
                 if (resource === undefined) return 0
                 let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
@@ -735,6 +758,7 @@ import { useURLStore } from '@/stores/url';
                 return returnedPrice.new_price
             },
             sort_resources(): void {
+                // Sorting resources
                 this.resources.sort((a,b) => {
                     if (this.sort_by === 'listing-new') {
                         return new Date(b.upload).getTime() - new Date(a.upload).getTime()
@@ -751,6 +775,7 @@ import { useURLStore } from '@/stores/url';
                 })
             },
             maximum_price(): void {
+                // Updating values to make sure they are valid
                 let max = 0
                 for (let resource of this.resources) {
                     if ((parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€',''))) > max) {
@@ -760,6 +785,7 @@ import { useURLStore } from '@/stores/url';
                 this.max_price = max
             },
             minimum_price(): void {
+                // Updating values to make sure they are valid
                 let min = 0
                 for (let resource of this.resources) {
                     if ((parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€',''))) < min) {
@@ -769,6 +795,7 @@ import { useURLStore } from '@/stores/url';
                 this.min_price = min
             },
             maximum_height(): void {
+                // Updating values to make sure they are valid
                 let max = 0
                 for (let resource of this.resources) {
                     if (resource.height > max) {
@@ -778,6 +805,7 @@ import { useURLStore } from '@/stores/url';
                 this.max_height = max
             },
             minimum_height(): void {
+                // Updating values to make sure they are valid
                 let min = 0
                 for (let resource of this.resources) {
                     if (resource.height < min) {
@@ -787,6 +815,7 @@ import { useURLStore } from '@/stores/url';
                 this.min_height = min
             },
             maximum_width(): void {
+                // Updating values to make sure they are valid
                 let max = 0
                 for (let resource of this.resources) {
                     if (resource.width > max) {
@@ -796,6 +825,7 @@ import { useURLStore } from '@/stores/url';
                 this.max_width = max
             },
             minimum_width(): void {
+                // Updating values to make sure they are valid
                 let min = 0
                 for (let resource of this.resources) {
                     if (resource.width < min) {
@@ -805,6 +835,7 @@ import { useURLStore } from '@/stores/url';
                 this.min_width = min
             },
             maximum_weight(): void {
+                // Updating values to make sure they are valid
                 let max = 0
                 for (let resource of this.resources) {
                     if (resource.weight > max) {
@@ -814,6 +845,7 @@ import { useURLStore } from '@/stores/url';
                 this.max_weight = max
             },
             minimum_weight(): void {
+                // Updating values to make sure they are valid
                 let min = 0
                 for (let resource of this.resources) {
                     if (resource.weight < min) {
@@ -823,6 +855,7 @@ import { useURLStore } from '@/stores/url';
                 this.min_weight = min
             },
             maximum_pages(): void {
+                // Updating values to make sure they are valid
                 let max = 0
                 for (let resource of this.resources) {
                     if ((resource.type !== 'Stationery') && (resource.page_end > max)) {
@@ -832,6 +865,7 @@ import { useURLStore } from '@/stores/url';
                 this.max_pages = max
             },
             minimum_pages(): void {
+                // Updating values to make sure they are valid
                 let min = 1
                 for (let resource of this.resources) {
                     if ((resource.type !== 'Stationery') && (resource.page_start < min)) {
@@ -841,8 +875,9 @@ import { useURLStore } from '@/stores/url';
                 this.min_pages = min
             },
             valid_date(resource: Resource): boolean {
+                // Updating values to make sure they are valid
                 if (this.all_delivery) {
-                    // return true if all deliveries are allowed or the units are the same and the value is within the upper and lower bounds
+                    // Return true if all deliveries are allowed or the units are the same and the value is within the upper and lower bounds
                     return true
                 }
                 if (resource.estimated_delivery_units === this.min_delivery_option) {
@@ -856,18 +891,18 @@ import { useURLStore } from '@/stores/url';
                     || ((this.min_delivery_option === 'day') && (resource.estimated_delivery_units !== 'hour') && (resource.estimated_delivery_units !== 'minute'))
                     || ((this.min_delivery_option === 'week') && ((resource.estimated_delivery_units === 'week') || (resource.estimated_delivery_units === 'month')))
                     || ((this.min_delivery_option === 'month') && (resource.estimated_delivery_units === 'month')))) {
-                    // return false if units are below the minimum
+                    // Return false if units are below the minimum
                         return false
                 } else if (!((this.max_delivery_option === 'minute' && resource.estimated_delivery_units === 'minute')
                     || ((this.max_delivery_option === 'hour') && (resource.estimated_delivery_units !== 'day') && (resource.estimated_delivery_units !== 'week') && (resource.estimated_delivery_units !== 'month'))
                     || ((this.max_delivery_option === 'day') && (resource.estimated_delivery_units !== 'week') && (resource.estimated_delivery_units !== 'month'))
                     || ((this.max_delivery_option === 'week') && (resource.estimated_delivery_units !== 'month'))
                     || (this.max_delivery_option === 'month'))) {
-                        // return false if units are below the minimum
+                        // Return false if units are below the minimum
                         return false
                 }
                 
-                // dealing with cases where min and max units are not the same, already assumed to meet the minimum based on tests above
+                // Dealing with cases where min and max units are not the same, already assumed to meet the minimum based on tests above
                 if ((this.max_delivery_option === 'hour') && (resource.estimated_delivery_units === 'hour')
                     || (this.max_delivery_option === 'day') && (resource.estimated_delivery_units === 'day')
                     || (this.max_delivery_option === 'week') && (resource.estimated_delivery_units === 'week')
@@ -875,7 +910,7 @@ import { useURLStore } from '@/stores/url';
                 ) {
                     return resource.estimated_delivery_time <= this.max_delivery
                 }
-                // resource is within max delivery option so if they are not the same then the max would cover it
+                // Resource is within max delivery option so if they are not the same then the max would cover it
                 return true
             }
         },
@@ -884,7 +919,7 @@ import { useURLStore } from '@/stores/url';
                 return useURLStore().url
             },
             subjects(): string[] {
-                // return top 5 most common subjects for filtering
+                // Return top 5 most common subjects for filtering
                 let subjects_map: {[key: string] : number} = {}
                 for (let resource of this.resources) {
                     if (!subjects_map[resource.subject]) {
@@ -896,7 +931,7 @@ import { useURLStore } from '@/stores/url';
                 return Object.keys(subjects_map).sort((a,b) => subjects_map[b]-subjects_map[a]).slice(0,6)
             },
             authors(): string[] {
-                // return top 5 most common authors for filtering
+                // Return top 5 most common authors for filtering
                 let authors_map: {[key: string] : number} = {}
                 for (let resource of this.resources) {
                     if (!authors_map[resource.author]) {
@@ -917,6 +952,7 @@ import { useURLStore } from '@/stores/url';
                 return useUserStore().user
             },
             filtered_resources(): Resource[] {
+                // Filter resources
                 let temp_resources = []
                 for (let resource of this.resources) {
                     if (resource.unique) {
@@ -951,7 +987,7 @@ import { useURLStore } from '@/stores/url';
                         ))
                         && this.valid_date(resource)
                         && (this.source_all || !resource.unique || (
-                            // assume resource is unqiue and check attributes
+                            // Assume resource is unqiue and check attributes
                             (this.source_ai && resource.source === 'AI')  
                             || (this.source_internet && resource.source === 'Internet')  
                             || (this.source_self && resource.source === 'None')  
@@ -1010,21 +1046,27 @@ import { useURLStore } from '@/stores/url';
         },
         watch: {
             subject_one(): void {
+                // Update 'All' filter
                 this.check_subjects()
             },
             subject_two(): void {
+                // Update 'All' filter
                 this.check_subjects()
             },
             subject_three(): void {
+                // Update 'All' filter
                 this.check_subjects()
             },
             subject_four(): void {
+                // Update 'All' filter
                 this.check_subjects()
             },
             subject_five(): void {
+                // Update 'All' filter
                 this.check_subjects()
             },
             subject_all(): void {
+                // Update filters based on whether 'All' is true
                 if (this.subject_all) {
                     this.subject_one = true
                     this.subject_two = true
@@ -1034,21 +1076,27 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             author_one(): void {
+                // Update 'All' filter
                 this.check_authors()
             },
             author_two(): void {
+                // Update 'All' filter
                 this.check_authors()
             },
             author_three(): void {
+                // Update 'All' filter
                 this.check_authors()
             },
             author_four(): void {
+                // Update 'All' filter
                 this.check_authors()
             },
             author_five(): void {
+                // Update 'All' filter
                 this.check_authors()
             },
             author_all(): void {
+                // Update filters based on whether 'All' is true
                 if (this.author_all) {
                     this.author_one = true
                     this.author_two = true
@@ -1058,39 +1106,51 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             red(): void {
+                // Update 'All' filter
                 this.check_colours()
             },
             yellow(): void {
+                // Update 'All' filter
                 this.check_colours()
             },
             pink(): void {
+                // Update 'All' filter
                 this.check_colours()
             },
             purple(): void {
+                // Update 'All' filter
                 this.check_colours()
             },
             green(): void {
+                // Update 'All' filter
                 this.check_colours()
             },
             blue(): void {
+                // Update 'All' filter
                 this.check_colours()
             },
             white(): void {
+                // Update 'All' filter
                 this.check_colours()
             },
             brown(): void {
+                // Update 'All' filter
                 this.check_colours()
             },
             orange(): void {
+                // Update 'All' filter
                 this.check_colours()
             },
             grey(): void {
+                // Update 'All' filter
                 this.check_colours()
             },
             black(): void {
+                // Update 'All' filter
                 this.check_colours()
             },
             colour_all(): void {
+                // Update filters based on whether 'All' is true
                 if (this.colour_all) {
                     this.black = true
                     this.red = true
@@ -1106,42 +1166,52 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             paper(): void {
+                // Update 'All' filter
                 this.check_media()
             },
             online(): void {
+                // Update 'All' filter
                 this.check_media()
             },
             media_all(): void {
+                // Update filters based on whether 'All' is true
                 if (this.media_all) {
                     this.paper = true
                     this.delivery = true
                 }
             },
             delivery(): void {
+                // Update 'All' filter
                 this.check_options()
             },
             collection(): void {
+                // Update 'All' filter
                 this.check_options()
             },
             options_all(): void {
+                // Update filters based on whether 'All' is true
                 if (this.options_all) {
                     this.collection = true
                     this.delivery = true
                 }
             },
             returns_all(): void {
+                // Update filters based on whether 'All' is true
                 if (this.returns_all) {
                     this.returns = true
                     this.no_returns = true
                 }
             },
             returns(): void {
+                // Update 'All' filter
                 this.check_returns()
             },
             no_returns(): void {
+                // Update 'All' filter
                 this.check_returns()
             },
             source_all(): void {
+                // Update filters based on whether 'All' is true
                 if (this.source_all) {
                     this.source_ai = true
                     this.source_internet = true
@@ -1149,12 +1219,15 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             source_self(): void {
+                // Update 'All' filter
                 this.check_source()
             },
             source_ai(): void {
+                // Update 'All' filter
                 this.check_source()
             },
             source_internet(): void {
+                // Update 'All' filter
                 this.check_source()
             },
             all_pages(): void {
@@ -1188,6 +1261,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async resources(resources: Resource[]): Promise<void> {
+                // Resetting values
                 if (Object.keys(this.user).length < 1 || Object.keys(resources).length < 1) return
                 for (const resource of resources) {
                     resource.price = await this.listedprice(resource)
@@ -1207,6 +1281,7 @@ import { useURLStore } from '@/stores/url';
                 this.sort_resources()
             },
             min_price(): void {
+                // Finding minimum price based on all resources
                 if (this.min_price.toString() === '' || this.min_price < 0) this.min_price = 0
                 if (this.min_price > this.max_price) {
                     this.max_price = this.min_price
@@ -1214,6 +1289,7 @@ import { useURLStore } from '@/stores/url';
                 this.all_price = false
             },
             max_price(): void {
+                // Finding maximum price based on all resources
                 if (this.max_price.toString() === '' || this.max_price < 0) this.max_price = 0
                 if (this.min_price > this.max_price) {
                     this.min_price = this.max_price
@@ -1221,6 +1297,7 @@ import { useURLStore } from '@/stores/url';
                 this.all_price = false
             },
             min_height(): void {
+                // Finding minimum height based on all resources
                 if (this.min_height.toString() === '' || this.min_height < 0) this.min_height = 0
                 if (this.min_height > this.max_height) {
                     this.max_height = this.min_height
@@ -1228,6 +1305,7 @@ import { useURLStore } from '@/stores/url';
                 this.all_height = false
             },
             max_height(): void {
+                // Finding maximum height based on all resources
                 if (this.max_height.toString() === '' || this.max_height < 0) this.max_height = 0
                 if (this.min_height > this.max_height) {
                     this.min_height = this.max_height
@@ -1235,6 +1313,7 @@ import { useURLStore } from '@/stores/url';
                 this.all_height = false
             },
             min_width(): void {
+                // Finding minimum width based on all resources
                 if (this.min_width.toString() === '' || this.min_width < 0) this.min_width = 0
                 if (this.min_width > this.max_width) {
                     this.max_width = this.min_width
@@ -1242,6 +1321,7 @@ import { useURLStore } from '@/stores/url';
                 this.all_width = false
             },
             max_width(): void {
+                // Finding maximum width based on all resources
                 if (this.max_width.toString() === '' || this.max_width < 0) this.max_width = 0
                 if (this.min_width > this.max_width) {
                     this.min_width = this.max_width
@@ -1249,6 +1329,7 @@ import { useURLStore } from '@/stores/url';
                 this.all_width = false
             },
             min_pages(): void {
+                // Finding minimum pages based on all resources
                 if (this.min_pages.toString() === '' || this.min_pages < 1) this.min_pages = 1
                 if (this.min_pages > this.max_pages) {
                     this.max_pages = this.min_pages
@@ -1256,6 +1337,7 @@ import { useURLStore } from '@/stores/url';
                 this.all_pages = false
             },
             max_pages(): void {
+                // Finding maximum pages based on all resources
                 if (this.max_pages.toString() === '' || this.max_pages < 1) this.max_pages = 1
                 if (this.min_pages > this.max_pages) {
                     this.min_pages = this.max_pages
@@ -1263,6 +1345,7 @@ import { useURLStore } from '@/stores/url';
                 this.all_pages = false
             },
             min_delivery_option(): void {
+                // Finding minimum delivery option unit based on all resources
                 if (this.min_delivery_option === 'month') {
                     this.max_delivery_option = 'month'
                 } else if (this.min_delivery_option === 'week') {
@@ -1281,6 +1364,7 @@ import { useURLStore } from '@/stores/url';
                 this.all_delivery = false
             },
             max_delivery_option(): void {
+                // Finding maximum delivery option unit based on all resources
                 if ((this.min_delivery > this.max_delivery) && (
                     (this.min_delivery_option === 'day' && this.max_delivery_option === 'day')
                     || (this.min_delivery_option === 'minute' && this.max_delivery_option === 'minute')
@@ -1293,6 +1377,7 @@ import { useURLStore } from '@/stores/url';
                 this.all_delivery = false
             },
             min_delivery(): void {
+                // Finding minimum delivery option value based on all resources
                 if (this.min_delivery.toString() === '' || this.min_delivery < 1) this.min_delivery = 1
                 if (this.min_delivery > 9999) this.min_delivery = 9999
                 if ((this.min_delivery > this.max_delivery) && (
@@ -1307,6 +1392,7 @@ import { useURLStore } from '@/stores/url';
                 this.all_delivery = false
             },
             max_delivery(): void {
+                // Finding maximum delivery option value based on all resources
                 if (this.max_delivery.toString() === '' || this.max_delivery < 1) this.max_delivery = 1
                 if (this.max_delivery > 9999) this.max_delivery = 9999
                 if ((this.min_delivery > this.max_delivery) && (

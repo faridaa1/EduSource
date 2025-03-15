@@ -306,7 +306,7 @@
     import Stars from './Stars.vue';
     import { useUsersStore } from '@/stores/users';
     import Error from '../user experience/error/Error.vue';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Stars, ViewSellers, Error },
         data(): {
@@ -398,7 +398,8 @@ import { useURLStore } from '@/stores/url';
         }},
         methods: {
             has_resources(): boolean {
-                const resources = useResourcesStore().resources.filter(resource => resource.user === this.user.id)
+                // If resource sellers are only the current user, false will be returned as the user cannot exchange items with themself
+                const resources = useResourcesStore().resources.filter(resource => (resource.user === this.user.id) && !resource.is_draft && (resource.stock > 0))
                 const own_resource = this.allResources.find(resource => resource.user !== this.user.id) ? false : true
                 return (resources.length > 0) && (!own_resource)
             },
@@ -412,6 +413,7 @@ import { useURLStore } from '@/stores/url';
                 this.all_media = this.filter_images && this.filter_video && this.no_reviews
             },
             async exchange(): Promise<void> {
+                // Taking users to paeg where they can exchange resources
                 if (this.seller === -1) {
                     this.viewing_sellers = true
                     this.exchanging = true
@@ -448,6 +450,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             buy_now(): void {
+                // Taking users to fast checkout where they do not have to re-enter their details
                 this.buying_now = true
                 if (this.seller === -1) {
                     this.viewing_sellers = true
@@ -465,6 +468,7 @@ import { useURLStore } from '@/stores/url';
                 return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
             },
             async edit_wishlist(): Promise<void> {
+                // User can add or remove resource from wishlist
                 if (this.cart_resource.number !== 0) {
                     await this.update_cart_db('DELETE', this.cart_resource.id, -1)
                 }
@@ -492,6 +496,7 @@ import { useURLStore } from '@/stores/url';
                 })
             },
             update_seller(resource: number): void {
+                // Used to update the resource seller the user will be buying the resources from
                 this.viewing_sellers = false
                 this.seller = resource
                 if (this.cart_resource.number === 0) {
@@ -504,6 +509,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async get_cart(): Promise<void> {
+                // Find cart resource associated with the curernt resource being viewed
                 const cart: Response = await fetch(`${useURLStore().url}/api/cart/${this.user.id}/`, {
                     method: 'GET',
                     credentials: 'include',
@@ -532,6 +538,7 @@ import { useURLStore } from '@/stores/url';
                 useUserStore().updateCart(data)
             },
             async update_cart_db(method: string, cart_number: number, resource: number): Promise<void> {
+                // Update numebr of items in cart
                 const updateCart: Response = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/${cart_number}/resource/${resource}/`, {
                     method: method,
                     credentials: 'include',
@@ -552,8 +559,13 @@ import { useURLStore } from '@/stores/url';
                 this.get_cart()
             },
             update_cart(number: number): void {
-                if (this.cart_resource.number === 0 && number === -1) return
+                // Determining logic of cart updates
+                if (this.cart_resource.number === 0 && number === -1) {
+                    // User cannot reduce number of items in cart from 0
+                    return
+                }
                 if (this.cart_resource.number === 0) {
+                    // User chooses seller before adding item to cart
                     if (this.allResources.filter(resource => resource.user !== this.user.id).length === 1) {
                         this.update_seller((this.allResources.find(resource => resource.user !== this.user.id) as Resource).id)                      
                         return
@@ -572,6 +584,7 @@ import { useURLStore } from '@/stores/url';
                 this.update_cart_db('PUT', this.cart_resource.id, this.cart_resource.resource)
             },
             toggleFilter(): void {
+                // Determines whether filter options show
                 this.toggle_filter = !this.toggle_filter
                 if (this.toggle_filter) {
                     document.addEventListener('click', (event: Event) => {
@@ -583,6 +596,7 @@ import { useURLStore } from '@/stores/url';
                 } 
             },
             close_review(review: Review): void {
+                // User stops editing review
                 document.getElementById(`${review.id}review-review`)?.classList.remove('review-review-desc')
                 document.getElementById('review-heading-one')?.classList.add('review-heading-one-height')
                 document.getElementById('review-heading-one')?.classList.remove('review-heading-one-reviewing-height')
@@ -590,6 +604,7 @@ import { useURLStore } from '@/stores/url';
                 this.review = -1
             },
             edit_review(review: Review): void {
+                // Allow user to edit review
                 this.editing_review = review.id
                 this.editing = true
                 this.addingReview = false
@@ -619,6 +634,7 @@ import { useURLStore } from '@/stores/url';
                 })
             },
             async delete_review(review: Review) {
+                // Allows user to delete review
                 this.api = true
                 const response: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/review/${review.id}/`, {
                     method: 'DELETE',
@@ -638,6 +654,7 @@ import { useURLStore } from '@/stores/url';
                 this.api = false
             },
             to_date(date: string): string {
+                // Performing review date conversion
                 const full_date: Date = new Date(date) 
                 const year = full_date.getFullYear()
                 const day = full_date.getDate()
@@ -658,6 +675,7 @@ import { useURLStore } from '@/stores/url';
                 return `${day} ${month} ${year}`
             },
             remove_video(event:Event, num: number): void {
+                // Remove uploaded video
                 event.preventDefault()
                 const vid: HTMLImageElement = document.getElementById(num === 0 ? 'vid' : 'vid1') as HTMLImageElement
                 const video: HTMLInputElement = document.getElementById('video1') as HTMLInputElement
@@ -669,6 +687,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             show_video(event: Event, num: number): void {
+                // Upload video
                 const inputElement: HTMLInputElement = event.target as HTMLInputElement
                 if (!inputElement.files) return
                 const video: File = inputElement.files[0]
@@ -680,6 +699,7 @@ import { useURLStore } from '@/stores/url';
                 this.video = video
             },
             remove_image(event: Event): void {
+                // Remove uploaded image
                 event.preventDefault()
                 const img: HTMLImageElement = document.getElementById('img') as HTMLImageElement
                 const image: HTMLInputElement = document.getElementById('image1') as HTMLInputElement
@@ -691,6 +711,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             show_image(event: Event): void {
+                // Upload image
                 const inputElement: HTMLInputElement = event.target as HTMLInputElement
                 if (!inputElement.files) return
                 const image: File = inputElement.files[0]
@@ -702,6 +723,7 @@ import { useURLStore } from '@/stores/url';
                 this.image = image
             },
             add_review(): void {
+                // Allow user to see input values to add review
                 this.addingReview = true
                 this.editing = false
                 nextTick(() => {
@@ -712,6 +734,7 @@ import { useURLStore } from '@/stores/url';
                 })
             },
             reset_validity(number: number, review?: number): void {
+                // Clear input error messages
                 const title: HTMLInputElement = document.getElementById(number === 0 ? 'review-title' : 'specific-review-title') as HTMLInputElement
                 const description: HTMLTextAreaElement = document.getElementById(number === 0 ? 'review-text' : `${review}review-review`) as HTMLTextAreaElement
                 title.setCustomValidity('')
@@ -720,6 +743,7 @@ import { useURLStore } from '@/stores/url';
                 description.reportValidity()
             },
             async save_edited_review(review: Review): Promise<void> {
+                // Validating review input and saving edited review
                 const title: HTMLInputElement = document.getElementById('specific-review-title') as HTMLInputElement
                 const description: HTMLTextAreaElement = document.getElementById(`${review.id}review-review`) as HTMLTextAreaElement
 
@@ -775,6 +799,7 @@ import { useURLStore } from '@/stores/url';
                 this.api = false
             },
             async save_review(): Promise<void> {
+                // Validating review input and saving new review
                 const title: HTMLInputElement = document.getElementById('review-title') as HTMLInputElement
                 const description: HTMLTextAreaElement = document.getElementById('review-text') as HTMLTextAreaElement
 
@@ -832,6 +857,7 @@ import { useURLStore } from '@/stores/url';
                 this.api = false
             },
             show_potential_rating(event: Event): void {
+                // Allow colours to change as user hovers over number of stars
                 let star: HTMLElement = event.target as HTMLElement
                 const star1: HTMLElement = document.getElementById('rating-one') as HTMLElement
                 const star2: HTMLElement = document.getElementById('rating-two') as HTMLElement
@@ -848,6 +874,7 @@ import { useURLStore } from '@/stores/url';
                 this.rating = star === star1 ? 1 : star === star2 ? 2 : star === star3 ? 3 : star === star4 ? 4 : 5
             },
             async listedprice(resource: Resource): Promise<number> {
+                // Performing currency conversion
                 if (resource === undefined) return 0
                 if (Object.keys(this.user).length === 0) return resource.price
                 let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
@@ -879,7 +906,7 @@ import { useURLStore } from '@/stores/url';
             },
             possible_sellers(editing: boolean): Resource[] {
                 if (Object.keys(this.user).length === 0) return this.allResources
-                // filter so that user cannot review seller twice; check who theyve reviewed and remove them
+                // Filter so that user cannot review seller twice; check who they've reviewed and remove them
                 let resources = this.allResources.filter(resource =>  resource.user !== this.user.id)
                 if (editing) {
                     return resources.filter(resource => resource.reviews.length === 0 || resource.reviews.some(review => this.review === review.id || review.user !== this.user.id))
@@ -893,6 +920,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async reviews_ordered(reviews: Review[]): Promise<void> {
+                // Sorting reviews
                 const sentiment = await this.resource_sentiment
                 this.all_reviews = reviews.sort((review1, review2) => 
                     this.sort_by === 'positive' ?
@@ -901,6 +929,7 @@ import { useURLStore } from '@/stores/url';
                 )
             },
             async get_all_reviews(): Promise<void> {
+                // Retrieving all reviews - sorting and filtering 
                 let reviews: Review[] = []
                 this.allResources.forEach((resource) =>
                     reviews.push(...resource.reviews)
@@ -969,6 +998,7 @@ import { useURLStore } from '@/stores/url';
                 return useUsersStore().users
             },
             async resource_sentiment(): Promise<{[key: number] : number}> {
+                // Storing resource review sentiment to be used when ordering reviews
                 const response: Response = await fetch(`${useURLStore().url}/api/sentiment/${this.allResources[0].name}/`, {
                     method: 'GET',
                     credentials: 'include',
@@ -980,6 +1010,7 @@ import { useURLStore } from '@/stores/url';
                 return scores
             },
             total_ratings(): number {
+                // Find total number of reviews
                 let number_of_reviews: number = 0
                 this.allResources.forEach((resource) => {
                     resource.reviews.forEach((review) => {
@@ -989,6 +1020,7 @@ import { useURLStore } from '@/stores/url';
                 return number_of_reviews
             },
             average_rating(): number {
+                // Determine average review rating
                 let sum_of_rating: number = 0
                 this.allResources.forEach((resource) => {
                     resource.reviews.forEach((review) => {
@@ -1030,12 +1062,14 @@ import { useURLStore } from '@/stores/url';
         },
         watch: {
             both_reviews(): void {
+                // Updating whether filter item is true
                 if (this.both_reviews) {
                     this.me_reviews = true
                     this.my_reviews = true
                 }
             },
             all_stars(): void {
+                // Updating whether filter item is true
                 if (this.all_stars) {
                     this.filter_one = true
                     this.filter_zero = true
@@ -1046,6 +1080,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             all_media(): void {
+                // Updating whether filter item is true
                 if (this.all_media) {
                     this.filter_images = true
                     this.filter_video = true
@@ -1065,6 +1100,7 @@ import { useURLStore } from '@/stores/url';
                         this.cart_price = 0
                         return
                     }
+                    // Update cart price
                     let price = await this.listedprice(this.allResources.find(resource => resource.id === this.cart_resource.resource) as Resource)
                     this.cart_price = parseFloat(price.toString().replace('€','').replace('£','').replace('$',''))
                     const resource: Resource | undefined = this.allResources.find(resource => resource.id === this.cart_resource.resource)
@@ -1075,6 +1111,7 @@ import { useURLStore } from '@/stores/url';
                 this.updateWishlist(wishlist)
             },
             async "cart_resource.number"(new_number: number): Promise<void> {
+                // Updating styles based on whether or not + is shown for cart update
                 if (this.cart_resource.number === 0) {
                     nextTick(() => {
                         let line: HTMLHRElement = document.getElementById('separator') as HTMLHRElement
@@ -1094,6 +1131,7 @@ import { useURLStore } from '@/stores/url';
                         this.cart_price = 0
                         return
                     }
+                    // Update cart price
                     let price = await this.listedprice(this.allResources.find(resource => resource.id === this.cart_resource.resource) as Resource)
                     this.cart_price = parseFloat(price.toString().replace('€','').replace('£','').replace('$',''))
                     const resource: Resource | undefined = this.allResources.find(resource => resource.id === this.cart_resource.resource)
@@ -1106,6 +1144,7 @@ import { useURLStore } from '@/stores/url';
                         this.cart_price = 0
                         return
                     }
+                    // Update cart price
                     let price = await this.listedprice(this.allResources.find(resource => resource.id === this.cart_resource.resource) as Resource)
                     this.cart_price = parseFloat(price.toString().replace('€','').replace('£','').replace('$',''))
                     const resource: Resource | undefined = this.allResources.find(resource => resource.id === this.cart_resource.resource)
@@ -1134,6 +1173,7 @@ import { useURLStore } from '@/stores/url';
             async resource(resource: Resource): Promise<void> {
                 this.fill_stars()
                 resource.price = await this.listedprice(resource)
+                // Adding viewed resource to user search history
                 fetch(`${useURLStore().url}/api/semantic-search/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -1148,6 +1188,7 @@ import { useURLStore } from '@/stores/url';
                 this.get_all_reviews()
             },
             allResources(): void {
+                // Updating this.seller, which stores the id corresponding to the resource in the cart
                 if (Object.keys(this.user).length > 0) {
                     this.updateWishlist(this.user.wishlist)
                     this.get_cart()
@@ -1163,10 +1204,12 @@ import { useURLStore } from '@/stores/url';
             all_reviews(): void {
                 this.scrollReviewsIntoView()
                 if (!this.seen_review && window.location.href.includes('add-review')) {
+                    // Take user to add review straight away
                     this.add_review()
                     this.seen_review = true
                 } else if (!this.seen_review && window.location.href.includes('review')) {
                     nextTick(() => {
+                        // Take user to view a review they've written straight away
                         const window_location: string[] = window.location.href.split('/')
                         const id: string = window_location[window_location.length-1]
                         const review: HTMLDivElement = document.querySelector(`[name='${id}']`) as HTMLDivElement
@@ -1179,56 +1222,67 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             filter_zero(): void {
+                // Updating reviews shown as filter is toggled
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()
                 this.check_all_stars()
             },
             filter_one(): void {
+                // Updating reviews shown as filter is toggled
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()
                 this.check_all_stars()
             },
             filter_two(): void {
+                // Updating reviews shown as filter is toggled
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()
                 this.check_all_stars()
             },
             filter_three(): void {
+                // Updating reviews shown as filter is toggled
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()
                 this.check_all_stars()
             },
             filter_four(): void {
+                // Updating reviews shown as filter is toggled
                 this.get_all_reviews()
                 this.check_all_stars()
                 this.scrollReviewsIntoView()
             },
             filter_five(): void {
+                // Updating reviews shown as filter is toggled
                 this.get_all_reviews()
                 this.check_all_stars()
                 this.scrollReviewsIntoView()
             },
             filter_images(): void {
+                // Updating reviews shown as filter is toggled
                 this.get_all_reviews()
                 this.check_all_media()
                 this.scrollReviewsIntoView()
             },
             filter_video(): void {
+                // Updating reviews shown as filter is toggled
                 this.check_all_media()
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()
             },
             my_reviews(): void {
+                // Updating reviews shown as filter is toggled
                 this.check_all_reviews()
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()
             },
             me_reviews(): void {
+                // Updating reviews shown as filter is toggled
                 this.check_all_reviews()
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()
             },
             no_reviews(): void {
+                // Updating reviews shown as filter is toggled
                 this.check_all_media()
                 this.get_all_reviews()
                 this.scrollReviewsIntoView()

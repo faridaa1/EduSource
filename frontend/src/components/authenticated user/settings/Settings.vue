@@ -40,7 +40,7 @@
     import { useUsersStore } from '@/stores/users';
     import Loading from '@/components/user experience/loading/Loading.vue';
     import Error from '@/components/user experience/error/Error.vue';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
       components: { Loading, Error },
       data(): { currency_setting: string, mode_setting: string, error: boolean } { return {
@@ -50,8 +50,9 @@ import { useURLStore } from '@/stores/url';
         }
       },
       mounted(): void {
-            this.currency_setting = this.user.currency
-            this.mode_setting = this.user.mode
+        // Initialising with user preferences
+        this.currency_setting = this.user.currency
+        this.mode_setting = this.user.mode
       },
       computed: {
         user(): User {
@@ -60,12 +61,14 @@ import { useURLStore } from '@/stores/url';
       },
       watch: {
         user(): void {
+            // Initialising with user preferences
             this.currency_setting = this.user.currency
             this.mode_setting = this.user.mode
         }
       },
       methods: {
         async update_setting(called_by: string, data: string): Promise<void> {
+            // Update setting
             let updateResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/${called_by}/`, {
                 method: 'PUT',
                 credentials: 'include',
@@ -84,6 +87,7 @@ import { useURLStore } from '@/stores/url';
             useUsersStore().updateUser(userUpdateData)
         },
         async toggle_theme(called_by: string, event?: Event): Promise<void> {
+            // Toggle theme based on user preference
             const div = document.getElementById('app-vue')
             if (div) {
                 const theme = div.firstElementChild
@@ -107,8 +111,7 @@ import { useURLStore } from '@/stores/url';
     })
 </script>
   
-  <style>
-
+<style scoped>
     #settings-header {
         font-size: 1.3rem;
         margin-bottom: 1rem;
@@ -197,5 +200,5 @@ import { useURLStore } from '@/stores/url';
     select:hover {
         cursor: pointer;
     }
-  </style>
+</style>
   

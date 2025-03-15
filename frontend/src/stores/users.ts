@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import type { User } from '../types';
 
+// Global store to access data and methods relating to all users
+
 export const useUsersStore = defineStore('users', {
     state: (): { users: User[]} => ({
         users: [] as User[],

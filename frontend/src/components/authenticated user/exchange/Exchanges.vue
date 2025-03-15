@@ -49,12 +49,15 @@
         }},
         methods: {
             view_exchange(exchange_id: number): void {
+                // View particular exchange
                 window.location.href = `/exchange/${exchange_id}`
             },
             get_user(user_id: number): User {
+                // Retrieve user based on given id
                 return useUsersStore().users.find(user => user.id === user_id) as User
             },
             get_resource(resource_id: number): Resource {
+                // Retrieve resource based on given id
                 return useResourcesStore().resources.find(resource => resource.id === resource_id) as Resource || {}
             }
         },
@@ -63,6 +66,7 @@
                 return useUserStore().user || {} as User
             },
             filtered_exchanges(): Exchange[] {
+                // Filter exchanges based on filter
                 return this.user.exchanges.sort((a,b) => {
                     if (this.sort === 'new') return b.id - a.id
                     return a.id - b.id

@@ -16,6 +16,7 @@
     export default defineComponent({
         methods: {
             view(page: string): void {
+                // Links which take user home or to their orders
                 window.location.href = page === 'home' ? '/' : '/orders'
             }
         },

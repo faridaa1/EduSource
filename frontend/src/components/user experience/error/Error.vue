@@ -1,4 +1,5 @@
 <template>
+    <!-- Creating error popup -->
     <div id="outer">
         <div id="inner">
             <p>Whoops! We ran into an error.</p>

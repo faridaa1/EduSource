@@ -1054,18 +1054,20 @@ def feedback(request: HttpRequest) -> JsonResponse:
 known_questions_and_answers = {
     'How do I place an order?' : '''There are two ways to do this:\n
     The first way is as follows:
-    \n1. Search for the item
-    \n2. Select the item
-    \n3. Select Buy Now
-    \n4. Select Place Order
+    \n1. Ensure you are in buyer mode (from settings)
+    \n2. Search for the item
+    \n3. Select the item
+    \n4. Select Buy Now
+    \n5. Select Place Order
     \nThe second way is as follows:
-    \n1. Search for the item
-    \n2. Select the item
-    \n3. Add item to Cart
-    \n4. Select Profile
-    \n5. Select Cart
-    \n6. Select Checkout
-    \n7. Select Place Order
+    \n1. Ensure you are in buyer mode (from settings)
+    \n2. Search for the item
+    \n3. Select the item
+    \n4. Add item to Cart
+    \n5. Select Profile
+    \n6. Select Cart
+    \n7. Select Checkout
+    \n8. Select Place Order
     \nI hope that helps.''',
     'How do I exchange resources?' : '''1. Search for the Item
     \n2. Select the item
@@ -1073,9 +1075,10 @@ known_questions_and_answers = {
     \n4. Select a resource you want to exchange
     \nI hope that helps.''',
     'How do I list items' : '''
-    1. Select Profile
-    \n2. Select Listings
-    \n3. Select the + within the listing container
+    1. Ensure you are in seller mode (from settings)
+    \n2. Select Profile
+    \n3. Select Listings
+    \n4. Select the + within the listing container
     \nI hope that helps''',
     'How do I track an order?' : '''
     1. Select Profile
@@ -1084,14 +1087,15 @@ known_questions_and_answers = {
     \n4. View Order Status
     \nI hope that helps''',
     'How do I start a return?' : '''    
-    1. Select Profile
-    \n2. Select Orders
-    \n3. Select Order
-    \n4. Select Start Return
-    \n5. Select number of items for return
-    \n6. Select Return Method
-    \n7. (Optional) Add Return Reason
-    \n8. Click Submit
+    1. Ensure you are in buyer mode (from settings)
+    \n2. Select Profile
+    \n3. Select Orders
+    \n4. Select Order
+    \n5. Select Start Return
+    \n6. Select number of items for return
+    \n7. Select Return Method
+    \n8. (Optional) Add Return Reason
+    \n9. Click Submit
     \nI hope that helps.''',
     'Do you provide resource recommendations?': "Of course! Start your next sentence with 'Can you provide resource recommendations for...'",
     'Can you provide resource recommendations for': '',

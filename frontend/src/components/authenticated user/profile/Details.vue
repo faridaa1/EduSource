@@ -163,7 +163,7 @@
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
     import Confirm from '@/components/user experience/confirm/Confirm.vue';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error, Confirm },
         data(): {
@@ -235,6 +235,7 @@ import { useURLStore } from '@/stores/url';
         }},
         methods: {
             async delete_account(): Promise<void> {
+                // Delete user account
                 this.confirm = ''
                 const delete_account_response: Response = await fetch(`${useURLStore().url}/delete-account/${this.user.id}/`, {
                     method: 'DELETE',
@@ -251,6 +252,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             reset(field: string): void {
+                // Ensure only one field can be updated at a time
                 if (field !== 'email') {
                     this.email = this.user.email
                     this.editingEmail = false
@@ -297,6 +299,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async delete_subject(id: number): Promise<void> {
+                // Delete selected subject preference
                 const response: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/subjects/`, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -314,6 +317,7 @@ import { useURLStore } from '@/stores/url';
                 useUserStore().saveUser(user)
             },
             async save_subject(subject? : string): Promise<void> {
+                // Save subject preference
                 const search: HTMLInputElement = document.getElementById('sub-pref') as HTMLInputElement
                 if (!search) return
                 this.show_subjects = false;
@@ -328,6 +332,7 @@ import { useURLStore } from '@/stores/url';
                 
             },
             async semantic_subject(): Promise<void> {
+                // Perform semantic search to provide subject autocomplete
                 const search: HTMLInputElement = document.getElementById('sub-pref') as HTMLInputElement
                 if (!search) return
                 if (search.value.trim() === '') {
@@ -359,6 +364,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async validate_line2(submit: boolean): Promise<void> {
+                // Performing address line 2 validation
                 this.reset('line2')
                 this.clear_details('address')
                 const address_line_two: HTMLInputElement = document.getElementById('line2') as HTMLInputElement
@@ -380,6 +386,7 @@ import { useURLStore } from '@/stores/url';
                 this.editingLine2 = false
             },
             async validate_city(submit: boolean): Promise<void> {
+                // Performing city validation
                 this.reset('city')
                 this.clear_details('address')
                 const city: HTMLInputElement = document.getElementById('city') as HTMLInputElement
@@ -406,6 +413,7 @@ import { useURLStore } from '@/stores/url';
                 this.editingCity = false
             },
             async validate_postcode(submit: boolean): Promise<void> {
+                // Performing postcode validation
                 this.reset('postcode')
                 this.clear_details('address')
                 const postcode: HTMLInputElement = document.getElementById('postcode') as HTMLInputElement
@@ -432,6 +440,7 @@ import { useURLStore } from '@/stores/url';
                 this.editingPostcode = false
             },
             async validate_line1(submit: boolean): Promise<void> {
+                // Performing address line 1 validation
                 this.reset('line1')
                 this.clear_details('address')
                 const address_line_one: HTMLInputElement = document.getElementById('line1') as HTMLInputElement
@@ -458,6 +467,7 @@ import { useURLStore } from '@/stores/url';
                 this.editingLine1 = false
             },
             async validate_description(submit: boolean): Promise<void> {
+                // Performing description validation
                 this.reset('description')
                 this.clear_details('details')
                 const description: HTMLInputElement = document.getElementById('description') as HTMLInputElement
@@ -482,6 +492,7 @@ import { useURLStore } from '@/stores/url';
                 this.editingDescription = false
             },
             async validate_number(submit: boolean): Promise<void> {
+                // Performing number validation
                 this.reset('number')
                 this.clear_details('details')
                 const number: HTMLInputElement = document.getElementById('number') as HTMLInputElement
@@ -511,6 +522,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async validate_surname(submit: boolean): Promise<void> {
+                // Performing surname validation
                 this.reset('surname')
                 this.clear_details('details')
                 const name: HTMLInputElement = document.getElementById('last_name') as HTMLInputElement
@@ -537,6 +549,7 @@ import { useURLStore } from '@/stores/url';
                 this.editingLastName = false
             },
             async validate_name(submit: boolean): Promise<void> {
+                // Performing name validation
                 this.reset('name')
                 this.clear_details('details')
                 const name: HTMLInputElement = document.getElementById('first_name') as HTMLInputElement
@@ -570,6 +583,7 @@ import { useURLStore } from '@/stores/url';
                 this.new_password = ''
             },
             toggle_password(field: string, show_password: boolean): void {
+                // Toggle password visibility
                 if (field === 'password') {
                     const passwordElement: HTMLInputElement = document.getElementById('pass') as HTMLInputElement
                     if (passwordElement) {
@@ -591,10 +605,12 @@ import { useURLStore } from '@/stores/url';
                 } 
             },
             validate(caller: string): void {
+                // Validating form
                 const detailsForm: HTMLFormElement = caller === 'details' ? this.$refs.detailsForm as HTMLFormElement : this.$refs.addressForm as HTMLFormElement
                 detailsForm.checkValidity()
             },
             async validate_password(submit : boolean): Promise<void> {
+                // Performing password validation
                 this.reset('password')
                 this.editingPassword = true
                 if (!submit) {
@@ -667,6 +683,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async validate_username(submit : boolean): Promise<void> {
+                // Performing username validation
                 this.reset('username')
                 this.clear_details('details')
                 const username: HTMLInputElement = document.getElementById('username') as HTMLInputElement
@@ -706,6 +723,7 @@ import { useURLStore } from '@/stores/url';
                 this.editingUsername = false
             }, 
             clear_details(form: string) {
+                // Clear errors
                 const detailsForm: HTMLFormElement = form === 'details' ? this.$refs.detailsForm as HTMLFormElement : this.$refs.addressForm as HTMLFormElement
                 if (!detailsForm) return
                 const inputs = detailsForm.querySelectorAll('input, textarea')
@@ -716,6 +734,7 @@ import { useURLStore } from '@/stores/url';
                 })
             },
             async validate_email(submit : boolean): Promise<void> {
+                // Performing email validation
                 this.reset('email')
                 this.clear_details('details')
                 const detailsForm: HTMLFormElement = this.$refs.detailsForm as HTMLFormElement
@@ -755,6 +774,9 @@ import { useURLStore } from '@/stores/url';
                 this.editingEmail = false
             },
             async attribute_existence(attribute: string, data: string): Promise<string> {
+                // Check if attribute exists
+
+                // Disable buttons when API call is being made
                 const saveButton: HTMLButtonElement = attribute === 'email' ? document.getElementById('email-save') as HTMLButtonElement : attribute === 'username' ? document.getElementById('username-save') as HTMLButtonElement : attribute === 'password' ? document.getElementById('password-save') as HTMLButtonElement : document.getElementById('number-save') as HTMLButtonElement 
                 const cancelButton: HTMLButtonElement = attribute === 'email' ? document.getElementById('email-cancel') as HTMLButtonElement : attribute === 'username' ? document.getElementById('username-cancel') as HTMLButtonElement : attribute === 'password' ? document.getElementById('password-cancel') as HTMLButtonElement : document.getElementById('number-cancel') as HTMLButtonElement
                 if (saveButton) {
@@ -785,6 +807,7 @@ import { useURLStore } from '@/stores/url';
                 return 'error'
             },
             async update_details(attribute: string, data: string): Promise<void> {
+                // Update user details
                 const saveButton: HTMLButtonElement = 
                     attribute === 'email' ? document.getElementById('email-save') as HTMLButtonElement 
                     : attribute === 'username' ? document.getElementById('username-save') as HTMLButtonElement 
@@ -865,6 +888,7 @@ import { useURLStore } from '@/stores/url';
         },
         computed: {
             user(): User {
+                // Automatically fill in input with user information
                 let user: User = useUserStore().user
                 this.email = user.email
                 this.username = user.username
@@ -881,6 +905,7 @@ import { useURLStore } from '@/stores/url';
         },
         watch: {
             user(new_user) {
+                // Automatically fill in input with user information
                 this.email = new_user.email
                 this.username = new_user.username
                 this.first_name = new_user.first_name
@@ -895,12 +920,14 @@ import { useURLStore } from '@/stores/url';
         },
         mounted(): void {
             document.addEventListener('click', (event) => {
+                // Stop showing subject search results on click
                 if (this.show_subjects && !((event.target as HTMLDivElement).id === 'sub-pref')) {
                     this.subject = ''
                     this.show_subjects = false
                 }
             })
             document.addEventListener('keydown', (event) => {
+                // Keyboard shortcuts for inputting data
                 if (this.error !== '') { 
                     event.preventDefault()
                     return

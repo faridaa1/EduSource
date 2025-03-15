@@ -7,6 +7,7 @@
             </div>
         </div>
         <div id="background" v-if="show_info" @click="show_info=false">
+            <!-- Show information modal so users get the best out of the app -->
             <div id="shown-info">
                 <p id="x" @click="show_info=false"><i class="bi bi-x-lg"></i></p>
                 <p>Hi! I am EduBot - a ChatBot designed for your assistance.</p>
@@ -47,9 +48,8 @@
     import { useUserStore } from '@/stores/user';
     import { defineComponent, nextTick } from 'vue';
     import type { User } from '@/types';
-    import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error },
         data(): {
@@ -69,20 +69,22 @@ import { useURLStore } from '@/stores/url';
         }},
         methods: {
             format(data: string): string {
+                // Format chatbot message
                 return data.replaceAll('\n','<br>')
             },
             clear(): void {
+                // Remove error messages
                 const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
                 if (!message) return
-                // validation 
                 message.setCustomValidity('')
                 message.reportValidity()
             },
             async send_message(): Promise<void> {
+                // Send message
                 const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
                 if (!message) return
 
-                // validation 
+                // Validation 
                 if (message.value.trim() === '') {
                     message.setCustomValidity('Enter a message')
                     message.reportValidity()
@@ -119,6 +121,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             scroll(): void {
+                // Scroll to bottom of page when a new message is received
                 nextTick(() => {
                     const messagesDiv: HTMLDivElement = document.getElementById('messages') as HTMLDivElement
                     if (messagesDiv) {
@@ -129,18 +132,8 @@ import { useURLStore } from '@/stores/url';
             }
         },
         computed: {
-            users(): User[] {
-                return useUsersStore().users
-            },
             user(): User {
                 return useUserStore().user
-            },
-            other_user(): User {
-                const window_location: string[] = window.location.href.split('/')
-                const other_seller: number = parseInt(window_location[window_location.length-1])
-                const user: User | undefined = this.users.find(user => user.id === other_seller)
-                if (user === undefined) return {} as User
-                return user
             },
         },
     })

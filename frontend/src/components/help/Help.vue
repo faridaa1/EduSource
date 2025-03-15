@@ -27,19 +27,21 @@
                 </div>
                 <div v-if="two" id="two">
                     <div class="list">
-                        <p>1. Search for the item</p>
-                        <p>2. Select the item</p>
-                        <p>3. Select Buy Now</p>
-                        <p>4. Select Place Order</p>
+                        <p>1. Ensure you are in buyer mode (from settings)</p>
+                        <p>2. Search for the item</p>
+                        <p>3. Select the item</p>
+                        <p>4. Select Buy Now</p>
+                        <p>5. Select Place Order</p>
                     </div>
                     <div class="list">
-                        <p>1. Search for the item</p>
-                        <p>2. Select the item</p>
-                        <p>3. Add item to Cart</p>
-                        <p>4. Select Profile</p>
-                        <p>5. Select Cart</p>
-                        <p>6. Select Checkout</p>
-                        <p>7. Select Place Order</p>
+                        <p>1. Ensure you are in buyer mode (from settings)</p>
+                        <p>2. Search for the item</p>
+                        <p>3. Select the item</p>
+                        <p>4. Add item to Cart</p>
+                        <p>5. Select Profile</p>
+                        <p>6. Select Cart</p>
+                        <p>7. Select Checkout</p>
+                        <p>8. Select Place Order</p>
                     </div>
                 </div>
             </div>
@@ -50,9 +52,10 @@
                     <i v-if="!three" class="bi bi-arrow-up-circle-fill"></i>
                 </div>
                 <div v-if="three" class="list">
-                    <p>1. Select Profile</p>
-                    <p>2. Select Listings</p>
-                    <p>3. Select the + within the listing container</p>
+                    <p>1. Ensure you are in seller mode (from settings)</p>
+                    <p>2. Select Profile</p>
+                    <p>3. Select Listings</p>
+                    <p>4. Select the + within the listing container</p>
                 </div>
             </div>
             <div class="item">
@@ -75,14 +78,15 @@
                     <i v-if="!five" class="bi bi-arrow-up-circle-fill"></i>
                 </div>
                 <div v-if="five" class="list">
-                    <p>1. Select Profile</p>
-                    <p>2. Select Orders</p>
-                    <p>3. Select Order</p>
-                    <p>4. Select Start Return</p>
-                    <p>5. Select number of items for return</p>
-                    <p>6. Select Return Method</p>
-                    <p>7. (Optional) Add Return Reason</p>
-                    <p>8. Click Submit</p>
+                    <p>1. Ensure you are in buyer mode (from settings)</p>
+                    <p>2. Select Profile</p>
+                    <p>3. Select Orders</p>
+                    <p>4. Select Order</p>
+                    <p>5. Select Start Return</p>
+                    <p>6. Select number of items for return</p>
+                    <p>7. Select Return Method</p>
+                    <p>8. (Optional) Add Return Reason</p>
+                    <p>9. Click Submit</p>
                 </div>
             </div>
         </div>
@@ -102,7 +106,7 @@
     import { defineComponent } from 'vue';
     import type { User } from '@/types';
     import Error from '../user experience/error/Error.vue';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error },
         data(): {
@@ -126,9 +130,11 @@ import { useURLStore } from '@/stores/url';
         }},
         methods: {
             chatbot(): void {
+                // Send user to chatbot page
                 window.location.href = '/chatbot'
             },
             async submit_feedback(): Promise<void> {
+                // Send feedback
                 this.feedback_sent = false
                 let send_feedback: Response = await fetch(`${useURLStore().url}/api/feedback/`, {
                     method: 'POST',

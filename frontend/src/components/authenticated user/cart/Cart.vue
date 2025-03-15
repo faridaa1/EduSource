@@ -77,6 +77,7 @@
         }},
         methods: {
             confirm_yes(): void {
+                // Clear cart after user action confirmation
                 if (this.confirm_caller === 'clear_cart') {
                     this.clear_cart()
                 } else {
@@ -86,10 +87,12 @@
                 this.confirm_caller = ''
             },
             confirm_no(): void {
+                // Do not clear cart if user does not confirm the action
                 this.confirm = ''
                 this.confirm_caller = ''
             },
             async checkout(): Promise<void> {
+                // Take user to checkout
                 const validate_cart: Response = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/-1/resource/-1/`, {
                     method: 'GET',
                     credentials: 'include',
@@ -107,11 +110,13 @@
                 window.location.href = '/checkout'
             },
             move_all_wishlist(): void {
+                // Move all cart items to wishlist
                 for (let cart_item of this.user.cart.resources) {
                     this.move_to_wishlist(cart_item)
                 }
             },
             async move_to_wishlist(resource: CartResource): Promise<void> {
+                // Move cart item to wishlist
                 const moveToWishlist: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/cart-to-wishlist/`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -131,6 +136,7 @@
                 useUsersStore().updateUser(this.user)
             },
             async clear_cart(): Promise<void> {
+                // Confirm whether user seeks to clear cart and delete cart items if so
                 if (this.confirm === '') {
                     this.confirm = 'Are you sure you want to clear your cart'
                     this.confirm_caller = 'clear_cart'
@@ -141,6 +147,7 @@
                 }
             },
             async delete_cart_item(resource: CartResource): Promise<void> {
+                // Remove item from cart
                 const deleteCartItem: Response = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -158,6 +165,7 @@
                 useUsersStore().updateUser(this.user)
             },
             async edit_cart_item(resource: CartResource, value: number): Promise<void> {
+                // Edit number of a particular resource in cart
                 const putCartItem: Response = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -176,6 +184,7 @@
                 useUsersStore().updateUser(this.user)
             },
             toggle_cart(resource: CartResource, value: number): void {
+                // Delete item from cart if there is only 1 left, otherwise amend the amount
                 if (resource.number === 1 && value === -1) {
                     if (this.confirm === '') {
                         this.remembered_resource = resource
@@ -189,14 +198,17 @@
                 }
             },
             view_item(id: number): void {
+                // Allow user to view resource page
                 window.location.href = `/view/${id}`
             },
             cart_price(resource: CartResource): number {
+                // Returning resource price
                 const res = this.allResources.find(res => res.id === resource.resource)
                 if (res) return parseFloat(res.price.toString().replace('€','').replace('£','').replace('$',''))
                 return 0
             },
             async listedprice(resource: Resource): Promise<number> {
+                // Performing currency conversion
                 if (resource === undefined) return 0
                 let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
@@ -210,6 +222,7 @@
                 return returnedPrice.new_price
             },
             async update_total(): Promise<void> {
+                // Calculating cart total
                 if ((Object.keys(this.allResources).length === 0)|| (!this.user.cart.resources)) {
                     this.total = 0 
                     return

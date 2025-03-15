@@ -58,23 +58,27 @@
                 const current_time = new Date()
                 let date_format = new Date(date)
                 if (current_time.getDate() === date_format.getDate() && current_time.getMonth() === date_format.getMonth() && current_time.getFullYear() === date_format.getFullYear()) {
-                    // show time if the day is the same
+                    // Show time if the day is the same
                     return `${String(date_format.getHours()).padStart(2, '0')}:${String(date_format.getMinutes()).padStart(2, '0')}`
                 }
-                // show date if it happened more than one day ago
+                // Show date if it happened more than one day ago
                 return `${String(date_format.getDate()).padStart(2, '0')}/${String(date_format.getMonth()+1).padStart(2, '0')}/${String(date_format.getFullYear()).slice(-2)}`
             },
             view_profile(seller: User): void {
+                // Allow user to view seller profile
                 window.location.href = `/seller/${seller.username}`
             },
             get_message(userID: number): void {
+                // Take user to particualr chat
                 window.location.href = `/message/${this.user.id}/${userID}`
             },
             most_recent_message(message: Messages): Message {
+                // Find most recent message from the chat
                 const sorted_messages = message.messages.sort((a, b) => { return new Date(a.sent).getTime() - new Date(b.sent).getTime() })
                 return sorted_messages[sorted_messages.length-1]
             },
             unseen(message: Messages): boolean {
+                // Determine whether chat is unseen - determined by whether a user has sent a message after the last time the initial user checked the chat
                 const other_user_messages: Message[] = message.messages.filter(message => message.user !== this.user.id)
                 if (!other_user_messages || other_user_messages.length < 1) return false
                 const last_message_time: number = new Date(other_user_messages.sort((a, b) => { return new Date(a.sent).getTime() - new Date(b.sent).getTime() })[other_user_messages.length-1].sent).getTime()
@@ -82,6 +86,7 @@
                 return last_message_time > new Date(message.user2_seen).getTime()
             },
             filtered_messages(): Messages[] {
+                // Filter messages
                 if (!this.user.messages) return [] 
                 let messages: Messages[] = this.user.messages.sort((a,b) => {
                     if (this.sort_by === 'new') {

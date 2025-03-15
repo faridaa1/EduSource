@@ -1,4 +1,5 @@
 <template>
+    <!-- Creating confirmation popup -->
     <div id="outer">
         <div id="inner">
             <p id="message">{{ message }}</p>

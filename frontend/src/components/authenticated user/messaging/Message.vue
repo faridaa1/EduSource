@@ -40,7 +40,7 @@
     import { useUsersStore } from '@/stores/users';
     import Loading from '@/components/user experience/loading/Loading.vue';
     import Error from '@/components/user experience/error/Error.vue';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Loading, Error },
         data(): {
@@ -58,6 +58,7 @@ import { useURLStore } from '@/stores/url';
         }},
         methods: {
             to_month(month_number: number): string {
+                // Formatting message date
                 return month_number === 1 ? 'Jan' 
                 : month_number === 2 ? 'Feb'
                 : month_number === 3 ? 'Mar'
@@ -75,6 +76,7 @@ import { useURLStore } from '@/stores/url';
                 return `${new Date(message).getDate() } ${this.to_month(new Date(message).getMonth()+1)} ${String(new Date(message).getFullYear())}`
             },
             new_date(id: number): boolean {
+                // Determining when to show new day message was sent
                 let previous_id: number = -1
                 for (let message of this.messages.messages) {
                     if (message.id === id) break
@@ -93,12 +95,15 @@ import { useURLStore } from '@/stores/url';
                 return true
             },
             back(): void {
+                // Take user back to previous messages page
                 window.location.href = '/messages'
             },
             view_profile(my_profile: boolean): void {
+                // Allow user to access chat between themlseves and another user
                 window.location.href = my_profile ? '/listings' : `/seller/${this.other_user.username}`
             },
             async update_last_seen(): Promise<void> {
+                // Update when the user last saw the chat
                 this.get_unread_message_index()
                 this.sending_message = true
                 let messageResponse: Response = await fetch(`${useURLStore().url}/api/message/${this.messages.id}/${this.user.id}/`, {
@@ -122,6 +127,7 @@ import { useURLStore } from '@/stores/url';
                 this.sending_message = false
             },
             clear(): void {
+                // Remove error messages
                 const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
                 if (!message) return
                 // validation 
@@ -129,10 +135,11 @@ import { useURLStore } from '@/stores/url';
                 message.reportValidity()
             },
             async send_message(): Promise<void> {
+                // Send message
                 const message: HTMLTextAreaElement = document.getElementById('message-content') as HTMLTextAreaElement
                 if (!message) return
                 
-                // validation 
+                // Validation 
                 if (message.value.trim() === '') {
                     message.setCustomValidity('Enter a message')
                     message.reportValidity()
@@ -172,6 +179,7 @@ import { useURLStore } from '@/stores/url';
                 this.sending_message = false
             },
             async create_messages(): Promise<void> {
+                // Create Message object between users if it does not already exist
                 if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
                 this.sending_message = true
                 let messagesResponse: Response = await fetch(`${useURLStore().url}/api/messages/${this.user.id}/${this.other_user.id}/`, {
@@ -199,6 +207,7 @@ import { useURLStore } from '@/stores/url';
                 this.sending_message = false
             },
             get_messages(): void {
+                // Retrieve messages between users
                 if (Object.keys(this.other_user).length === 0 || Object.keys(this.user).length === 0) return
                 if (Object.keys(this.user.messages).length === 0 || !(this.user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id)))) {
                     this.create_messages()
@@ -206,6 +215,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             get_unread_message_index(): void {
+                // Find index of user's last read message
                 for (let message of this.messages.messages) {
                     if (message.user === this.user.id) continue
                     if ((this.messages.user2 === this.user.id && (new Date(message.sent).getTime() >= new Date(this.messages.user2_seen).getTime())) || (this.messages.user1 === this.user.id && (new Date(message.sent).getTime() >= new Date(this.messages.user1_seen).getTime()))) {
@@ -217,6 +227,7 @@ import { useURLStore } from '@/stores/url';
             },
             scroll(): void {
                 nextTick(() => {
+                    // Scroll to the bottom of the chat (where new messgages are)
                     const messagesDiv: HTMLDivElement = document.getElementById('messages') as HTMLDivElement
                     if (messagesDiv) {
                         messagesDiv.scrollTo({ top: messagesDiv.scrollHeight })
@@ -271,6 +282,7 @@ import { useURLStore } from '@/stores/url';
             if (!this.messages_set && Object.keys(this.user.messages).length > 0) {
                 const message = this.user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id) || (message.user2 === this.user.id && message.user1 === this.other_user.id))
                 if (message) {
+                    // If messages can be found assign the chat to the variable and update the user's last seen chat status
                     this.messages = message
                     this.messages_set = true
                     this.update_last_seen()

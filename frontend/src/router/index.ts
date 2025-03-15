@@ -21,6 +21,9 @@ import CompareResources from '@/components/search/CompareResources.vue'
 import Help from '@/components/help/Help.vue'
 import ChatBot from '@/components/help/ChatBot.vue'
 
+
+// Defining frontend routing
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [

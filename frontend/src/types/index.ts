@@ -1,3 +1,5 @@
+// Defining interfaces which match models
+
 export interface User {
     id: number;
     email: string;

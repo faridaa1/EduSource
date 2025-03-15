@@ -66,6 +66,7 @@
     export default defineComponent({
         methods: {
             percent(rating: number): number {
+                // Find the percentage of reviews with a certain number of stars
                 let sum_of_rating: number = 0
                 let number_of_reviews: number = 0
                 this.allResources.forEach((resource) => {

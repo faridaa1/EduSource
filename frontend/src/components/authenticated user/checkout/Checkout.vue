@@ -102,7 +102,7 @@
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
     import Confirm from '@/components/user experience/confirm/Confirm.vue';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error, Confirm },
         data(): {
@@ -126,6 +126,8 @@ import { useURLStore } from '@/stores/url';
         }},
         methods: {
             valid(resource: CartResource): boolean {
+                /* Check if resource is part of the order - if user is doing fast checkout they could have other items in the cart, 
+                so it's important to only retrieve one (the one in the URL) */
                 if (window.location.href.includes('fast')) {
                     const window_location: string[] = window.location.href.split('/')
                     const id: number = parseInt(window_location[window_location.length-1])
@@ -134,6 +136,7 @@ import { useURLStore } from '@/stores/url';
                 return true
             },
             async place_order(): Promise<void> {
+                // Place order for user
                 let userResponse: Response
                 if (window.location.href.includes('fast')) {
                     const window_location: string[] = window.location.href.split('/')
@@ -173,6 +176,7 @@ import { useURLStore } from '@/stores/url';
                 window.location.href = '/order-confirmation'
             },
             cancel_edit(attribute: number): void {
+                // Dynamically determine which field to end the editing of
                 if (attribute === 0) {
                     this.changing_number = false
                 } else {
@@ -180,6 +184,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             clear_address_error(): void {
+                // Clearing validation errors associated with address input
                 const address1Element: HTMLInputElement = document.getElementById('address1') as HTMLInputElement
                 const address2Element: HTMLInputElement = document.getElementById('address2') as HTMLInputElement
                 const cityElement: HTMLInputElement = document.getElementById('city') as HTMLInputElement
@@ -191,18 +196,20 @@ import { useURLStore } from '@/stores/url';
                 postcodeElement.setCustomValidity('')
             },
             clear_number_error(): void {
+                // Clearing validation errors associated with phoe number input
                 const numberElement: HTMLInputElement = document.getElementById('number_input') as HTMLInputElement
                 if (!numberElement) return
                 numberElement.setCustomValidity('')
             },
             async change_address(): Promise<void> {
+                // Clearing validation errors associated with address input
                 const address1Element: HTMLInputElement = document.getElementById('address1') as HTMLInputElement
                 const address2Element: HTMLInputElement = document.getElementById('address2') as HTMLInputElement
                 const cityElement: HTMLInputElement = document.getElementById('city') as HTMLInputElement
                 const postcodeElement: HTMLInputElement = document.getElementById('postcode') as HTMLInputElement
                 if (!address1Element || !address2Element || !cityElement || !postcodeElement) return
 
-                // validate address line 1 
+                // Validate address line 1 
                 const address1Input = address1Element.value
                 if (address1Input.length === 0) {
                     address1Element.setCustomValidity('Cannot be empty')
@@ -214,7 +221,7 @@ import { useURLStore } from '@/stores/url';
                     return
                 }
 
-                // validate address line 2
+                // Validate address line 2
                 const address2Input = address2Element.value
                 if (address2Input.length !== 0 && !(/^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$/.test(address2Input))) {
                     address2Element.setCustomValidity('No special characters allowed')
@@ -222,7 +229,7 @@ import { useURLStore } from '@/stores/url';
                     return
                 }
 
-                // validate city
+                // Validate city
                 const cityInput = cityElement.value
                 if (cityInput.length === 0) {
                     cityElement.setCustomValidity('Cannot be empty')
@@ -234,7 +241,7 @@ import { useURLStore } from '@/stores/url';
                     return
                 }
 
-                // validate postcode
+                // Validate postcode
                 const postcodeInput = postcodeElement.value
                 if (postcodeInput.length === 0) {
                     postcodeElement.setCustomValidity('Cannot be empty')
@@ -254,6 +261,7 @@ import { useURLStore } from '@/stores/url';
                 this.updating_detail = false
             },
             async update_address(attribute: string, data: string): Promise<void> {
+                // Calling API to update address
                 let userResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/${attribute}/`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -273,6 +281,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async change_phone_number(): Promise<void> {
+                // Validating phone number and calling API to update it
                 const numberElement: HTMLInputElement = document.getElementById('number_input') as HTMLInputElement
                 if (!numberElement) return
                 const input = numberElement.value
@@ -314,13 +323,16 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             attribute_existence(data: string): boolean {
+                // Check if phone number exists
                 const user = useUsersStore().users.filter(user => user.id !== this.user.id).find(user => user.phone_number === data)
                 return user === undefined ? false : true
             },
             home(): void {
+                // Take user back to cart page
                 window.location.href = '/cart'
             },
             async remove_from_cart(resource: CartResource): Promise<void> {
+                // Remove resource item from cart
                 if (resource.number === 1) {
                     if (this.confirm === '') {
                         this.stored_resource = resource
@@ -352,6 +364,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             async add_to_cart(resource: CartResource): Promise<void> {
+                // Add resource item to cart
                 this.updating_detail = true
                 const putCartItem: Response = await fetch(`${useURLStore().url}/api/update-cart/user/${this.user.id}/cart/${resource.id}/resource/${resource.resource}/`, {
                     method: 'PUT',
@@ -374,11 +387,13 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             getResource(resource_id: number): Resource {
+                // Retrieve resource based on given id
                 const resource: Resource | undefined = useResourcesStore().resources.find(resource => resource.id === resource_id)
                 if (resource) return resource
                 return {} as Resource
             },
             async listedprice(resource: Resource): Promise<number> {
+                // Performing currency conversion
                 if (resource === undefined) return 0
                 let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
@@ -392,6 +407,7 @@ import { useURLStore } from '@/stores/url';
                 return returnedPrice.new_price
             },
             get_total(): void {
+                // Calculate cart total
                 this.total = 0
                 if (!this.user.cart || !this.user.cart.resources) return
                 for (let item of this.user.cart.resources.filter(resource => this.valid(resource))) {
@@ -422,11 +438,13 @@ import { useURLStore } from '@/stores/url';
         },
         async mounted(): Promise<void> {
             for (const resource of useResourcesStore().resources) {
+                // Perform currency conversion on resources
                 resource.price = await this.listedprice(resource)
             }
             this.placed_order = false
             this.get_total()
             document.addEventListener('keydown', (event) => {
+                // Keyboard shortcuts to streamline address input process
                 if (this.confirm !== '' || this.error != '') {
                     event.preventDefault()
                     return
@@ -466,11 +484,13 @@ import { useURLStore } from '@/stores/url';
         },
         watch: {
             changing_address(new_boolean: boolean): void {
+                // Ensure either address or number is updated at one point in time
                 if (new_boolean) {
                     this.changing_number = false
                 }
             },
             changing_number(new_boolean: boolean): void {
+                // Ensure either address or number is updated at one point in time
                 if (new_boolean) {
                     this.changing_address = false
                 }
@@ -488,6 +508,7 @@ import { useURLStore } from '@/stores/url';
                 this.get_total()
             },
             "user.cart"(): void {
+                // Return user home if they have not placed an order and there are no valid resources in their cart
                 const resources = this.user.cart.resources.filter(resource => this.valid(resource))
                 if (!this.placed_order && resources.length === 0) {
                     window.location.href = '/cart'

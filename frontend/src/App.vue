@@ -1,6 +1,7 @@
 <template>
   <div id="app-vue" v-if="complete">
     <div id="light">
+      <!-- Defining main header/navigation of application -->
       <header id="main-header">
         <img id='logo' src="/logo-light.svg" alt="EduSource" width="125" height="125" v-pre/>
         <RouterLink :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="hide-on-mobile link">Home</RouterLink>
@@ -34,6 +35,7 @@
         <button id="show-on-mobile" @click="mobile_menu=true"><i class="bi bi-list"></i></button>
       </header>
       <transition name="nav">
+        <!-- Defining navbar for mobile devices -->
         <div id="hamburger" v-if="mobile_menu">
           <RouterLink id="item1" :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="show-mobile">Home</RouterLink>
           <div id="item2" class="show-mobile" v-if="authenticated">
@@ -60,6 +62,7 @@
    </div>
   </div>
   <div v-else>
+    <!-- Show loading screen while all API calls have not yet been made -->
     <Loading />
    </div>
 </template>
@@ -72,7 +75,7 @@
   import { useResourcesStore } from './stores/resources';
   import { useUsersStore } from './stores/users';
   import Loading from './components/user experience/loading/Loading.vue';
-import { useURLStore } from './stores/url';
+  import { useURLStore } from './stores/url';
   export default defineComponent({
     components: { RouterView, Loading },
     data(): { searching: boolean, authenticated: boolean, search_results: Resource[], clicked_profile: boolean, mobile_menu: boolean, complete: boolean, clicked_profile_mobile: boolean } { return {
@@ -94,12 +97,14 @@ import { useURLStore } from './stores/url';
       })
       document.addEventListener('click', (event) => {
         if (this.clicked_profile) {
+          // Closing menu
           const div: HTMLDivElement = event.target as HTMLDivElement
           if (div.parentNode && (div.parentNode as HTMLDivElement).id !== 'profile-div') {
             this.clicked_profile = false
           } 
         }
         if (this.mobile_menu) {
+          // Closing menu
           const div: HTMLDivElement = event.target as HTMLDivElement
           if (div.parentNode && (div.parentNode as HTMLDivElement).id !== 'show-on-mobile' && (div.parentNode as HTMLDivElement).id !== 'item2') {
             this.mobile_menu = false
@@ -107,16 +112,24 @@ import { useURLStore } from './stores/url';
           } 
         }
         let target: HTMLElement = event.target as HTMLElement
-        if (target.id === 'logo' && !(window.location.pathname === '/') && !(window.location.pathname === '/listings')) this.go_home()
+        if (target.id === 'logo' && !(window.location.pathname === '/') && !(window.location.pathname === '/listings')) {
+          // Return home when logo is clicked
+          this.go_home()
+
+        }
         if (target.id !== 'search') {
+          // Remove search results when user clicks elsewhere
           this.search_results = []
         }
       })
+      // Dynamically generating URL
       if (window.location.href.includes('localhost')) {
         useURLStore().saveURL('localhost')
       } else {
         useURLStore().saveURL('deploy')
       }
+
+      // Store all users
       let usersResponse: Response = await fetch(`${useURLStore().url}/api/users/`, {
         method: 'GET',
         credentials: 'include',
@@ -127,6 +140,7 @@ import { useURLStore } from './stores/url';
       let usersData: User[] = await usersResponse.json()
       useUsersStore().updateUsers(usersData)
 
+      // Store current user
       let userResponse: Response = await fetch(`${useURLStore().url}/api/user/`, {
         method: 'GET',
         credentials: 'include',
@@ -136,6 +150,8 @@ import { useURLStore } from './stores/url';
       })
       let userData: { user: User | 'unauthenticated' } = await userResponse.json()
       this.complete = true
+
+      // Store CSRF token
       for (let cookie of document.cookie.split(';')) {
         const cookie_pair = cookie.split('=')
           if (cookie_pair[0] === 'csrftoken') {
@@ -143,6 +159,7 @@ import { useURLStore } from './stores/url';
           }
       }
       if (userData.user === 'unauthenticated') {
+        // Updating styling if user is logged out (there are less menu options available so the design should change appropriately)
         nextTick(() => {
           let header: HTMLHeadingElement = document.getElementById('main-header') as HTMLHeadingElement
           header.style.gridTemplateColumns = '1fr 1fr 0fr 2fr 1fr 1fr'
@@ -153,6 +170,8 @@ import { useURLStore } from './stores/url';
         useUserStore().saveUser(userData.user)
         this.toggle_theme()
       }
+
+      // Store all resources
       let getResourcesStore: Response = await fetch(`${useURLStore().url}/api/resources/`, {
           method: 'GET',
           credentials: 'include',
@@ -174,21 +193,26 @@ import { useURLStore } from './stores/url';
     },
     watch: {
       user(): void {
+        // Update theme to match what user has saved
         this.toggle_theme()
       }
     },
     methods: {
       has_resources(): boolean {
-        const resources = useResourcesStore().resources.filter(resource => resource.user === this.user.id)
+        // Return true if user sells at least one resource
+        const resources = useResourcesStore().resources.filter(resource => (resource.user === this.user.id) && !resource.is_draft && (resource.stock > 0))
         return resources.length > 0
       },
       toggle_profile_view(): void {
+        // Determine when profile menu shows
         this.clicked_profile = !this.clicked_profile
       },
       toggle_profile_view_mobile(): void {
+        // Determine when hamburger menu items show
         this.clicked_profile_mobile = !this.clicked_profile_mobile
       },
       toggle_theme(): void {
+        // Update theme to match user preference
         if (Object.keys(this.user).length === 0) return
         nextTick(() => {
           const div = document.getElementById('app-vue')
@@ -206,6 +230,7 @@ import { useURLStore } from './stores/url';
         })
       },
       conduct_search(resource?: Resource): void {
+        // Take user to search results page
         this.searching = false
         if (resource) {
           window.location.href = `/search/${resource.name}`
@@ -217,6 +242,7 @@ import { useURLStore } from './stores/url';
         }
       },
       async semantic_search(): Promise<void> {
+        // Conduct semantic search to autocomplete search
         const search: HTMLInputElement = document.getElementById('search') as HTMLInputElement
         if (!search || search.value === '') {
           this.searching = false
@@ -240,9 +266,11 @@ import { useURLStore } from './stores/url';
         this.search_results = search_results
       },
       go_home(): void {
+        // Return to home page
         window.location.href = Object.keys(this.user).length === 0 || this.user.mode === 'buyer' ? '/' : '/listings'
       },
       async sign_out(): Promise<void> {
+        // Sign user out
         await fetch(`${useURLStore().url}/signout/`, {
           method: 'GET',
           credentials: 'include',
@@ -254,6 +282,7 @@ import { useURLStore } from './stores/url';
         window.location.href = '/'
       },
       async sign_in(): Promise<void> {
+        // Sign user in
         window.location.href = `${useURLStore().url}/login`
       },
     }
@@ -261,6 +290,7 @@ import { useURLStore } from './stores/url';
 </script>
 
 <style>
+  /* Allowing use of Bootstrap and Inter font */
   @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
   @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css');
   
@@ -464,7 +494,6 @@ import { useURLStore } from './stores/url';
     }
 
     #item2 .profile-nav-mobile {
-      /* right: 6.2rem !important; */
       right: 10rem !important;
     }
 

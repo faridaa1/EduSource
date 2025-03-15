@@ -49,7 +49,7 @@
                     <div>Seller Phone Number</div>
                     <div id="user_number">
                         <div id="number_container">
-                            <div><input id="number_input" type="text" v-model="phone_number" disabled="true" @input="changing_number=true; clear_number_error()"></div>
+                            <div><input id="number_input" type="text" v-model="phone_number" disabled="true"></div>
                         </div>
                     </div>
                 </div>
@@ -74,19 +74,19 @@
                         <div v-if="!changing_address">{{ mode === 'buyer' ? seller.postcode : user.postcode }}</div>
                         <div v-if="changing_address" class="input">
                             <label>First Line</label>
-                            <input id="address1" type="text" :value="user.address_line_one" @input="clear_address_error">
+                            <input id="address1" type="text" :value="user.address_line_one">
                         </div>
                         <div v-if="changing_address" class="input">
                             <label class="header">Second Line</label>
-                            <input id="address2" type="text" :value="user.address_second_line" @input="clear_address_error">
+                            <input id="address2" type="text" :value="user.address_second_line">
                         </div>
                         <div v-if="changing_address" class="input">
                             <label class="header">City</label>
-                            <input id="city" type="text" :value="user.city" @input="clear_address_error">
+                            <input id="city" type="text" :value="user.city">
                         </div>
                         <div v-if="changing_address" class="input">
                             <label class="header">Postcode</label>
-                            <input id="postcode" type="text" :value="user.postcode" @input="clear_address_error">
+                            <input id="postcode" type="text" :value="user.postcode">
                         </div>
                     </div>
                 </div>
@@ -130,7 +130,7 @@
     import { useUsersStore } from '@/stores/users';
     import Error from '@/components/user experience/error/Error.vue';
     import Loading from '@/components/user experience/loading/Loading.vue';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         components: { Error, Loading },
         data(): {
@@ -162,6 +162,7 @@ import { useURLStore } from '@/stores/url';
         }},
         methods: {
             async update_status(): Promise<void> {
+                // Updating order status
                 const status: HTMLSelectElement = document.getElementById('order-status') as HTMLSelectElement
                 if (!status) {
                     this.error = 'Error updating status. Please try again'
@@ -190,11 +191,13 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             message_seller(seller_id: number): void {
+                // Take user to page to message other user
                 window.location.href = `/message/${this.user.id}/${seller_id}`
             },
             async return_item(return_number: number, resource_id: number): Promise<void> {
                 this.making_change = true
                 let returnItemResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/return/${this.order.id}/${resource_id}/`, {
+                    // Updating number of items for return
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -205,7 +208,7 @@ import { useURLStore } from '@/stores/url';
                 })
                 if (!returnItemResponse.ok) {
                     this.making_change = false
-                    this.error = 'Error updating return status. Please try again.'
+                    this.error = 'Error updating number of items. Please try again.'
                     return
                 }
                 if (return_number > 0) {
@@ -217,30 +220,8 @@ import { useURLStore } from '@/stores/url';
                 useUsersStore().updateUser(data.user)
                 useResourcesStore().updateResource(data.resource)
             },
-            cancel_edit(attribute: number): void {
-                if (attribute === 0) {
-                    this.changing_number = false
-                } else {
-                    this.changing_address = false
-                }
-            },
-            clear_address_error(): void {
-                const address1Element: HTMLInputElement = document.getElementById('address1') as HTMLInputElement
-                const address2Element: HTMLInputElement = document.getElementById('address2') as HTMLInputElement
-                const cityElement: HTMLInputElement = document.getElementById('city') as HTMLInputElement
-                const postcodeElement: HTMLInputElement = document.getElementById('postcode') as HTMLInputElement
-                if (!address1Element || !address2Element || !cityElement || !postcodeElement) return
-                address1Element.setCustomValidity('')
-                address2Element.setCustomValidity('')
-                cityElement.setCustomValidity('')
-                postcodeElement.setCustomValidity('')
-            },
-            clear_number_error(): void {
-                const numberElement: HTMLInputElement = document.getElementById('number_input') as HTMLInputElement
-                if (!numberElement) return
-                numberElement.setCustomValidity('')
-            },
             async submit_return(order: Order, cancel: boolean): Promise<void> {
+                // Submitting or cancelling return
                 let selected_item = false
                 for (const order_resource of order.resources) {
                     if (order_resource.number_for_return > 0) {
@@ -279,12 +260,8 @@ import { useURLStore } from '@/stores/url';
                 }
                 window.location.href = `/${this.mode === 'buyer' ? 'order' : 'sold-order'}/${window_location[4]}/${this.order.status}/${window_location[6]}/${window_location[7]}`
             },
-            attribute_existence(data: string): boolean {
-                const user = useUsersStore().users.filter(user => user.id !== this.user.id).find(user => user.phone_number === data)
-                this.making_change = false
-                return user === undefined ? false : true
-            },
             back(): void {
+                // Return to order page
                 const window_location: string[] = window.location.href.split('/')
                 if (window_location.length <= 5) {
                     window.location.href = `/${this.mode === 'buyer' ? 'order' : 'sold-order'}/${window_location[4]}`
@@ -293,11 +270,13 @@ import { useURLStore } from '@/stores/url';
                 window.location.href = `/${this.mode === 'buyer' ? 'order' : 'sold-order'}/${window_location[4]}/${this.order.status}/${window_location[6]}/${window_location[7]}`
             },
             getResource(resource_id: number): Resource {
+                // Return resource for given id
                 const resource: Resource | undefined = useResourcesStore().resources.find(resource => resource.id === resource_id)
                 if (resource) return resource
                 return {} as Resource
             },
             async listedprice(resource: Resource): Promise<number> {
+                // Performing currency conversion
                 if (resource === undefined) return 0
                 this.making_change = true
                 let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
@@ -317,6 +296,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             get_total(): void {
+                // Retrieving return total
                 this.total = 0
                 if (!this.order || !this.order.resources || this.order.resources.length === 0 || this.order.is_exchange) return
                 for (let item of this.order.resources) {
@@ -330,6 +310,7 @@ import { useURLStore } from '@/stores/url';
                 }
             },
             returnable(resourceID: number): boolean {
+                // Determine if item can be returned
                 return this.all_resources.find(resource => resource.id === resourceID)?.allow_return || false
             },
         },
@@ -353,6 +334,7 @@ import { useURLStore } from '@/stores/url';
                 return useResourcesStore().resources
             },
             order(): Order {
+                // Orders to look thorugh varies based on whether buyer or seller is viewing
                 const window_location: string[] = window.location.href.split('/')
                 const id: number = parseInt(window_location[4])
                 if (!this.user || ((this.mode === 'buyer') && ((!this.user.placed_orders) || (!this.user.placed_orders.find(order => order.id === id)))) || ((this.mode === 'seller') && ((!this.user.sold_orders) || (!this.user.sold_orders.find(order => order.id === id))))) return {} as Order
@@ -373,10 +355,12 @@ import { useURLStore } from '@/stores/url';
                 this.mode = 'seller'
             }
             for (const resource of useResourcesStore().resources) {
+                // Perform currency conversion
                 resource.price = await this.listedprice(resource)
             }
             this.placed_order = false
             this.get_total()
+            // Initialising variables
             this.phone_number = this.seller.phone_number
             this.return_method = this.order.return_method
             this.return_reason = this.order.return_reason
@@ -391,6 +375,7 @@ import { useURLStore } from '@/stores/url';
             select_item_error(): void {
                 if (this.select_item_error !== '') {
                     nextTick(() => {
+                        // Scroll to top of div when error occurs (where error message is)
                         const content = document.getElementById('content')
                         if (content) {
                             content.scrollTo({top: 0})

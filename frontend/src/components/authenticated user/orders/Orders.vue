@@ -108,9 +108,11 @@
         }},
         methods: {
             update_page(new_page: number): void {
+                // Updating page
                 this.current_page = this.current_page + new_page
             },
             handle_x_click(): void {
+                // Clear search value
                 const input: HTMLInputElement = document.getElementById('order-search') as HTMLInputElement
                 if (!input) return
                 this.search = ''
@@ -118,12 +120,14 @@
                 this.searching = false
             },
             clear_error(): void {
+                // Clear error messages
                 const input: HTMLInputElement = document.getElementById('order-search') as HTMLInputElement
                 if (!input || this.searching) return
                 input.setCustomValidity('')
                 input.reportValidity()
             },
             async search_orders(): Promise<void> {
+                // Perform semantic search on orders
                 const input: HTMLInputElement = document.getElementById('order-search') as HTMLInputElement
                 if (!input || this.searching) return
                 if (this.search.trim() === '') {
@@ -156,14 +160,17 @@
                 }
             },
             remove_focus(): void {
+                // Remove focus on input element
                 const div: HTMLInputElement = document.getElementById('search') as HTMLInputElement
                 if (!div) return
                 div.blur()
             },
             view_item(id: number): void {
+                // View order
                 window.location.href = `/${this.mode === 'buyer' ? 'order' : 'sold-order'}/${id}/${this.status}/${this.order}/${this.current_page}`
             },
             order_total(order: Order): number {
+                // Calculate order total
                 let total = 0
                 for (let resource of order.resources) {
                     total += resource.number
@@ -176,6 +183,7 @@
                 return useURLStore().url
             },
             filtered_orders(): Order[] {
+                // Filter orders
                 let temp_orders;
                 if (this.mode === 'buyer') {
                     temp_orders = this.searched_items.length > 0 ? this.searched_items.filter(order => this.status === 'all' || order.status === this.status) : this.user.placed_orders.filter(order => this.status === 'all' || order.status === this.status)
@@ -199,6 +207,7 @@
                 this.searching = false
             },
             order(): void {
+                // Scroll to top of first page each time order is updated
                 const div: HTMLDivElement = document.getElementById('resources') as HTMLDivElement
                 if (!div) return
                 div.scrollTo({top: 0})
@@ -206,6 +215,7 @@
                 this.current_page = 1
             },
             status(): void {
+                // Scroll to top of first page each time order status is updated
                 const div: HTMLDivElement = document.getElementById('resources') as HTMLDivElement
                 if (!div) return
                 div.scrollTo({top: 0})
@@ -217,6 +227,7 @@
             this.total_pages = this.mode === 'buyer' ? Math.ceil(this.user.placed_orders.length/10) : Math.ceil(this.user.sold_orders.length/10)
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter' && (event.target as HTMLInputElement).id === 'order-search') {
+                    // Keyboard shortut for searching
                     this.search_orders()
                 }
             })
@@ -225,7 +236,7 @@
                 this.mode = 'seller'
             }
             if (window_location.length > 4) {
-                // reset settings
+                // Reset search conditions (e.g. search filter and page)
                 this.status = window_location[5].replace('%20', ' ') as 'all' | 'Placed' | 'Processing' | 'Return Received' | 'Cancelled' | 'Dispatched' | 'Complete' | 'Return Started' | 'Refunded'
                 this.order = window_location[6]
                 this.current_page = parseInt(window_location[7])

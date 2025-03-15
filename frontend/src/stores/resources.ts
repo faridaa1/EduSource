@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import type { Resource, Review } from '../types';
 
+// Global store to access data and methods relating to all resources
+
 export const useResourcesStore = defineStore('resources', {
     state: (): { resources: Resource[]} => ({
         resources: [] as Resource[],

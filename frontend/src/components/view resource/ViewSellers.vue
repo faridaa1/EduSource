@@ -105,7 +105,7 @@
     import { defineComponent, type PropType } from 'vue';
     import type { Resource, Review, User } from '@/types';
     import { useUsersStore } from '@/stores/users';
-import { useURLStore } from '@/stores/url';
+    import { useURLStore } from '@/stores/url';
     export default defineComponent({
         emits: ['close-view', 'update_seller'],
         props: {
@@ -125,15 +125,18 @@ import { useURLStore } from '@/stores/url';
         }},
         methods: {
             message(userID: number): void {
+                // Take user to message page
                 window.location.href = `/message/${this.user.id}/${userID}`
             },
             view_seller(seller_id: number): void {
+                // Allow user to view seller profile
                 window.location.href = this.user.id === seller_id ? '/listings' : `/seller/${this.users.find(user => user.id === seller_id)?.username}`
             },
             unauth_currency(resource: Resource): string {
                 return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
             },
             to_date(date: string): string {
+                // Convert listing date 
                 const full_date: Date = new Date(date) 
                 const year = full_date.getFullYear()
                 const day = full_date.getDate()
@@ -156,6 +159,7 @@ import { useURLStore } from '@/stores/url';
             async listedprice(resource: Resource): Promise<number> {
                 if (Object.keys(this.user).length === 0) return resource.price
                 if (resource === undefined) return 0
+                // Perform currency conversion
                 let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
@@ -184,6 +188,7 @@ import { useURLStore } from '@/stores/url';
                 return users
             },
             listed_resources(): Resource[] { 
+                // Sort sellers based on ratings
                 let sorted_resources = this.resources.sort((a, b) => {
                     const user_b: User | undefined = this.users.find(user => user.id === b.user)
                     const user_a: User | undefined = this.users.find(user => user.id === a.user)
@@ -210,6 +215,7 @@ import { useURLStore } from '@/stores/url';
                 resource.price = await this.listedprice(resource)
             }
             document.addEventListener('click', (event) => {
+                // Close div on click
                 const container: HTMLDivElement = event.target as HTMLDivElement
                 if (container.id === 'view-sellers-container') {
                     this.$emit('close-view')

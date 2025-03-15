@@ -103,15 +103,19 @@
         }},
         methods: {
             me_within_stock(): boolean {
+                // Check if number of items is within the stock of the user
                 return ((this.user.id === this.exchange.user1) && (this.exchange.resource1_number < this.get_resource(this.exchange.resource1).stock)) || ((this.user.id === this.exchange.user2) && (this.exchange.resource2_number < this.get_resource(this.exchange.resource2).stock))
             },
             seller_within_stock(): boolean {
+                // Check if number of items is within the stock of the seller
                 return ((this.user.id === this.exchange.user1) && (this.exchange.resource2_number < this.get_resource(this.exchange.resource2).stock)) || ((this.user.id === this.exchange.user2) && (this.exchange.resource1_number < this.get_resource(this.exchange.resource1).stock))
             },
             back(): void {
+                // Go back to exchanges page
                 window.location.href = '/exchanges'
             },
             view(): void {
+                // Allow user to view resource
                 if (this.user.id === this.exchange.user1) {
                     window.location.href = `/view/${this.exchange.resource2}`
                 } else {
@@ -119,6 +123,7 @@
                 }
             },
             show_status(): boolean {
+                // Show user exchange acceptance status
                 if ((this.exchange.user1 === this.user.id) && (this.exchange.status2 !== 'Pending')) {
                     return true
                 } else if ((this.exchange.user1 !== this.user.id) && (this.exchange.status1 !== 'Pending')) {
@@ -127,6 +132,7 @@
                 return false
             },
             async submit(): Promise<void> {
+                // Submit exchange as new order
                 this.api_call = true
                 const submitResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/order/`, {
                     method: 'POST',
@@ -149,6 +155,7 @@
                 }
             },
             async cancel(): Promise<void> {
+                // Cancel exchange
                 this.api_call = true
                 const exchangeResponse: Response = await fetch(`${useURLStore().url}/api/exchange/user/${this.user.id}/seller/${this.user2.id}/resource/${this.exchange.id}/`, {
                     method: 'DELETE',
@@ -169,6 +176,7 @@
                 }
             },
             async set_resource(field: string, number?: number): Promise<void> {
+                // Set resource to the one selected by the user
                 this.api_call = true
                 const exchangeResponse: Response = await fetch(`${useURLStore().url}/api/exchange/user/${this.user.id}/seller/${this.user2.id}/resource/${this.exchange.id}/`, {
                     method: 'PUT',
@@ -193,6 +201,7 @@
                 }
             },
             get_resource(resource_id: number): Resource {
+                // Retrieve resource based on given id
                 const resource: Resource | undefined = useResourcesStore().resources.find(resource => resource.id === resource_id)
                 return resource || {} as Resource
             }
@@ -215,6 +224,7 @@
         async mounted(): Promise<void> {
             const window_location = window.location.href.split('/')
             this.api_call = true
+            // Find exchange between users and initialise variables accordingly
             const exchangeResponse: Response = await fetch(`${useURLStore().url}/api/exchange/user/${this.user.id}/seller/0/resource/${window_location[window_location.length-1]}/`, {
                 method: 'GET',
                 credentials: 'include',
