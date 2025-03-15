@@ -37,4 +37,3 @@ urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [
     path('api/cart/<int:user>/', get_cart, name='get cart'),
     re_path(r'.*', frontend, name='frontend'),
 ]
-# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
