@@ -25,7 +25,7 @@
                 <p class="value">Hi! I am EduBot. How can I help?</p>
             </div>
             <div class="message-area" :class="message.user === 'user' ? 'right end' : 'left'" v-for="message in messages.sort((a,b) => b.id - a.id)">
-                <i v-if="message.user !== 'user'" class="bi bi-robot icon"></i>
+                <i v-if="message.user !== 'user'" class="bi bi-chat-left-text icon"></i>
                 <p v-html="format(message.message)" class="value" :class="message.user === 'user' ? 'push' : ''" ></p>
                 <i v-if="message.user === 'user'" class="bi bi-person-circle icon2"></i>
             </div>
