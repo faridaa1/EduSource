@@ -777,7 +777,7 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
     dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
 
     # data preprocessing
-    resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('description', 'name', 'subject'))
+    resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('description', 'name', 'subject', 'author', 'colour'))
     dataset = [ " ".join(resource) for resource in resources ]
     if request.method == 'POST':
         # ensuring values in lists are unique
@@ -848,6 +848,7 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
         sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
 
         # only keeping results at least 45% similar
+        print(sorted_search_dict)
         keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.2]
         resources: list = []
         # using iteration to preserve order of resources
