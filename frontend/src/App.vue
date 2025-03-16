@@ -156,9 +156,7 @@
 
       // Store CSRF token
       for (let cookie of document.cookie.split(';')) {
-        console.log('I AM INTERATING')
         const cookie_pair = cookie.split('=')
-            console.log('I HAVE NOW FOUND', cookie_pair)
           if (cookie_pair[0].trim() === 'csrftoken') {
             useUserStore().saveCsrf(cookie_pair[1])
           }
