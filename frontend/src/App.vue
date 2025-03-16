@@ -158,12 +158,11 @@
       for (let cookie of document.cookie.split(';')) {
         console.log('I AM INTERATING')
         const cookie_pair = cookie.split('=')
-          if (cookie_pair[0] === 'csrftoken') {
             console.log('I HAVE NOW FOUND', cookie_pair)
+          if (cookie_pair[0] === 'csrftoken') {
             useUserStore().saveCsrf(cookie_pair[1])
           }
       }
-      console.log('i should now be', useUserStore().csrf)
       if (userData.user === 'unauthenticated') {
         // Updating styling if user is logged out (there are less menu options available so the design should change appropriately)
         nextTick(() => {
