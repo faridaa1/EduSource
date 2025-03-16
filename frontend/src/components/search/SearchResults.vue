@@ -424,6 +424,7 @@
             })
             if (searchResponse.ok) {
                 const searchResults: Resource[] = await searchResponse.json()
+                console.log(searchResults)
                 this.resources = searchResults.filter(resource => resource.stock > 0 && !resource.is_draft)
                 this.sort_resources()
             }
