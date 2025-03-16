@@ -66,7 +66,20 @@ class User(AbstractUser):
     
     def as_dict(self) -> dict[str, int | float | str]:
         """Defining dictionary representation of User object"""
-        address: Address = Address.objects.get(user=self)
+        try:
+            address: Address = Address.objects.get(user=self)
+        except:
+            address: Address = Address.objects.create(
+                first_line='test',
+                city='test',
+                postcode='edusrc',
+                user=self
+            )
+        if self.cart == None:
+            self.cart = Cart.objects.create()
+        if self.wishlist == None:
+            self.wishlist = Wishlist.objects.create()
+        self.save()
         placed_orders = Order.objects.filter(buyer=self)
         sold_orders = Order.objects.filter(seller=self)
         messages = Messages.objects.filter(Q(user1=self) | Q(user2=self))
