@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import path from 'node:path'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig((({mode}) => ({
   plugins: [
     vue(),
   ],
@@ -14,7 +14,7 @@ export default defineConfig({
   },
   build: {
     emptyOutDir: true,
-    outDir: '../api/static/api/',
+    outDir: '../api/static/api',
   },
-  base: import.meta.url.includes('localhost') ? 'http://localhost:5173/' : '/static/api/' 
-})
+  base: mode === 'development' ? 'http://localhost:5173/' : '/static/api/' 
+})))
