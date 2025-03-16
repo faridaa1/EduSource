@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'node:path'
 
-console.log('hi', import.meta.url, import.meta.url.includes('localhost'))
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -17,5 +16,5 @@ export default defineConfig({
     emptyOutDir: true,
     outDir: '../api/static/api/',
   },
-  // base: import.meta.url.includes('localhost') ? 'http://localhost:5173/' : '/static/api/' 
+  base: import.meta.url.includes('localhost') ? 'http://localhost:5173/' : '/static/api/' 
 })
