@@ -17,5 +17,5 @@ export default defineConfig({
     emptyOutDir: true,
     outDir: '../api/static/api/',
   },
-  base: '/'
+  base: import.meta.url.includes('localhost') ? 'http://localhost:5173' : '/static/api' 
 })
