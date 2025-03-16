@@ -79,6 +79,8 @@ class User(AbstractUser):
             search_history: SearchHistory = SearchHistory.objects.get(user=self)
         except:
             self.search_history=SearchHistory.objects.create(user=self)
+            self.save()
+            search_history: SearchHistory = SearchHistory.objects.get(user=self)
         if self.cart == None:
             self.cart = Cart.objects.create()
         if self.wishlist == None:
