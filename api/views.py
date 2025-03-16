@@ -231,7 +231,15 @@ def user_details(request: HttpRequest, id: int, attribute: str) -> JsonResponse 
     user: User | Http404 = get_object_or_404(User, id=id)
     if request.method == 'PUT':
         """Update user details"""
-        address: Address | Http404 = get_object_or_404(Address, user=user)
+        try:
+            address: Address | Http404 = get_object_or_404(Address, user=user)
+        except:
+            address: Address = Address.objects.create(
+                first_line='test',
+                city='test',
+                postcode='edusrc',
+                user=user
+            )
         if attribute == 'theme':
             user.theme_preference = json.loads(request.body)
         elif attribute == 'currency':
@@ -814,6 +822,11 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
         if user != '-1':
             user: User = get_object_or_404(User, id=user)
             contains_search = False
+            try:
+                SearchHistory.objects.get(user=user)
+            except:
+                user.search_history = SearchHistory.objects.create(user=user)
+                user.save()
             for search_item in user.search_history.search_item.all():
                 if search_item.search.lower()==search.lower():
                     contains_search = True
@@ -949,6 +962,10 @@ def recommendations(request: HttpRequest, user: int) -> JsonResponse:
 
     # determine embeddings
     embeddings = semantic_search_model.encode(new_dataset)
+    try:
+        search_history: SearchHistory = SearchHistory.objects.get(user=user)
+    except:
+        user.search_history = SearchHistory.objects.create(user=user)
     search_history: list = list(SearchHistory.objects.get(user=user).search_item.all().order_by('id').values_list('search', flat=True))
     subject_preferences: list = list(user.subject.all().order_by('id').values_list('name', flat=True))
     history = search_history + subject_preferences

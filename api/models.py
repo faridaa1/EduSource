@@ -75,6 +75,10 @@ class User(AbstractUser):
                 postcode='edusrc',
                 user=self
             )
+        try:
+            search_history: SearchHistory = SearchHistory.objects.get(user=self)
+        except:
+            self.search_history=SearchHistory.objects.create(user=self)
         if self.cart == None:
             self.cart = Cart.objects.create()
         if self.wishlist == None:
@@ -84,7 +88,6 @@ class User(AbstractUser):
         sold_orders = Order.objects.filter(seller=self)
         messages = Messages.objects.filter(Q(user1=self) | Q(user2=self))
         subjects = Subject.objects.filter(user=self)
-        search_history = SearchHistory.objects.get(user=self)
         exchanges = Exchange.objects.filter(Q(user1=self) | Q(user2=self))
         return {
             'id': self.id,
