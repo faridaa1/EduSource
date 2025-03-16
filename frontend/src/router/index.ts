@@ -25,7 +25,7 @@ import ChatBot from '@/components/help/ChatBot.vue'
 // Defining frontend routing
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL === 'development' ? import.meta.env.BASE_URL : ''),
   routes: [
     { path: '/', name: 'home', component: Home },
     { path: '/chatbot', name: 'chatbot', component: ChatBot },
