@@ -47,8 +47,8 @@ class User(AbstractUser):
     rating = models.DecimalField(null=False, blank=True, default=0.0, max_digits=2, decimal_places=1, validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
     description = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
     THEMES: list [tuple[str, str]] = [('light', 'light'), ('dark', 'dark')]
-    cart = models.OneToOneField(Cart, on_delete=models.CASCADE, related_name='user')
-    wishlist = models.OneToOneField(Wishlist, on_delete=models.CASCADE, related_name='user')
+    cart = models.OneToOneField(Cart, null=True, on_delete=models.CASCADE, related_name='user')
+    wishlist = models.OneToOneField(Wishlist, null=True, on_delete=models.CASCADE, related_name='user')
     theme_preference = models.CharField(max_length=5, choices=THEMES, default='light', null=False, blank=False)
     
     MODES: list [tuple[str, str]] = [('buyer', 'buyer'), ('seller', 'seller')]

@@ -400,6 +400,12 @@ def sentiment_analysis(request: HttpRequest, resource: str) -> JsonResponse:
 def update_cart(request: HttpRequest, user: int, cart: int, resource: int) -> JsonResponse:
     """Implementing GET, POST, PUT and DELETE for Cart object"""
     user: User = get_object_or_404(User, id=user)
+    if user.cart is None:
+        user.cart = Cart.objects.create()
+        user.save()
+    if user.wishlist is None:
+        user.wishlist = Wishlist.objects.create()
+        user.save()
     if request.method == 'GET':
         """Returning cart"""
         for cart_resource in user.cart.cart_resource.all():
@@ -450,6 +456,9 @@ def get_cart(request: HttpRequest, user: int) -> JsonResponse:
     if request.method == 'GET':
         """Returning user cart"""
         user: User = get_object_or_404(User, id=user)
+        if user.cart is None:
+            user.cart = Cart.objects.create()
+            user.save()
         return JsonResponse(user.cart.as_dict())
     return JsonResponse({})
 
@@ -460,6 +469,12 @@ def update_wishlist(request: HttpRequest, user: int) -> JsonResponse:
     if request.method == 'POST':
         """Adding item to wishlist"""
         user: User = User.objects.get(id=user)
+        if user.cart is None:
+            user.cart = Cart.objects.create()
+            user.save()
+        if user.wishlist is None:
+            user.wishlist = Wishlist.objects.create()
+            user.save()    
         WishlistResource.objects.create(
             resource = Resource.objects.get(id=resource_id),
             wishlist=user.wishlist
@@ -470,6 +485,12 @@ def update_wishlist(request: HttpRequest, user: int) -> JsonResponse:
     elif request.method == 'DELETE':
         """Removing item from wishlist"""
         user: User = User.objects.get(id=user)
+        if user.cart is None:
+            user.cart = Cart.objects.create()
+            user.save()
+        if user.wishlist is None:
+            user.wishlist = Wishlist.objects.create()
+            user.save()
         resource: WishlistResource = get_object_or_404(WishlistResource, resource=Resource.objects.get(id=resource_id))
         user.wishlist.items -= 1
         user.wishlist.save()
@@ -478,6 +499,12 @@ def update_wishlist(request: HttpRequest, user: int) -> JsonResponse:
     elif request.method == 'PUT':
         """Defining move of item from wishlist to cart"""
         user: User = User.objects.get(id=user)
+        if user.cart is None:
+            user.cart = Cart.objects.create()
+            user.save()
+        if user.wishlist is None:
+            user.wishlist = Wishlist.objects.create()
+            user.save()
         wishlist_resource: WishlistResource = get_object_or_404(WishlistResource, id=resource_id)
         CartResource.objects.create(
             resource=wishlist_resource.resource,
@@ -497,6 +524,12 @@ def cart_to_wishlist(request: HttpRequest, user: int) -> JsonResponse:
     """Defining request that moves cart item to wishlist"""
     if request.method == 'PUT':
         user: User = User.objects.get(id=user)
+        if user.cart is None:
+            user.cart = Cart.objects.create()
+            user.save()
+        if user.wishlist is None:
+            user.wishlist = Wishlist.objects.create()
+            user.save()
         cart_resource: CartResource = get_object_or_404(CartResource, id=json.loads(request.body))
         WishlistResource.objects.create(
             resource=cart_resource.resource,
@@ -515,6 +548,9 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
     if request.method == 'GET':
         """Creating and returning order"""
         user: User = get_object_or_404(User, id=user)
+        if user.cart is None:
+            user.cart = Cart.objects.create()
+            user.save()
         all_cart_resources = user.cart.cart_resource.all()
         seller_ids = {}
         for cart_resource in all_cart_resources:
