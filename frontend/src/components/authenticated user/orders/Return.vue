@@ -169,7 +169,6 @@
                     return
                 }
                 if (this.order.status === status.value) return
-                console.log(this.order.status, status.value)
                 this.making_change = true
                 let userResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/order/`, {
                         method: 'PUT',

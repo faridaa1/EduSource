@@ -451,9 +451,7 @@
                             (display as HTMLDivElement).style.setProperty('height', 'auto', 'important')
                         } else if (parent && (parent.id === 'stationery') && (this.stationery.length === 0)){
                             (display as HTMLDivElement).style.setProperty('height', '70%', 'important')
-                        } else {
-                            console.log(parent.id)
-                        }
+                        } 
                     }
                     const viewings = Array.from(document.getElementsByClassName('viewing'))
                     if (!viewings) return
