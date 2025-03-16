@@ -837,24 +837,24 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
                     search_history=user.search_history
                 )
 
-            search_embeddings = semantic_search_model.encode(search)
+        search_embeddings = semantic_search_model.encode(search)
 
-            # generate similairty matrix
-            similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
-            
-            # convert tensor to dictionary sorted on values (similarity)
-            list_similarity_matrix = similarity_matrix.tolist()[0]
-            search_dict = dict(zip(dataset_resources, list_similarity_matrix))
-            sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
+        # generate similairty matrix
+        similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
+        
+        # convert tensor to dictionary sorted on values (similarity)
+        list_similarity_matrix = similarity_matrix.tolist()[0]
+        search_dict = dict(zip(dataset_resources, list_similarity_matrix))
+        sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
 
-            # only keeping results at least 45% similar
-            keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.2]
-            resources: list = []
-            # using iteration to preserve order of resources
-            for key in keys:
-                resource = Resource.objects.get(id=key)
-                resources.append(resource.as_dict())
-            return JsonResponse(resources, safe=False)
+        # only keeping results at least 45% similar
+        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.2]
+        resources: list = []
+        # using iteration to preserve order of resources
+        for key in keys:
+            resource = Resource.objects.get(id=key)
+            resources.append(resource.as_dict())
+        return JsonResponse(resources, safe=False)
     return JsonResponse({})
 
 
