@@ -397,11 +397,7 @@
                     descriptionInputField.setCustomValidity('Cannot be empty')
                     descriptionInputField.reportValidity()
                     return
-                } else if (!this.description.match(/^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*('[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*$/)) {
-                    descriptionInputField.setCustomValidity('Incorrect format')
-                    descriptionInputField.reportValidity()
-                    return
-                }
+                } 
 
                 // Subject validation
                 const subjectInputField: HTMLInputElement = document.getElementById('subject') as HTMLInputElement

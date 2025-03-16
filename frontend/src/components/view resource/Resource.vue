@@ -20,7 +20,7 @@
                 <span v-if="total_ratings === 0">0 ratings</span>
                 <div id="add-review" v-if="!written_review && total_ratings === 0" @click="add_review">Be the first to write a review</div>
                 <div id="add-review" v-if="Object.keys(user).length > 0 && total_ratings > 0 && possible_sellers(false).length > 0" @click="add_review">Add Review</div>
-                <div id="est-del">Estimated: {{ parseFloat((resource as Resource).estimated_delivery_time.toString()) }} {{ (resource as Resource).estimated_delivery_units }}{{ parseFloat((resource as Resource).estimated_delivery_time.toString()) !== 1 ? 's' : '' }}</div>
+                <div id="est-del">Estimated Delivery: {{ parseFloat((resource as Resource).estimated_delivery_time.toString()) }} {{ (resource as Resource).estimated_delivery_units }}{{ parseFloat((resource as Resource).estimated_delivery_time.toString()) !== 1 ? 's' : '' }}</div>
             </div>
         </div>
         <div id="resource-description">

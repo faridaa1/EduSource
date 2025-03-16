@@ -219,7 +219,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="compare_resources">
+                <div id="compare_resources" v-if="filtered_resources.length > 0">
                     <button @click="compare_resources">Compare Resources</button>
                 </div>
             </div>

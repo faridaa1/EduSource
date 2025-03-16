@@ -147,7 +147,7 @@ class Address(models.Model):
 class Resource(models.Model):
     """Defining attributes and methods for Resource model"""
     name = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*$', message='Invalid format')])
-    description = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*$', message='Invalid format')])
+    description = models.TextField(null=False, blank=True)
     height = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
     width = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
     weight = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
