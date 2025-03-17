@@ -16,6 +16,5 @@ export default defineConfig((({mode}) => ({
     emptyOutDir: true,
     outDir: '../api/static/api',
   },
-  // base: mode === 'development' ? 'http://localhost:5173/' : '/static/api/' 
-  base: mode === 'development' ? 'http://localhost:5173/' : '/' 
+  base: mode === 'development' ? 'http://localhost:5173/' : '/static/api/' 
 })))
