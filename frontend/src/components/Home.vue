@@ -8,7 +8,7 @@
             <div class="displays">
                 <div v-for="listing in recommendations">
                     <div class="listed" @click="showResourcePage(listing)">
-                        <img :src="`${url}${listing.image1}`" alt="Textbook">
+                        <img :src="`${url}${listing.image1}`" alt="Recommendation">
                         {{ currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
@@ -182,13 +182,28 @@
             },
         },
         watch: {
-            async user(): Promise<void> {
-                for (const resource of this.resources) {
+            async resources(resources: Resource[]): Promise<void> {
+                for (const resource of resources) {
                     resource.price = await this.listedprice(resource)
                 }
             },
-            async resources(resources: Resource[]): Promise<void> {
-                for (const resource of resources) {
+            async recommendations(): Promise<void> {
+                for (const resource of this.recommendations) {
+                    resource.price = await this.listedprice(resource)
+                }
+            },
+            async textbooks(): Promise<void> {
+                for (const resource of this.textbooks) {
+                    resource.price = await this.listedprice(resource)
+                }
+            },
+            async notes(): Promise<void> {
+                for (const resource of this.notes) {
+                    resource.price = await this.listedprice(resource)
+                }
+            },
+            async stationery(): Promise<void> {
+                for (const resource of this.stationery) {
                     resource.price = await this.listedprice(resource)
                 }
             }
