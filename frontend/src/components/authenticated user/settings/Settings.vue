@@ -53,6 +53,10 @@
         // Initialising with user preferences
         this.currency_setting = this.user.currency
         this.mode_setting = this.user.mode
+        if (Object.keys(this.user).length === 0) {
+            // Return unauthorised user home
+            window.location.href = '/'
+        }
       },
       computed: {
         url(): string {

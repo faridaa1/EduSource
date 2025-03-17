@@ -222,6 +222,11 @@
             }
         },
         async mounted(): Promise<void> {
+            if (Object.keys(this.user).length === 0) {
+                // Return unauthorised user home
+                window.location.href = '/'
+                return
+            }
             const window_location = window.location.href.split('/')
             this.api_call = true
             // Find exchange between users and initialise variables accordingly

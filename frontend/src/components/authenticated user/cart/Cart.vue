@@ -274,6 +274,10 @@
         },
         mounted(): void {
             this.update_total()
+            if (Object.keys(this.user).length === 0) {
+                // Return unauthorised user home
+                window.location.href = '/'
+            }
         },
     })
 </script>

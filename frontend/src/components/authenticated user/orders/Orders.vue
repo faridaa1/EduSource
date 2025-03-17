@@ -224,6 +224,11 @@
             }
         },
         mounted(): void {
+            if (Object.keys(this.user).length === 0) {
+                // Return unauthorised user home
+                window.location.href = '/'
+                return
+            }
             this.total_pages = this.mode === 'buyer' ? Math.ceil(this.user.placed_orders.length/10) : Math.ceil(this.user.sold_orders.length/10)
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter' && (event.target as HTMLInputElement).id === 'order-search') {

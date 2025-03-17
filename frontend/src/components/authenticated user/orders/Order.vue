@@ -298,6 +298,11 @@
             }
         },
         async mounted(): Promise<void> {
+            if (Object.keys(this.user).length === 0) {
+                // Return unauthorised user home
+                window.location.href = '/'
+                return
+            }
             for (const resource of useResourcesStore().resources) {
                 resource.price = await this.listedprice(resource)
             }

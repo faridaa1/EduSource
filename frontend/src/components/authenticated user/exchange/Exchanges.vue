@@ -47,6 +47,13 @@
          } { return {
             sort: 'new'
         }},
+        mounted(): void {
+            if (Object.keys(this.user).length === 0) {
+                // Return unauthorised user home
+                window.location.href = '/'
+                return
+            }
+        },
         methods: {
             view_exchange(exchange_id: number): void {
                 // View particular exchange

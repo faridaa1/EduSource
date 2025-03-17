@@ -349,6 +349,11 @@
             }
         },
         async mounted(): Promise<void> {
+            if (Object.keys(this.user).length === 0) {
+                // Return unauthorised user home
+                window.location.href = '/'
+                return
+            }
             const window_location: string[] = window.location.href.split('/')
             if (window_location.includes('sold-return')) {
                 this.mode = 'seller'

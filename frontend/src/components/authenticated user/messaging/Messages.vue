@@ -107,6 +107,13 @@
                 return messages
             }
         },
+        mounted(): void {
+            if (Object.keys(this.user).length === 0) {
+                // Return unauthorised user home
+                window.location.href = '/'
+                return
+            }
+        },
         computed: {
             user(): User {
                 return useUserStore().user

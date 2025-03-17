@@ -842,6 +842,11 @@
             }
         },
         mounted(): void {
+            if (Object.keys(this.user).length === 0) {
+                // Return unauthorised user home
+                window.location.href = '/'
+                return
+            }
             this.currency = this.user.currency
             // Set type based on URL
             if (window.location.href.includes('notes')) {

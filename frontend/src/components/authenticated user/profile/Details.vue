@@ -919,6 +919,11 @@
             }
         },
         mounted(): void {
+            if (Object.keys(this.user).length === 0) {
+                // Return unauthorised user home
+                window.location.href = '/'
+                return
+            }
             document.addEventListener('click', (event) => {
                 // Stop showing subject search results on click
                 if (this.show_subjects && !((event.target as HTMLDivElement).id === 'sub-pref')) {

@@ -12,8 +12,16 @@
 </template>
 
 <script lang="ts">
+    import { useUserStore } from '@/stores/user';
     import { defineComponent } from 'vue';
     export default defineComponent({
+        mounted(): void {
+            if (Object.keys(useUserStore().user).length === 0) {
+                // Return unauthorised user home
+                window.location.href = '/'
+                return
+            }
+        },
         methods: {
             view(page: string): void {
                 // Links which take user home or to their orders

@@ -279,6 +279,11 @@
             }
         },
         mounted(): void {
+            if (Object.keys(this.user).length === 0) {
+                // Return unauthorised user home
+                window.location.href = '/'
+                return
+            }
             if (!this.messages_set && Object.keys(this.user.messages).length > 0) {
                 const message = this.user.messages.find(message => (message.user1 === this.user.id && message.user2 === this.other_user.id) || (message.user2 === this.user.id && message.user1 === this.other_user.id))
                 if (message) {
