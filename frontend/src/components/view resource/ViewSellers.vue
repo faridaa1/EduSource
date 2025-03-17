@@ -73,7 +73,7 @@
                 </div>
                 <div id="media">
                     <img class="hoverable" :src="`${url}${resource.image1}`" alt="Image1" @click="media_clicked=`${resource.id}image1`">
-                    <img class="hoverable" :src="`${url}${resource.image2}`" alt="Image1" @click="media_clicked=`${resource.id}image2`">
+                    <img class="hoverable" :src="`${url}${resource.image2}`" alt="Image2" @click="media_clicked=`${resource.id}image2`">
                     <video class="hoverable" :src="`${url}${resource.video}`" @click="media_clicked=`${resource.id}video`"></video>
                     <div @click="media_clicked=''" class="large-media" v-if="media_clicked === `${resource.id}video`">
                         <div class="big-media" v-if="media_clicked === `${resource.id}video`">
