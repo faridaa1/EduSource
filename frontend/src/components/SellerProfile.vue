@@ -168,6 +168,12 @@
             stationeryMessage: 'All'
         }},
         methods: {
+            async get_price(resources: Resource[]): Promise<void> {
+                if (!resources) return
+                for (const resource of resources) {
+                    resource.price = await this.listedprice(resource)
+                }
+            },
             message(userID: number): void {
                 // Take user to message page between themselves and the other user
                 window.location.href = `/message/${this.user.id}/${userID}`
@@ -373,6 +379,7 @@
                     // Only show in stock, undrafted textbooks when viewing profile
                     textbooks = textbooks.filter(listing => !listing.is_draft && listing.stock > 0)
                 }
+                this.get_price(textbooks)
                 return textbooks
             },
             notes(): Resource[] {
@@ -399,6 +406,7 @@
                     // Only show in stock, undrafted notes when viewing profile
                     notes = notes.filter(listing => !listing.is_draft  && listing.stock > 0)
                 }
+                this.get_price(notes)
                 return notes
             },
             stationery(): Resource[] {
@@ -425,6 +433,7 @@
                     // Only show in stock, undrafted stationery when viewing profile
                     stationery = stationery.filter(listing => !listing.is_draft && listing.stock > 0)
                 }
+                this.get_price(stationery)
                 return stationery
             }
         },
@@ -475,11 +484,6 @@
             async user(new_user: User): Promise<void> {
                 this.fill_stars()
                 for (const resource of this.user.listings) {
-                    resource.price = await this.listedprice(resource)
-                }
-            },
-            async resources(resources: Resource[]): Promise<void> {
-                for (const resource of resources) {
                     resource.price = await this.listedprice(resource)
                 }
             },
