@@ -34,7 +34,7 @@
                                     <div class="item">
                                         <label>Rating</label>
                                         <div>
-                                            <p :class="rating_all ? 'new' : 'not'" @click="() => { rating_all=!rating_all, one=true; two=true; three=true; four=true; five=true } ">All</p>
+                                            <p :class="rating_all ? 'new' : 'not'" @click="() => { rating_all=!rating_all, zero=true; one=true; two=true; three=true; four=true; five=true } ">All</p>
                                             <p :class="zero ? 'new' : 'not'" @click="() => {zero=!zero; check_all()}">0</p>
                                             <p :class="one ? 'new' : 'not'" @click="() => {one=!one; check_all()}">1</p>
                                             <p :class="two ? 'used' : 'not'" @click="() => {two=!two; check_all()}">2</p>
@@ -358,7 +358,7 @@
             returns_all: true, returns: true, no_returns: true,
             search_value: '',
             one: true,
-            dimension_unit: 'cm',
+            dimension_unit: 'm',
             two: true,
             min_price: 0,
             error: '',
@@ -804,6 +804,7 @@
                     }
                 }
                 this.max_height = max
+                this.dimension_unit = 'm'
             },
             minimum_height(): void {
                 // Updating values to make sure they are valid
@@ -814,6 +815,7 @@
                     }
                 }
                 this.min_height = min
+                this.dimension_unit = 'm'
             },
             maximum_width(): void {
                 // Updating values to make sure they are valid
@@ -824,6 +826,7 @@
                     }
                 }
                 this.max_width = max
+                this.weight_dimension = 'kg'
             },
             minimum_width(): void {
                 // Updating values to make sure they are valid
@@ -1232,29 +1235,34 @@
                 this.check_source()
             },
             all_pages(): void {
-                this.maximum_pages()
-                this.minimum_pages()
-                this.all_pages = true
+                if (this.all_pages) {
+                    this.maximum_pages()
+                    this.minimum_pages()
+                }
             },
             all_price(): void {
-                this.maximum_price()
-                this.minimum_price()
-                this.all_price = true
+                if (this.all_price) {
+                    this.maximum_price()
+                    this.minimum_price()
+                }
             },
             all_height(): void {
-                this.maximum_height()
-                this.minimum_height()
-                this.all_height = true
+                if (this.all_height) {
+                    this.maximum_height()
+                    this.minimum_height()
+                }
             },
             all_width(): void {
-                this.maximum_width()
-                this.minimum_width()
-                this.all_width = true
+                if (this.all_width) {
+                    this.maximum_width()
+                    this.minimum_width()
+                }
             },
             all_weight(): void {
-                this.maximum_weight()
-                this.minimum_weight()
-                this.all_weight = true
+                if (this.all_weight) {
+                    this.maximum_weight()
+                    this.minimum_weight()
+                }
             },
             async user(new_user: User): Promise<void> {
                 for (const resource of this.user.listings) {
@@ -1594,7 +1602,7 @@
     }
 
     #dark .new:hover, #dark .used:hover, #dark .all:hover {
-        background-color: darkgray;
+        background-color: rgb(96, 96, 96);
     }
 
     .not {
@@ -1604,7 +1612,7 @@
     }
 
     #dark .not {
-        background-color: darkgray;
+        background-color: rgb(96, 96, 96);
         color: black;
     }
 
