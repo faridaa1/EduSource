@@ -92,6 +92,12 @@
       }
     },
     async mounted(): Promise<void> {
+      // Dynamically generating URL
+      if (window.location.href.includes('localhost')) {
+        useURLStore().saveURL('localhost')
+      } else {
+        useURLStore().saveURL('deploy')
+      }
       this.toggle_theme()
       window.addEventListener('resize', () => {
         this.clicked_profile = false;
@@ -125,13 +131,6 @@
           this.search_results = []
         }
       })
-      // Dynamically generating URL
-      if (window.location.href.includes('localhost')) {
-        useURLStore().saveURL('localhost')
-      } else {
-        useURLStore().saveURL('deploy')
-      }
-
       // Store all users
       let usersResponse: Response = await fetch(`${useURLStore().url}/api/users/`, {
         method: 'GET',

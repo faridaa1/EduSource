@@ -128,6 +128,11 @@
             unauth_currency(resource: Resource): string {
                 return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
             },
+            async get_prices(): Promise<void> {
+                for (const resource of this.resources) {
+                    resource.price = await this.listedprice(resource)
+                }
+            }
         },
         computed: {
             url(): string {
@@ -166,47 +171,34 @@
                         newAllResources.push(resource)
                     }
                 }
+                this.get_prices()
                 return newAllResources
             },
             textbooks(): Resource[] {
                 if (!this.resources) return []
+                this.get_prices()
                 return this.resources.filter(resource => resource.type === 'Textbook')
             },
             notes(): Resource[] {
                 if (!this.resources) return []
+                this.get_prices()
                 return this.resources.filter(resource => resource.type === 'Notes')
             },
             stationery(): Resource[] {
                 if (!this.resources) return []
+                this.get_prices()
                 return this.resources.filter(resource => resource.type === 'Stationery')
             },
         },
         watch: {
             async resources(resources: Resource[]): Promise<void> {
-                for (const resource of resources) {
-                    resource.price = await this.listedprice(resource)
-                }
+                this.get_prices()
             },
             async recommendations(): Promise<void> {
                 for (const resource of this.recommendations) {
                     resource.price = await this.listedprice(resource)
                 }
             },
-            async textbooks(): Promise<void> {
-                for (const resource of this.textbooks) {
-                    resource.price = await this.listedprice(resource)
-                }
-            },
-            async notes(): Promise<void> {
-                for (const resource of this.notes) {
-                    resource.price = await this.listedprice(resource)
-                }
-            },
-            async stationery(): Promise<void> {
-                for (const resource of this.stationery) {
-                    resource.price = await this.listedprice(resource)
-                }
-            }
         }
     })
 </script>
