@@ -3,9 +3,9 @@
         <div id="header">
             <h1>{{ isPriorListing ? '' : 'New' }} Resource Listing</h1>
             <div id="buttons">
-                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft : false)">{{ isPriorListing ? 'Update' : 'List' }}</button>
-                <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft ? false : true : true)">{{ resource && resource.is_draft ? 'List' : 'Draft'}}</button>
-                <button class="delete_listing" @click="confirm='Are you sure you want to delete this listing? This action cannot be undone.'">Delete</button>
+                <button :disabled="api_call" v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft : false)">{{ isPriorListing ? 'Update' : 'List' }}</button>
+                <button :disabled="api_call" v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft ? false : true : true)">{{ resource && resource.is_draft ? 'List' : 'Draft'}}</button>
+                <button :disabled="api_call" class="delete_listing" @click="confirm='Are you sure you want to delete this listing? This action cannot be undone.'">Delete</button>
             </div>
         </div>
         <div id="form" @input="clear_errors" @change="clear_errors">
@@ -201,7 +201,7 @@
                         <label for="image1" class="input-square">
                             <i v-if="image1.name === ''" class="bi bi-plus-lg plus"></i>
                             <img id="img1" alt="image1">
-                            <button v-if="!(image1.name === '')" @click="(event) => remove_image(event, 1)"><i class="bi bi-x-lg"></i></button>
+                            <button :disabled="api_call" v-if="!(image1.name === '')" @click="(event) => remove_image(event, 1)"><i class="bi bi-x-lg"></i></button>
                         </label>
                     </div>
                     <div class="image_input" id="image_2">
@@ -209,7 +209,7 @@
                         <label for="image2" class="input-square">
                             <i v-if="image2.name === ''" class="bi bi-plus-lg plus"></i>
                             <img id="img2" alt="image2">
-                            <button v-if="!(image2.name === '')" @click="(event) => remove_image(event, 2)"><i class="bi bi-x-lg"></i></button>
+                            <button :disabled="api_call" v-if="!(image2.name === '')" @click="(event) => remove_image(event, 2)"><i class="bi bi-x-lg"></i></button>
                         </label>
                     </div>
                 </div>
@@ -222,15 +222,15 @@
                     <label for="video1" class="video-square">
                         <i v-if="video1.name === ''" class="bi bi-plus-lg plus"></i>
                         <video controls id="vid1"></video>
-                        <button v-if="!(video1.name === '')" @click="remove_video"><i class="bi bi-x-lg"></i></button>
+                        <button :disabled="api_call" v-if="!(video1.name === '')" @click="remove_video"><i class="bi bi-x-lg"></i></button>
                     </label>
                 </div>
             </div>
         </div>
         <div id="buttons1">
-            <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft : false)">{{ isPriorListing ? 'Update' : 'List' }}</button>
-            <button v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft ? false : true : true)">{{ resource && resource.is_draft ? 'List' : 'Draft'}}</button>
-            <button class="delete_listing" @click="confirm='Are you sure you want to delete this listing? This action cannot be undone.'">Delete</button>
+            <button :disabled="api_call" v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft : false)">{{ isPriorListing ? 'Update' : 'List' }}</button>
+            <button :disabled="api_call" v-if="!duplicate_resource" @click="submit(isPriorListing ? resource.is_draft ? false : true : true)">{{ resource && resource.is_draft ? 'List' : 'Draft'}}</button>
+            <button :disabled="api_call" class="delete_listing" @click="confirm='Are you sure you want to delete this listing? This action cannot be undone.'">Delete</button>
         </div>
         <div v-if="confirm!==''">
             <Confirm :message="confirm" @confirm-no="confirm=''" @confirm-yes="confirm=''; delete_listing()" />
@@ -264,6 +264,7 @@
             weight: number,
             subject_select: string
             weight_unit: string,
+            api_call: boolean,
             dimension_unit: string,
             type: 'Textbook' | 'Notes' | 'Stationery'
             subject: string
@@ -305,6 +306,7 @@
             name: '',
             description: '',
             allow_delivery: false,
+            api_call: false,
             allow_collection: false,
             allow_return: false,
             height: 1,
@@ -344,6 +346,7 @@
         methods: {
             async delete_listing(): Promise<void> {
                 // Delete listing
+                this.api_call = true
                 let deleteListingResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/new-listing/`, {
                     method: 'DELETE',
                     credentials: 'include',
@@ -352,6 +355,7 @@
                     },
                     body: JSON.stringify(this.resource.id)
                 })
+                this.api_call = false
                 if (!deleteListingResponse.ok) {
                     this.error = 'Failed to delete listing. Please try again.'
                     return
@@ -560,6 +564,7 @@
                 data.append('unique', this.unique.toString())
                 let postListingResponse: Response
                 if (!this.isPriorListing) {
+                    this.api_call = true
                     postListingResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/new-listing/`, {
                         method: 'POST',
                         credentials: 'include',
@@ -569,6 +574,7 @@
                         body: data
                     }) 
                 } else {
+                    this.api_call = true
                     postListingResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/new-listing/`, {
                         method: 'POST',
                         credentials: 'include',
@@ -578,6 +584,7 @@
                         body: data
                     })
                 }
+                this.api_call = false
                 if (!postListingResponse.ok) {
                     this.error = is_draft ? 'Error saving listing as draft. Please try again.' : 'Error posting listing. Please try again.' 
                     return
@@ -940,6 +947,12 @@
 
     #subject-container input {
         width: 20rem !important;
+    }
+
+    button:disabled, button:disabled:hover {
+        background-color: darkgray !important;
+        cursor: not-allowed !important;
+        color: white !important;
     }
 
     #author-div {
