@@ -129,6 +129,7 @@
                 return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
             },
             async get_prices(): Promise<void> {
+                if (!this.resources) return
                 for (const resource of this.resources) {
                     resource.price = await this.listedprice(resource)
                 }
@@ -191,7 +192,7 @@
             },
         },
         watch: {
-            async resources(resources: Resource[]): Promise<void> {
+            async resources(): Promise<void> {
                 this.get_prices()
             },
             async recommendations(): Promise<void> {
