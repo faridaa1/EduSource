@@ -55,6 +55,9 @@
         this.mode_setting = this.user.mode
       },
       computed: {
+        url(): string {
+            return useURLStore().url
+        },
         user(): User {
           return useUserStore().user
         }
@@ -100,7 +103,7 @@
                     document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
                     const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
                     if (logo) {
-                        logo.src = theme.id === 'light' ? '/logo-light.svg' : '/logo-dark.svg'
+                        logo.src = theme.id === 'light' ? this.url.includes('localhost') ? '/logo-light.svg' : '/static/api/logo-light.svg' : this.url.includes('localhost') ? '/logo-dark.svg' : '/static/api/logo-dark.svg'
                     }
                     if (called_by === 'mounted') return
                     this.update_setting('theme', theme.id)

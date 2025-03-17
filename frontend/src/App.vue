@@ -3,7 +3,7 @@
     <div id="light">
       <!-- Defining main header/navigation of application -->
       <header id="main-header">
-        <img id='logo' src="/logo-light.svg" alt="EduSource" width="125" height="125" v-pre/>
+        <img id='logo' :src="url.includes('localhost') ? '/logo-light.svg' : '/static/api/logo-light.svg'" alt="EduSource" width="125" height="125" v-pre/>
         <RouterLink :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="hide-on-mobile link">Home</RouterLink>
         <div id="profile-div" class="hide-on-mobile">
           <p id="profile-header" v-if="authenticated" @click="toggle_profile_view">Profile</p>
@@ -190,6 +190,9 @@
         this.complete = true
     },
     computed: {
+      url(): string {
+        return useURLStore().url
+      },
       user(): User {
         return useUserStore().user
       }
@@ -233,7 +236,7 @@
                 document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
                 const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
                 if (logo) {
-                    logo.src = theme.id === 'light' ? '/logo-light.svg' : '/logo-dark.svg'
+                    logo.src = theme.id === 'light' ? this.url.includes('localhost') ? '/logo-light.svg' : '/static/api/logo-light.svg' : this.url.includes('localhost') ? '/logo-dark.svg' : '/static/api/logo-dark.svg'
                 }
             }
           }
