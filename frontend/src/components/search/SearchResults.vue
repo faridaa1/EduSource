@@ -424,7 +424,6 @@
             })
             if (searchResponse.ok) {
                 const searchResults: Resource[] = await searchResponse.json()
-                console.log(searchResults)
                 this.resources = searchResults.filter(resource => resource.stock > 0 && !resource.is_draft)
                 this.sort_resources()
             }
@@ -774,6 +773,7 @@
                     }
                     return parseFloat(a.price.toString().replace('$','').replace('£','').replace('€','')) - parseFloat(b.price.toString().replace('$','').replace('£','').replace('€',''))
                 })
+                console.log(this.resources)
             },
             maximum_price(): void {
                 // Updating values to make sure they are valid
@@ -970,9 +970,9 @@
                     if (
                         (this.all_price || ((parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) >= this.min_price)
                         && (parseFloat(resource.price.toString().replace('$','').replace('£','').replace('€','')) <= this.max_price)))
-                        && ((this.converted_dimension(resource, 'height') <= this.max_height) && (this.converted_dimension(resource, 'height') >= this.min_height))
-                        && ((this.converted_dimension(resource, 'width') <= this.max_width) && (this.converted_dimension(resource, 'width') >= this.min_width))
-                        && ((this.converted_weight(resource) <= this.max_weight) && (this.converted_weight(resource) >= this.min_weight))
+                        && (this.all_height || ((this.converted_dimension(resource, 'height') <= this.max_height) && (this.converted_dimension(resource, 'height') >= this.min_height)))
+                        && (this.all_width || ((this.converted_dimension(resource, 'width') <= this.max_width) && (this.converted_dimension(resource, 'width') >= this.min_width)))
+                        && (this.all_weight || ((this.converted_weight(resource) <= this.max_weight) && (this.converted_weight(resource) >= this.min_weight)))
                         && ((this.condition_new && resource.condition === 'New') || (this.condition_used && resource.condition === 'Used'))
                         && ((this.textbook && resource.type === 'Textbook') || (this.stationery && resource.type === 'Stationery') || (this.notes && resource.type === 'Notes'))
                         && ((this.zero && resource.rating >= 0)
