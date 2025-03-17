@@ -407,7 +407,7 @@
                 // Generate CSRF token of unauthenticated user
                 for (let cookie of document.cookie.split(';')) {
                     const cookie_pair = cookie.split('=')
-                    if (cookie_pair[0] === 'csrftoken') {
+                    if (cookie_pair[0].trim() === 'csrftoken') {
                         useUserStore().saveCsrf(cookie_pair[1])
                     }
                 }
