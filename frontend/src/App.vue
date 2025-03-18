@@ -3,6 +3,7 @@
     <div id="light">
       <!-- Defining main header/navigation of application -->
       <header id="main-header">
+        {{ csrf }}
         <img id='logo' src="/logo-light.svg" alt="EduSource" width="125" height="125"/>
         <RouterLink :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="hide-on-mobile link">Home</RouterLink>
         <div id="profile-div" class="hide-on-mobile">
@@ -160,7 +161,6 @@
             useUserStore().saveCsrf(cookie_pair[1])
           }
       }
-      console.log(' i have saved', useUserStore().csrf)
       if (userData.user === 'unauthenticated') {
         // Updating styling if user is logged out (there are less menu options available so the design should change appropriately)
         nextTick(() => {
@@ -190,6 +190,9 @@
         this.complete = true
     },
     computed: {
+      csrf(): string {
+        return useUserStore().csrf
+      },
       url(): string {
         return useURLStore().url
       },
