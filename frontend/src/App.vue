@@ -160,6 +160,7 @@
             useUserStore().saveCsrf(cookie_pair[1])
           }
       }
+      console.log(' i have saved', useUserStore().csrf)
       if (userData.user === 'unauthenticated') {
         // Updating styling if user is logged out (there are less menu options available so the design should change appropriately)
         nextTick(() => {
