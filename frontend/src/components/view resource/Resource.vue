@@ -753,21 +753,13 @@
                     title.setCustomValidity('Cannot be empty')
                     title.reportValidity()
                     return
-                } else if (!title.value.match(/^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*[\.!\?]*$/)) {
-                    title.setCustomValidity('Invalid format')
-                    title.reportValidity()
-                    return
-                }
+                } 
 
                 if (description.value === '') {
                     description.setCustomValidity('Cannot be empty')
                     description.reportValidity()
                     return
-                } else if (!description.value.match(/^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*[\.!\?]*$/)) {
-                    description.setCustomValidity('Invalid format')
-                    description.reportValidity()
-                    return
-                }
+                } 
 
                 this.reset_validity(1, review.id)
                 const seller_element: HTMLSelectElement = document.getElementById(`${review.id}`) as HTMLSelectElement
@@ -809,22 +801,14 @@
                     title.setCustomValidity('Cannot be empty')
                     title.reportValidity()
                     return
-                } else if (!title.value.match(/^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*[\.!\?]*$/)) {
-                    title.setCustomValidity('Invalid format')
-                    title.reportValidity()
-                    return
-                }
+                } 
 
                 if (description.value === '') {
                     description.setCustomValidity('Cannot be empty')
                     description.reportValidity()
                     return
-                } else if (!description.value.match(/^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*[\.!\?]*$/)) {
-                    description.setCustomValidity('Invalid format')
-                    description.reportValidity()
-                    return
-                }
-
+                } 
+                
                 if (this.rating === 0) {
                     this.rating_error = true
                     document.getElementById('my-rating')?.scrollIntoView()

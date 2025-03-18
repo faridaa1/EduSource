@@ -121,7 +121,7 @@ class User(AbstractUser):
 
 class Subject(models.Model):
     """Defining attributes and methods for Subject model"""
-    name = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z]+( [a-zA-Z]+)*$', message='Invalid format')])
+    name = models.CharField(max_length=150, null=False, blank=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subject')
     
     def as_dict(self) -> str:
@@ -133,10 +133,10 @@ class Subject(models.Model):
 
 class Address(models.Model):
     """Defining attributes and methods for Address model"""
-    first_line = models.CharField(max_length=255, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$', message='No special characters allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
-    second_line = models.CharField(max_length=255, null=False, blank=True, validators=[RegexValidator(r'^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$', message='No special characters allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
-    city = models.CharField(max_length=255, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$', message='No special characters allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
-    postcode = models.CharField(max_length=7, null=False, blank=False, validators=[RegexValidator(r'^[A-Za-z0-9]{5,7}$', message='Enter 5-7 character postcode without spaces')])
+    first_line = models.CharField(max_length=255, null=False, blank=False)
+    second_line = models.CharField(max_length=255, null=False, blank=True)
+    city = models.CharField(max_length=255, null=False, blank=False)
+    postcode = models.CharField(max_length=7, null=False, blank=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='address')
     
     def __str__(self) -> str:
@@ -146,7 +146,7 @@ class Address(models.Model):
 
 class Resource(models.Model):
     """Defining attributes and methods for Resource model"""
-    name = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*$', message='Invalid format')])
+    name = models.CharField(max_length=150, null=False, blank=False)
     description = models.TextField(null=False, blank=True)
     height = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
     width = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
@@ -154,8 +154,8 @@ class Resource(models.Model):
     price = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
     stock = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
     estimated_delivery_time = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2)
-    subject = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z]+( [a-zA-Z]+)*$', message='Invalid format')])
-    author = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+( [a-zA-Z0-9]+)*$', message='Invalid format')])
+    subject = models.CharField(max_length=150, null=False, blank=False)
+    author = models.CharField(max_length=150, null=False, blank=False)
     self_made = models.BooleanField(null=False, blank=False)
     is_draft = models.BooleanField(null=False, blank=False)
     unique = models.BooleanField(null=False, blank=False, default=True)
@@ -287,8 +287,8 @@ class Review(models.Model):
     resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name='review')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='review')
     rating = models.DecimalField(null=False, blank=True, default=0.0, max_digits=2, decimal_places=1, validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
-    title = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*[\.!\?]*$', message='Invalid format')])
-    review = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*(\'[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*[\.!\?]*$', message='Invalid format')])
+    title = models.CharField(max_length=150, null=False, blank=False)
+    review = models.TextField(null=False, blank=True)
     upload_date = models.DateTimeField(default=timezone.now)
     image = models.ImageField(null=False, blank=True, upload_to='review_images/')
     video = models.FileField(null=False, blank=True, upload_to='review_videos/')
@@ -320,7 +320,7 @@ class Order(models.Model):
     RETURN_METHODS: list [tuple[str, str]] = [('Delivery', 'Delivery'), ('Collection', 'Collection')]
     return_method = models.CharField(max_length=10, choices=RETURN_METHODS, default='Delivery', null=False, blank=False)
     is_exchange = models.BooleanField(null=False, blank=False, default=False)
-    return_reason = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
+    return_reason = models.TextField(null=False, blank=True)
 
 
     def as_dict(self) -> str:

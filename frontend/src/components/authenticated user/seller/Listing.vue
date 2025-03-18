@@ -389,11 +389,7 @@
                     nameInputField.setCustomValidity('Name must be less than 150 characters')
                     nameInputField.reportValidity()
                     return
-                } else if (!this.name.match(/^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*('[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*$/)) {
-                    nameInputField.setCustomValidity('Incorrect format')
-                    nameInputField.reportValidity()
-                    return
-                }
+                } 
                 
                 // Description validation
                 const descriptionInputField: HTMLInputElement = document.getElementById('description') as HTMLInputElement
@@ -413,19 +409,7 @@
                     subjectInputField.setCustomValidity('Subject must be less than 150 characters')
                     subjectInputField.reportValidity()
                     return
-                } else if (!this.subject.match(/^[a-zA-Z]+( [a-zA-Z]+)*$/)) {
-                    if (!this.subject.match(/^\S/)) {
-                        subjectInputField.setCustomValidity('Cannot start with space')
-                    } else if (!this.subject.match(/\S$/)) {
-                        subjectInputField.setCustomValidity('Cannot end in space')
-                    } else if (this.subject.match(/\s\s/)) {
-                        subjectInputField.setCustomValidity('Only one space between words')
-                    } else {
-                        subjectInputField.setCustomValidity('Only enter letters')
-                    }
-                    subjectInputField.reportValidity()
-                    return
-                }
+                } 
 
                 // Author validation
                 const authorInputField: HTMLInputElement = document.getElementById('author-field') as HTMLInputElement
@@ -438,19 +422,7 @@
                     authorInputField.setCustomValidity('Name must be less than 150 characters')
                     authorInputField.reportValidity()
                     return
-                } else if ((!(this.author === this.user.username)) && !this.author.match(/^[a-zA-Z]+( [a-zA-Z]+)*$/)) {
-                    if (!this.author.match(/^\S/)) {
-                        authorInputField.setCustomValidity('Cannot start with space')
-                    } else if (!this.author.match(/\S$/)) {
-                        authorInputField.setCustomValidity('Cannot end in space')
-                    } else if (this.author.match(/\s\s/)) {
-                        authorInputField.setCustomValidity('Only one space between words')
-                    } else {
-                        authorInputField.setCustomValidity('Only enter letters')
-                    }
-                    authorInputField.reportValidity()
-                    return
-                }
+                } 
 
                 // Ensuring images are uploaded
                 if (this.image1.name === '' && this.image2.name === '') {
