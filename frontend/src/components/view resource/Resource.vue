@@ -164,7 +164,7 @@
                 <p>Seller</p>
                 <select id="resource-add-seller">
                     <option :value="resource.id" v-for="resource in possible_sellers(false)">
-                        <p>{{ resource.author }}</p>
+                        <p>{{ users.find(user => user.id === resource.user)?.username }}</p>
                     </option>
                 </select>
             </div>
