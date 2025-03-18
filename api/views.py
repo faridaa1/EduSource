@@ -979,7 +979,7 @@ def recommendations(request: HttpRequest, user: int) -> JsonResponse:
     list_similarity_matrix = similarity_matrix.tolist()[0]
     search_dict = dict(zip(new_dataset_resources, list_similarity_matrix))
     sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
-
+    print(sorted_search_dict)
     keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.3]
     resources: list = []
 
