@@ -773,7 +773,6 @@
                     }
                     return parseFloat(a.price.toString().replace('$','').replace('£','').replace('€','')) - parseFloat(b.price.toString().replace('$','').replace('£','').replace('€',''))
                 })
-                console.log(this.resources)
             },
             maximum_price(): void {
                 // Updating values to make sure they are valid

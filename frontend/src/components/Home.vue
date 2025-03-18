@@ -102,7 +102,6 @@
                     this.recommendations = this.resources
                 }
                 let recommendations: Resource[] = await personalised_recommendations.json()
-                console.log(recommendations)
                 this.recommendations = recommendations
             },
             async listedprice(resource: Resource): Promise<number> {
