@@ -1044,7 +1044,6 @@
         display: none;
         max-height: 100%;
         width: 100%;
-        background-color: yellow;
     }
 
     #dark .plus {
