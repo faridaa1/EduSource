@@ -213,7 +213,6 @@
         margin-top: 1.5rem;
         margin-bottom: 1.5rem;
         overflow-y: auto;
-        overflow-x: none;
         gap: 1.5rem;
     }
 
@@ -257,6 +256,7 @@
         display: flex;
         gap: 3rem;
         overflow-x: auto;
+        width: 100%;
         margin-top: 1rem;
         padding-bottom: 1rem;
         height: 70%;
