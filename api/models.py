@@ -11,7 +11,7 @@ class Cart(models.Model):
     items = models.IntegerField(null=False, blank=False, default=0, validators=[MinValueValidator(0)])
     total = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2, default=0.0, validators=[MinValueValidator(0.0)])
 
-    def as_dict(self) -> str:
+    def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of Cart object"""
         cart_resources = CartResource.objects.filter(cart=self.id)
         return {
@@ -27,7 +27,7 @@ class Wishlist(models.Model):
     items = models.IntegerField(null=False, blank=False, default=0, validators=[MinValueValidator(0)])
     total = models.DecimalField(max_digits=6, null=False, blank=False, decimal_places=2, default=0.0, validators=[MinValueValidator(0.0)])
 
-    def as_dict(self) -> str:
+    def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of Wishlist object"""
         wishlist_resources = WishlistResource.objects.filter(wishlist=self.id)
         return {
@@ -64,7 +64,7 @@ class User(AbstractUser):
         """Defining string representation of User model"""
         return f"{self.first_name} {self.last_name}: {self.email}"
     
-    def as_dict(self) -> dict[str, int | float | str]:
+    def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of User object"""
         try:
             address: Address = Address.objects.get(user=self)
@@ -124,7 +124,7 @@ class Subject(models.Model):
     name = models.CharField(max_length=150, null=False, blank=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subject')
     
-    def as_dict(self) -> str:
+    def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of Subject object"""
         return {
             'id' : self.id,
@@ -210,7 +210,7 @@ class Resource(models.Model):
     MEDIUM: list [tuple[str, str]] = [('Online', 'Online'), ('Paper', 'Paper')]
     media = models.CharField(max_length=6, choices=MEDIUM, null=False, blank=True)
 
-    def as_dict(self) -> str:
+    def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of Resource object"""
         reviews = Review.objects.filter(resource=self.id)
         return {
@@ -259,7 +259,7 @@ class WishlistResource(models.Model):
     resource = models.ForeignKey(Resource, on_delete=models.CASCADE, related_name='wishlist_resource')
     wishlist = models.ForeignKey(Wishlist, on_delete=models.CASCADE, related_name='wishlist_resource')
     
-    def as_dict(self) -> str:
+    def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of WishlistResource object"""
         return {
             'id' : self.id,
@@ -273,7 +273,7 @@ class CartResource(models.Model):
     number = models.IntegerField(null=False, blank=False)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='cart_resource')
     
-    def as_dict(self) -> str:
+    def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of CartResource object"""
         return {
             'id' : self.id,
@@ -293,7 +293,7 @@ class Review(models.Model):
     image = models.ImageField(null=False, blank=True, upload_to='review_images/')
     video = models.FileField(null=False, blank=True, upload_to='review_videos/')
 
-    def as_dict(self) -> str:
+    def as_dict(self) -> dict[str, any]:
         """Defining dicionary representation of Review object"""
         return {
             'id': self.id,
@@ -323,7 +323,7 @@ class Order(models.Model):
     return_reason = models.TextField(null=False, blank=True)
 
 
-    def as_dict(self) -> str:
+    def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of Order object"""
         resources = OrderResource.objects.filter(order=self.id)
         return {
@@ -349,7 +349,7 @@ class OrderResource(models.Model):
     for_return = models.BooleanField(null=False, blank=False, default=False)
     number_for_return = models.IntegerField(null=False, blank=False, default=0)
 
-    def as_dict(self) -> str:
+    def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of OrderResource object"""
         return {
             'id': self.id,
@@ -368,7 +368,7 @@ class Messages(models.Model):
     user2_seen = models.DateTimeField(default=timezone.now)
     last_edited = models.DateTimeField(default=timezone.now)
 
-    def as_dict(self) -> str:
+    def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of Messages object"""
         messages = self.message.all()
         return {
@@ -389,7 +389,7 @@ class Message(models.Model):
     messages = models.ForeignKey(Messages, on_delete=models.CASCADE, related_name='message')
     sent = models.DateTimeField(default=timezone.now)
 
-    def as_dict(self) -> str:
+    def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of Message object"""
         return {
             'id': self.id,
@@ -411,7 +411,7 @@ class Exchange(models.Model):
     resource1_number = models.IntegerField(null=False, blank=False, default=0)
     resource2_number = models.IntegerField(null=False, blank=False, default=0)
 
-    def as_dict(self) -> str:
+    def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of Exchange object"""
         return {
             'id': self.id,
@@ -430,7 +430,7 @@ class SearchHistory(models.Model):
     """Defining model to store search history, aiding personalised recommendation and chatbot"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='search_history')
 
-    def as_dict(self) -> str:
+    def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of SearchHistory object"""
         search_history = SearchHistoryItem.objects.filter(search_history=self)
         return {
@@ -445,7 +445,7 @@ class SearchHistoryItem(models.Model):
     search = models.TextField(null=False, blank=False)
     search_history = models.ForeignKey(SearchHistory, on_delete=models.CASCADE, related_name='search_item')
 
-    def as_dict(self) -> str:
+    def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of SearchHistoryItem object"""
         return {
             'id': self.id,
