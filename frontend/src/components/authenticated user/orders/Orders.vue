@@ -2,7 +2,7 @@
     <div id="orders-view" v-if="(user && (mode === 'buyer') &&  user.placed_orders) || (user && (mode === 'seller') &&  user.sold_orders)">
         <div id="header">
             <div id="header1">
-                <p>{{ user.mode === 'buyer' ? 'My' : 'Sold' }} Orders</p>
+                <p>{{ mode === 'buyer' ? 'My' : 'Sold' }} Orders</p>
             <div id="search">
                 <input @input="clear_error" v-model="search" id="order-search" type="text" @click="remove_focus" placeholder="Enter resource name">
                 <i id="x" @click="handle_x_click" :class="search.trim() !== '' ? 'bi bi-x' : ''"></i>
@@ -202,6 +202,13 @@
             },
         },
         watch: {
+            '$route.path'(): void {
+                if (window.location.href.split('/').includes('sold-orders')) {
+                    this.mode = 'seller'
+                } else {
+                    this.mode = 'buyer'
+                }
+            },
             search(): void {
                 if (this.search.trim() === '') return
                 this.searching = false
@@ -239,6 +246,8 @@
             const window_location: string[] = window.location.href.split('/')
             if (window_location.includes('sold-orders')) {
                 this.mode = 'seller'
+            } else {
+                this.mode = 'buyer'
             }
             if (window_location.length > 4) {
                 // Reset search conditions (e.g. search filter and page)
