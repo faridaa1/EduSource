@@ -14,8 +14,8 @@
                 <RouterLink class="profile-item border-bottom" to="/exchanges" v-if="has_resources()">Exchanges</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/messages">Messages</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/cart">Cart</RouterLink>
-                <RouterLink class="profile-item rounded-bottom" to="/wishlist">Wishlist</RouterLink>
-                <RouterLink class="profile-item rounded-bottom" to="/orders" v-if="user.mode==='seller'">Placed Orders</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/wishlist">Wishlist</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='seller'">Placed Orders</RouterLink>
                 <RouterLink class="profile-item rounded-bottom" to="/sold-orders" v-if="user.mode==='seller'">Sold Orders</RouterLink>
             </div>
           </transition>
@@ -51,8 +51,9 @@
                 <RouterLink class="profile-item border-bottom" to="/exchanges" v-if="has_resources()">Exchanges</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/messages">Messages</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/cart">Cart</RouterLink>
-                <RouterLink class="profile-item rounded-bottom" to="/wishlist">Wishlist</RouterLink>
-                <RouterLink class="profile-item rounded-bottom" to="/orders" v-if="user.mode==='seller'">Placed Orders</RouterLink>
+                <RouterLink class="profile-item rounded-bottom" to="/wishlist" v-if="user.mode==='buyer'">Wishlist</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/wishlist" v-if="user.mode==='seller'">Wishlist</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='seller'">Placed Orders</RouterLink>
                 <RouterLink class="profile-item rounded-bottom" to="/sold-orders" v-if="user.mode==='seller'">Sold Orders</RouterLink>
             </div>
           </transition>
