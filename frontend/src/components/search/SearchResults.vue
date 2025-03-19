@@ -225,7 +225,8 @@
             </div>
         </div>
         <div id="search-content">
-            <div id="noresources" v-if="filtered_resources.length === 0">No resources found</div>
+            <div id="noresources" v-if="filtered_resources.length === 0 && searching"><Loading /></div>
+            <div id="noresources" v-if="filtered_resources.length === 0 && !searching">No resources found</div>
             <div class="search-item" v-for="resource in filtered_resources">
                 <div id="row1">
                     <div id="col1" @click="showResourcePage(resource.id)">
@@ -300,9 +301,11 @@
     import { useUsersStore } from '@/stores/users';
     import Error from '../user experience/error/Error.vue';
     import { useURLStore } from '@/stores/url';
+    import Loading from '../user experience/loading/Loading.vue';
     export default defineComponent({
-        components: { Error },
+        components: { Error, Loading },
         data(): {
+            searching: boolean,
             current_page: number,
             error: string,
             subject_all: boolean, subject_one: boolean, subject_two: boolean, subject_three: boolean, subject_four: boolean, subject_five: boolean,
@@ -357,6 +360,7 @@
             options_all: true, delivery: true, collection: true,
             returns_all: true, returns: true, no_returns: true,
             search_value: '',
+            searching: false,
             one: true,
             dimension_unit: 'm',
             two: true,
@@ -413,6 +417,7 @@
                 }
             }
             // Find resources matching search result
+            this.searching = true
             const searchResponse = await fetch(`${useURLStore().url}/api/semantic-search/${Object.keys(this.user).length > 0 ? this.user.id : -1}/`, {
                 method: 'PUT',
                 credentials: 'include',
@@ -422,6 +427,7 @@
                 },
                 body: JSON.stringify(this.search_value)
             })
+            this.searching = false
             if (searchResponse.ok) {
                 const searchResults: Resource[] = await searchResponse.json()
                 this.resources = searchResults.filter(resource => resource.stock > 0 && !resource.is_draft)
