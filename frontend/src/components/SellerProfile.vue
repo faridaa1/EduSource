@@ -797,15 +797,21 @@
     }
 
     /* Responsive Design */
-    @media (max-width: 1035px) {
-        #textbooks, #notes, #stationery {
-            width: 93vw;
+    @media (max-width: 1056px) {
+        #recommendations, #textbooks, #notes, #stationery {
+            width: 90vw;
         }
     }
 
     @media (max-width: 827px) {
-        #textbooks, #notes, #stationery {
+        #recommendations, #textbooks, #notes, #stationery {
             width: 90vw;
+        }
+    }
+
+    @media (max-width: 789px) {
+        #recommendations, #textbooks, #notes, #stationery {
+            width: 86vw;
         }
     }
 
