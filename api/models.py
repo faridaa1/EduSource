@@ -131,6 +131,7 @@ class Subject(models.Model):
             'name' : self.name,
         }
 
+
 class Address(models.Model):
     """Defining attributes and methods for Address model"""
     first_line = models.CharField(max_length=255, null=False, blank=False)
