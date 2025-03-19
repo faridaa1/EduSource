@@ -213,6 +213,7 @@
         margin-top: 1.5rem;
         margin-bottom: 1.5rem;
         overflow-y: auto;
+        overflow-x: hidden;
         gap: 1.5rem;
     }
 
@@ -256,7 +257,6 @@
         display: flex;
         gap: 3rem;
         overflow-x: auto;
-        width: 100%;
         margin-top: 1rem;
         padding-bottom: 1rem;
         height: 70%;
@@ -307,6 +307,18 @@
     }
 
     /* Responsive Design */
+    @media (max-width: 1035px) {
+        #recommendations, #textbooks, #notes, #stationery {
+            width: 93vw;
+        }
+    }
+
+    @media (max-width: 827px) {
+        #recommendations, #textbooks, #notes, #stationery {
+            width: 90vw;
+        }
+    }
+
     @media (max-width: 510px) {
         #recommendations, #textbooks, #notes, #stationery {
             width: 83vw;

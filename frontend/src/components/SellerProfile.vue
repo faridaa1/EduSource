@@ -797,6 +797,17 @@
     }
 
     /* Responsive Design */
+    @media (max-width: 1035px) {
+        #textbooks, #notes, #stationery {
+            width: 93vw;
+        }
+    }
+
+    @media (max-width: 827px) {
+        #textbooks, #notes, #stationery {
+            width: 90vw;
+        }
+    }
 
     @media (max-width: 658px) {
         .viewing {
@@ -807,7 +818,7 @@
         }
 
         #textbooks, #notes, #stationery {
-            height: 15rem;
+            height: 16rem;
         }
 
         .displays {
@@ -848,7 +859,7 @@
         }
 
         #textbooks, #notes, #stationery {
-            height: 15.5rem;
+            height: 15.8rem;
         }
 
         .displays {
