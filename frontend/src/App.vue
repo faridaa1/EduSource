@@ -170,6 +170,7 @@
           localStorage.setItem('first_session', 'false')
           this.sign_in()
         }
+        console.log(localStorage.getItem('first_session'), !localStorage.getItem('first_session'))
       } else {
         this.authenticated = true
         useUserStore().saveUser(userData.user)
