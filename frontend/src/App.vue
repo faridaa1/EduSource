@@ -166,7 +166,10 @@
           let header: HTMLHeadingElement = document.getElementById('main-header') as HTMLHeadingElement
           header.style.gridTemplateColumns = '1fr 1fr 0fr 2fr 1fr 1fr'
         })
-        
+        if (!localStorage.getItem('first_session')) {
+          localStorage.setItem('first_session', 'false')
+          this.sign_in()
+        }
       } else {
         this.authenticated = true
         useUserStore().saveUser(userData.user)
