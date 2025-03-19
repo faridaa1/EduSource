@@ -307,7 +307,7 @@
     }
 
     /* Responsive Design */
-    @media (max-width: 1056px) {
+    @media (max-width: 1221px) {
         #recommendations, #textbooks, #notes, #stationery {
             width: 90vw;
         }
