@@ -428,6 +428,9 @@
     padding: 0.3rem;
     width: 100%;
     padding-right: 1.5rem;
+  }
+
+  #app-vue #search {
     border-bottom-right-radius: 0;
     border-top-right-radius: 0;
   }
