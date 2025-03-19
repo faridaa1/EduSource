@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-qtyaw)h1@)o=y+s7mw-@#ju8(@%1r%jm&dz5e-4=%95x+d93$@'
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -65,8 +65,6 @@ ROOT_URLCONF = 'project.urls'
 CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SAMESITE = None
 SESSION_COOKIE_SECURE = True 
-CSRF_COOKIE_SAMESITE = None
-CSRF_COOKIE_SECURE = True
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
