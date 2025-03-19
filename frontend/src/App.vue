@@ -3,7 +3,7 @@
     <div id="light">
       <!-- Defining main header/navigation of application -->
       <header id="main-header">
-        {{ csrf }}
+        i am {{ csrf }}
         <img id='logo' src="/logo-light.svg" alt="EduSource" width="125" height="125"/>
         <RouterLink :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="hide-on-mobile link">Home</RouterLink>
         <div id="profile-div" class="hide-on-mobile">
