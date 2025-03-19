@@ -427,8 +427,7 @@
     width: 100%;
     padding-right: 1.5rem;
     border-bottom-right-radius: 0;
-    border-bottom-right-radius: 0;
-
+    border-top-right-radius: 0;
   }
 
   #app-vue input:focus {
