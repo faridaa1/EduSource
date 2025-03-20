@@ -42,7 +42,7 @@ def signup(request: HttpRequest) -> HttpResponse:
                 first_name=signup_data['first_name'],
                 last_name=signup_data['last_name'],
                 phone_number=signup_data['phone_number'],
-                username=signup_data['username'],
+                username=signup_data['username'].lower(),
                 password=signup_data['password'],
                 theme_preference=signup_data['theme_preference'],
                 mode=signup_data['mode'],
