@@ -261,8 +261,8 @@
                     textarea.setCustomValidity('Cannot be empty')
                     textarea.reportValidity()
                     return
-                } else if (!textarea.value.match(/^[a-zA-Z0-9]+(( [a-zA-Z0-9]+)*(: [a-zA-Z0-9]+)*(- [a-zA-Z0-9]+)*('[a-zA-Z0-9]+)*(, [a-zA-Z0-9]+)*(\([a-zA-Z0-9]+\))*(\[[a-zA-Z0-9]+\])*("[a-zA-Z0-9]+")*)*$/)) {
-                    textarea.setCustomValidity('Incorrect format')
+                } else if (!textarea.value.match(/^\S+( \S+)*$/)) {
+                    textarea.setCustomValidity('Only one space between words')
                     textarea.reportValidity()
                     return
                 }
