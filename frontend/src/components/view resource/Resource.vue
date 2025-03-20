@@ -83,7 +83,7 @@
             <div>
                 <p id="reviews-p">Reviews</p>
             </div>
-            <Stars />
+            <Stars :allResources="allResources" />
         </div>
         <div id="my-review">
             <div id="filtering" v-if="!addingReview && !editing">
