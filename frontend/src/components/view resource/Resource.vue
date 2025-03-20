@@ -283,13 +283,13 @@
             <div v-if="error!==''">
                 <Error :message="error" @close-error="error=''" />
             </div>
-            <div v-if="image_full || video_full" id="border" @click="image_full_url='',image_full=false,video_full=false,video_full_url=''">
+            <div v-if="image_full || video_full" id="border">
                 <div class="full_media" v-if="image_full && (image_full_url!=='')">
-                    <i id="x" class="bi bi-x-lg big-x"></i>
+                    <i id="x" class="bi bi-x-lg big-x" @click="image_full_url='',image_full=false"></i>
                     <img :src="image_full_url">
                 </div>
                 <div class="full_media" v-if="video_full && (video_full_url!=='')">
-                    <i id="x" class="bi bi-x-lg big-x"></i>
+                    <i id="x" class="bi bi-x-lg big-x" @click="video_full=false,video_full_url=''"></i>
                     <video :src="video_full_url" controls></video>
                 </div>
             </div>
@@ -1276,6 +1276,17 @@
             this.fill_stars()
             this.get_all_reviews()
             this.buying_now = false
+            document.addEventListener('click', (event) => {
+                if ((event.target as HTMLDivElement).id === 'border') {
+                    if (this.image_full) {
+                        this.image_full = false
+                        this.image_full_url = ''
+                    } else {
+                        this.video_full = false
+                        this.video_full_url = ''
+                    }
+                }
+            })
         },
     })
 </script>

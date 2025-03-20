@@ -75,9 +75,9 @@
                     <img class="hoverable" :src="`${url}${resource.image1}`" alt="Image1" @click="media_clicked=`${resource.id}image1`">
                     <img class="hoverable" :src="`${url}${resource.image2}`" alt="Image2" @click="media_clicked=`${resource.id}image2`">
                     <video class="hoverable" :src="`${url}${resource.video}`" @click="media_clicked=`${resource.id}video`"></video>
-                    <div @click="media_clicked=''" class="large-media" v-if="media_clicked === `${resource.id}video`">
+                    <div class="large-media" v-if="media_clicked === `${resource.id}video`">
                         <div class="big-media" v-if="media_clicked === `${resource.id}video`">
-                            <i class="bi bi-x-lg"></i>
+                            <i class="bi bi-x-lg" @click="media_clicked=''"></i>
                             <video :src="`${url}${resource.video}`" controls @click="media_clicked=`${resource.id}video`"></video>
                         </div>
                     </div>
@@ -219,6 +219,11 @@
                 const container: HTMLDivElement = event.target as HTMLDivElement
                 if (container.id === 'view-sellers-container') {
                     this.$emit('close-view')
+                }
+                if (this.media_clicked !== '') {
+                    if ((event.target as HTMLDivElement).className === 'large-media') {
+                        this.media_clicked = ''
+                    }
                 }
             })
         }
