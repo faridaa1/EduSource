@@ -443,9 +443,8 @@
     padding-right: 1.5rem;
   }
 
-  #main-header {
-    /* background-color: red !important; */
-    /* position: fixed; */
+  #main-header i {
+    color: black;
   }
 
   #app-vue #main-header-search {
