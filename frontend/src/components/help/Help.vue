@@ -9,8 +9,8 @@
             <div class="item">
                 <div class="heading" @click="one=!one">
                     <p>How do I exchange resources?</p>
-                    <i v-if="one" class="bi bi-arrow-down-circle-fill"></i>
-                    <i v-if="!one" class="bi bi-arrow-up-circle-fill"></i>
+                    <i v-if="!one" class="bi bi-arrow-down-circle-fill"></i>
+                    <i v-if="one" class="bi bi-arrow-up-circle-fill"></i>
                 </div>
                 <div v-if="one" class="list">
                     <p>1. Search for the item</p>
@@ -22,18 +22,20 @@
             <div class="item">
                 <div class="heading" @click="two=!two">
                     <p>How do I place an order?</p>
-                    <i v-if="two" class="bi bi-arrow-down-circle-fill"></i>
-                    <i v-if="!two" class="bi bi-arrow-up-circle-fill"></i>
+                    <i v-if="!two" class="bi bi-arrow-down-circle-fill"></i>
+                    <i v-if="two" class="bi bi-arrow-up-circle-fill"></i>
                 </div>
                 <div v-if="two" id="two">
                     <div class="list">
-                        <p>1. Ensure you are in buyer mode (from settings)</p>
+                    <p>Method 1:</p>
+                    <p>1. Ensure you are in buyer mode (from settings)</p>
                         <p>2. Search for the item</p>
                         <p>3. Select the item</p>
                         <p>4. Select Buy Now</p>
                         <p>5. Select Place Order</p>
                     </div>
                     <div class="list">
+                        <p>Method 2:</p>
                         <p>1. Ensure you are in buyer mode (from settings)</p>
                         <p>2. Search for the item</p>
                         <p>3. Select the item</p>
@@ -48,8 +50,8 @@
             <div class="item">
                 <div class="heading" @click="three=!three">
                     <p>How do I list items?</p>
-                    <i v-if="three" class="bi bi-arrow-down-circle-fill"></i>
-                    <i v-if="!three" class="bi bi-arrow-up-circle-fill"></i>
+                    <i v-if="!three" class="bi bi-arrow-down-circle-fill"></i>
+                    <i v-if="three" class="bi bi-arrow-up-circle-fill"></i>
                 </div>
                 <div v-if="three" class="list">
                     <p>1. Ensure you are in seller mode (from settings)</p>
@@ -61,8 +63,8 @@
             <div class="item">
                 <div class="heading" @click="four=!four">
                     <p>How do I track on order?</p>
-                    <i v-if="four" class="bi bi-arrow-down-circle-fill"></i>
-                    <i v-if="!four" class="bi bi-arrow-up-circle-fill"></i>
+                    <i v-if="!four" class="bi bi-arrow-down-circle-fill"></i>
+                    <i v-if="four" class="bi bi-arrow-up-circle-fill"></i>
                 </div>
                 <div v-if="four" class="list">
                     <p>1. Select Profile</p>
@@ -74,8 +76,8 @@
             <div class="item">
                 <div class="heading" @click="five=!five">
                     <p>How do I start a return?</p>
-                    <i v-if="five" class="bi bi-arrow-down-circle-fill"></i>
-                    <i v-if="!five" class="bi bi-arrow-up-circle-fill"></i>
+                    <i v-if="!five" class="bi bi-arrow-down-circle-fill"></i>
+                    <i v-if="five" class="bi bi-arrow-up-circle-fill"></i>
                 </div>
                 <div v-if="five" class="list">
                     <p>1. Ensure you are in buyer mode (from settings)</p>
@@ -206,6 +208,8 @@
     #two {
         display: flex;
         gap: 4rem;
+        /* flex-direction: column;
+        gap: 1.3rem; */
     }
 
     .list {

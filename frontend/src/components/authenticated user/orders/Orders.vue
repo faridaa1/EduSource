@@ -314,6 +314,8 @@
     input {
         width: 30rem !important;
         padding: 0.5rem !important;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
     }
 
     input:focus {
