@@ -65,7 +65,8 @@ def signup(request: HttpRequest) -> HttpResponse:
                 auth.login(request, authenticated_user)
             if 'localhost' in request.build_absolute_uri():
                 return redirect('http://localhost:5173/details')
-            return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/details')
+            return redirect('https://edutest-edusource.apps.a.comp-teach.qmul.ac.uk/details')
+            # return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/details')
         return render(request, 'api/signup.html', {'signup_form' : signup_form, 'address_form' : address_form})
     return render(request, 'api/signup.html', {'signup_form' : SignupForm(), 'address_form' : AddressForm()})
 
@@ -89,10 +90,12 @@ def login(request: HttpRequest) -> HttpResponse:
                 if authenticated_user.mode == 'buyer':
                     if 'localhost' in request.build_absolute_uri():
                         return redirect('http://localhost:5173/')
-                    return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/')
+                    return redirect('https://edutest-edusource.apps.a.comp-teach.qmul.ac.uk/')
+                    # return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/')
                 if 'localhost' in request.build_absolute_uri():
                     return redirect('http://localhost:5173/listings')
-                return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/listings')
+                return redirect('https://edutest-edusource.apps.a.comp-teach.qmul.ac.uk/listings')
+                # return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/listings')
             login_form.add_error(None, 'Invalid email or password' if '@' in login_data['user'] else 'Invalid username or password')
         return render(request, 'api/login.html', {'login_form' : login_form})
     return render(request, 'api/login.html', {'login_form' : LoginForm()})
