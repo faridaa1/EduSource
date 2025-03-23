@@ -40,10 +40,9 @@
                         <p>2. Search for the item</p>
                         <p>3. Select the item</p>
                         <p>4. Add item to Cart</p>
-                        <p>5. Select Account</p>
-                        <p>6. Select Cart</p>
-                        <p>7. Select Checkout</p>
-                        <p>8. Select Place Order</p>
+                        <p>5. Select Cart</p>
+                        <p>6. Select Checkout</p>
+                        <p>7. Select Place Order</p>
                     </div>
                 </div>
             </div>

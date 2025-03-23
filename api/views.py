@@ -1118,10 +1118,9 @@ known_questions_and_answers = {
     \n2. Search for the item
     \n3. Select the item
     \n4. Add item to Cart
-    \n5. Select Account
-    \n6. Select Cart
-    \n7. Select Checkout
-    \n8. Select Place Order
+    \n5. Select Cart
+    \n6. Select Checkout
+    \n7. Select Place Order
     \nI hope that helps.''',
     'How do I exchange resources?' : '''1. Search for the Item
     \n2. Select the item

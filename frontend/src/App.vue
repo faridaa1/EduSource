@@ -13,7 +13,6 @@
                 <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='buyer'">Orders</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/exchanges" v-if="has_resources()">Exchanges</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/messages">Messages</RouterLink>
-                <RouterLink class="profile-item border-bottom" to="/cart">Cart</RouterLink>
                 <RouterLink class="profile-item rounded-bottom" to="/wishlist" v-if="user.mode==='buyer'">Wishlist</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/wishlist" v-if="user.mode==='seller'">Wishlist</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='seller'">Placed Orders</RouterLink>
@@ -34,6 +33,7 @@
           <button @click="conduct_search()"><i class="bi bi-search"></i></button>
         </div>
         <RouterLink to="/help" class="hide-on-mobile link">Help</RouterLink>
+        <RouterLink class="hide-on-mobile link" to="/cart" v-if="Object.keys(user).length > 0">Cart</RouterLink>
         <RouterLink to="/settings" class="hide-on-mobile link" v-if="Object.keys(user).length > 0">Settings</RouterLink>
         <p v-if="authenticated" class="hide-on-mobile link sign" @click="sign_out"> Sign out </p>
         <p v-if="!authenticated" @click="sign_in" class="hide-on-mobile link sign"> Sign in</p>
@@ -51,7 +51,6 @@
                 <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='buyer'">Orders</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/exchanges" v-if="has_resources()">Exchanges</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/messages">Messages</RouterLink>
-                <RouterLink class="profile-item border-bottom" to="/cart">Cart</RouterLink>
                 <RouterLink class="profile-item rounded-bottom" to="/wishlist" v-if="user.mode==='buyer'">Wishlist</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/wishlist" v-if="user.mode==='seller'">Wishlist</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='seller'">Placed Orders</RouterLink>
@@ -59,10 +58,11 @@
             </div>
           </transition>
           </div>
-          <RouterLink to="/help" id="item3" class="show-mobile">Help</RouterLink>
-          <RouterLink v-if="authenticated" to="/settings" id="item4" class="show-mobile">Settings</RouterLink>
-          <p id="item5" v-if="authenticated" class="link sign" @click="sign_out"> Sign out </p>
-          <p id="item5" v-if="!authenticated" @click="sign_in" class="link sign"> Sign in</p>
+          <RouterLink id="item3" class="hide-on-mobile link" to="/cart" v-if="Object.keys(user).length > 0">Cart</RouterLink>
+          <RouterLink to="/help" id="item4" class="show-mobile">Help</RouterLink>
+          <RouterLink v-if="authenticated" to="/settings" id="item5" class="show-mobile">Settings</RouterLink>
+          <p id="item6" v-if="authenticated" class="link sign" @click="sign_out"> Sign out </p>
+          <p id="item6" v-if="!authenticated" @click="sign_in" class="link sign"> Sign in</p>
         </div>
       </transition>
       <RouterView />
@@ -381,7 +381,7 @@
   #app-vue header {
     padding: 0.5rem;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 2fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 2fr 1fr 1fr 1fr 1fr;
     place-items: center;
     padding-top: 0.8rem;
     background-color: #0DCAF0;
@@ -520,7 +520,7 @@
 
 
   /* Responsive Design */
-  @media (max-width: 871px) {
+  @media (max-width: 1000px) {
     #hamburger {
       position: absolute;
       top: 0;
@@ -540,7 +540,7 @@
     }
 
     #app-vue header {
-      grid-template-columns: 1fr 2fr 1fr!important;
+      grid-template-columns: 1fr 2fr 1fr !important;
     }
 
     .hide-on-mobile {
@@ -553,6 +553,8 @@
       background-color: transparent;
       border: none;
       font-size: 1.5rem;
+      margin-left: auto;
+      margin-right: 1rem;
     }
 
     #show-on-mobile i {
@@ -567,7 +569,7 @@
       color: white;
     }
 
-    #item1, #item2, #item3, #item4, #item5 {
+    #item1, #item2, #item3, #item4, #item5, #item6 {
       display: block;
       width: 6rem;
       text-align: center;
@@ -577,19 +579,19 @@
       background-color: #D9D9D9;
     }
 
-    #item1, #item2, #item3, #item4 {
+    #item1, #item2, #item3, #item4, #item5 {
       border-bottom: 0.1rem solid white;
     }
 
-    #dark #item1, #dark #item2, #dark #item3, #dark #item4, #dark #item5 {
+    #dark #item1, #dark #item2, #dark #item3, #dark #item4, #dark #item5, #dark #item6 {
       border-bottom: 0.1rem solid darkgray;
     }
 
-    #item1:hover, #item2:hover, #item3:hover, #item4:hover, #item5:hover {
+    #item1:hover, #item2:hover, #item3:hover, #item4:hover, #item5:hover, #item6:hover {
       background-color: #0DCAF0;
     }
 
-    #item5 {
+    #item6 {
       border-bottom-right-radius: 0.5rem;
       border-bottom-left-radius: 0.5rem;
     }
@@ -622,10 +624,15 @@
       grid-column: 3;
       grid-row: 5;
     }
+
+    #item6 {
+      grid-column: 3;
+      grid-row: 6;
+    }
   }
 
   /* Responsive Design */
-  @media (min-width: 1110px) {
+  @media (min-width: 1295px) {
     #app-vue input {
       width: 30rem;
     }

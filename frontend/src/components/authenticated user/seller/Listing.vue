@@ -97,9 +97,9 @@
             <div v-if="type !== 'Stationery'" class="form-item" id="pages-container">
                 <label>Page Range <span class="required">*</span></label>
                 <div>
-                <input required type="number" min="1" max="9999" step="1" v-model="page_start">
+                <input required type="number" min="1" max="9999" step="1" v-model="page_start" :disabled="exists_resource">
                 <p>to</p>
-                <input required type="number" :min="page_start" max="9999" step="1" v-model="page_end">
+                <input required type="number" :min="page_start" max="9999" step="1" v-model="page_end" :disabled="exists_resource">
                 </div>
             </div>
             <div class="form-item" id="subject-container">
@@ -118,7 +118,7 @@
             </div>
             <div class="form-item" id="colour-container">
                 <label>Colour <span class="required">*</span></label>
-                <select id="colour" v-model="colour">
+                <select id="colour" v-model="colour" :disabled="exists_resource">
                     <option value="Black">Black</option>
                     <option value="Red">Red</option>
                     <option value="Yellow">Yellow</option>
@@ -816,6 +816,9 @@
                     this.weight = new_existing_resource.weight
                     this.weight_unit = new_existing_resource.weight_unit
                     this.subject = new_existing_resource.subject
+                    this.page_start = new_existing_resource.page_start
+                    this.type = new_existing_resource.type
+                    this.page_end = new_existing_resource.page_end
                     this.colour = new_existing_resource.colour
                 }
             }
