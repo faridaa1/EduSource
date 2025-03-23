@@ -218,8 +218,9 @@
     #buyer-home {
         display: grid;
         grid-template-areas: "recommendations" "textbooks" "notes" "stationery";
-        height: 89vh;
-        width: 98vw;
+        height: 90vh;
+        box-sizing: border-box;
+        width: 100vw;
         margin-top: 1.5rem;
         margin-bottom: 1.5rem;
         overflow-y: auto;
