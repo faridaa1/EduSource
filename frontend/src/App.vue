@@ -443,7 +443,12 @@
     padding-right: 1.5rem;
   }
 
-  #app-vue #search {
+  #main-header {
+    /* background-color: red !important; */
+    /* position: fixed; */
+  }
+
+  #app-vue #main-header-search {
     border-bottom-right-radius: 0;
     border-top-right-radius: 0;
   }
