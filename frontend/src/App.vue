@@ -102,7 +102,6 @@
       } else {
         useURLStore().saveURL('deploy')
       }
-      this.toggle_theme()
       window.addEventListener('resize', () => {
         this.clicked_profile = false;
         this.clicked_profile_mobile = false;
@@ -194,6 +193,7 @@
         let resources: Resource[] = await getResourcesStore.json()
         useResourcesStore().saveResources(resources)
         this.complete = true
+        this.toggle_theme()
     },
     computed: {
       csrf(): string {
@@ -235,18 +235,30 @@
       },
       toggle_theme(): void {
         // Update theme to match user preference
-        if (Object.keys(this.user).length === 0) return
         nextTick(() => {
           const div = document.getElementById('app-vue')
+          console.log('hii', div)
           if (div) {
-            const theme = div.firstElementChild
+          const theme = div.firstElementChild
+            console.log('should be')
             if (theme) {
-                theme.id = this.user.theme_preference
-                document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
-                const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
-                if (logo) {
-                    logo.src = theme.id === 'light' ? this.url.includes('localhost') ? '/logo-light.svg' : '/static/api/logo-light.svg' : this.url.includes('localhost') ? '/logo-dark.svg' : '/static/api/logo-dark.svg'
-                }
+              if (this.authenticated) {
+                  theme.id = this.user.theme_preference 
+              } else {
+                  const theme_local = localStorage.getItem('theme')
+                  if (theme_local) {
+                      theme.id = theme_local
+                  } else {
+                      localStorage.setItem('theme', 'light')
+                      theme.id = 'light'
+                  }
+              }
+              console.log('her')
+              document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
+              const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
+              if (logo) {
+                  logo.src = theme.id === 'light' ? this.url.includes('localhost') ? '/logo-light.svg' : '/static/api/logo-light.svg' : this.url.includes('localhost') ? '/logo-dark.svg' : '/static/api/logo-dark.svg'
+              }
             }
           }
         })

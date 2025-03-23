@@ -1,5 +1,5 @@
 <template>
-    <div id="settings-container" v-if="Object.keys(user).length > 0">
+    <div id="settings-container">
         <p id="settings-header">Settings</p>
         <div id="settings">
             <div id="theme" class="setting">
@@ -17,7 +17,7 @@
                     </option>
                 </select>
             </div>
-            <div id="mode" class="setting">
+            <div id="mode" class="setting" v-if="authenticated">
                 <label>Mode</label>
                 <select id="currency-dropdown" v-model="mode_setting" @change="update_setting('mode', mode_setting)">
                     <option v-for="mode in ['buyer', 'seller']" :key="mode" :value="mode">
@@ -28,9 +28,6 @@
         </div>
         <Error v-if="error" message="Please try updating the setting again." @close-error="error=false" />
     </div>
-    <div v-else>
-        <Loading />
-    </div>
   </template>
   
   <script lang="ts">
@@ -38,24 +35,25 @@
     import { useUserStore } from '@/stores/user';
     import type { User } from '@/types';
     import { useUsersStore } from '@/stores/users';
-    import Loading from '@/components/user experience/loading/Loading.vue';
     import Error from '@/components/user experience/error/Error.vue';
     import { useURLStore } from '@/stores/url';
     export default defineComponent({
-      components: { Loading, Error },
-      data(): { currency_setting: string, mode_setting: string, error: boolean } { return {
+      components: { Error },
+      data(): { currency_setting: string, mode_setting: string, error: boolean, authenticated: boolean } { return {
           currency_setting : 'GBP',
           mode_setting: 'buyer',
           error: false,
+          authenticated: false,
         }
       },
       mounted(): void {
         // Initialising with user preferences
         this.currency_setting = this.user.currency
         this.mode_setting = this.user.mode
-        if (Object.keys(this.user).length === 0) {
-            // Return unauthorised user home
-            window.location.href = '/'
+        if (Object.keys(this.user).length > 0) {
+            this.authenticated = true
+        } else {
+            this.toggle_theme('mounted')
         }
       },
       computed: {
@@ -100,9 +98,30 @@
                 const theme = div.firstElementChild
                 if (theme) {
                     if (called_by === 'mounted') {
-                        theme.id = useUserStore().user.theme_preference
+                        if (this.authenticated) {
+                            theme.id = useUserStore().user.theme_preference 
+                        } else {
+                            const theme_local = localStorage.getItem('theme')
+                            if (theme_local) {
+                                theme.id = theme_local
+                            } else {
+                                localStorage.setItem('theme', 'light')
+                                theme.id = 'light'
+                            }
+                        }
                     } else {
-                        theme.id = theme.id === 'light' ? 'dark' : 'light'
+                        if (this.authenticated) {
+                            theme.id = theme.id === 'light' ? 'dark' : 'light'
+                        } else {
+                            const theme_local = localStorage.getItem('theme')
+                            if (theme_local) {
+                                theme.id = theme_local === 'light' ? 'dark' : 'light'
+                                localStorage.setItem('theme', theme.id)
+                            } else {
+                                localStorage.setItem('theme', 'light')
+                                theme.id = 'light'
+                            }
+                        }
                     }
                     document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
                     const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
@@ -110,7 +129,9 @@
                         logo.src = theme.id === 'light' ? this.url.includes('localhost') ? '/logo-light.svg' : '/static/api/logo-light.svg' : this.url.includes('localhost') ? '/logo-dark.svg' : '/static/api/logo-dark.svg'
                     }
                     if (called_by === 'mounted') return
-                    this.update_setting('theme', theme.id)
+                    if (this.authenticated) {
+                        this.update_setting('theme', theme.id)
+                    } 
                 }
             }
             },
