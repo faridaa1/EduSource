@@ -118,22 +118,9 @@ class LoginForm(ModelForm):
     def clean_user(self) -> ValidationError | str:
         """Handling username validation"""
         username: str = self.cleaned_data['user']
-        if '@' in username:
-            """Handle like email"""    
-            validate_email(username)
-        else:
-            """Handle like username"""  
-            if not re.match(r"^[a-zA-Z0-9]+$", username):
-                if re.search(r"\s", username):
-                    raise ValidationError('Username cannot contain spaces')
-                raise ValidationError('Username cannot contain special characters')
         return username
 
     def clean_password(self) -> ValidationError | str:
         """Handling password validation"""
         password: str = self.cleaned_data['password']
-        if re.search(r"\s", password):
-            raise ValidationError('Password cannot contain spaces')
-        if len(password) < 8 or len(password) > 15:
-            raise ValidationError('Password must be between 8 to 15 characters long')
         return password
