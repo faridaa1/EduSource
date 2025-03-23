@@ -29,11 +29,11 @@
                 <div class="item" id="images">
                     <div class="data header"></div>
                     <div class="data image">
-                        <img class="img" v-if="Object.keys(resource1).length > 0" :src="`${url}${resource1.image1}`">
+                        <img class="img" v-if="Object.keys(resource1).length > 0" :src="`${url}${resource1.image1}`" @click="view(resource1.id)">
                         <div v-else class="img"><i class="bi bi-file-image"></i></div>
                     </div>
                     <div class="data image">
-                        <img class="img" v-if="Object.keys(resource2).length > 0" :src="`${url}${resource2.image1}`">
+                        <img class="img" v-if="Object.keys(resource2).length > 0" :src="`${url}${resource2.image1}`" @click="view(resource2.id)">
                         <div v-else class="img"><i class="bi bi-file-image"></i></div>
                     </div>
                 </div>
@@ -295,6 +295,9 @@
             }
         },
         methods: {
+            view(id: number): void {
+                window.location.href = `/view/${id}`
+            },
             back(): void {
                 // Take user to search page
                 window.location.href = `/search/${this.search_value}`
@@ -481,6 +484,10 @@
         border-radius: 0.5rem;
         width: 7rem;
         object-fit: contain;
+    }
+
+    img:hover {
+        cursor: pointer;
     }
 
     #images i {
