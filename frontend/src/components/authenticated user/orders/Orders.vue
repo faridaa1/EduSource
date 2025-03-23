@@ -186,7 +186,6 @@
                     if (!res) return 0
                     total += (resource.number * res.price)
                 }
-                console.log(total)
                 return total
             },
             async listedprice(resource: Resource): Promise<number> {
@@ -201,7 +200,6 @@
                 })
                 if (!convertedPrice.ok) return resource.price
                 let returnedPrice: {new_price: number} = await convertedPrice.json()
-                console.log(returnedPrice)
                 return parseFloat(returnedPrice.new_price.toString().replace('£', '').replace('$','').replace('€',''))
             }
         },

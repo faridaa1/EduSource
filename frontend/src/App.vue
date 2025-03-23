@@ -21,7 +21,7 @@
           </transition>
         </div>
         <div id="search-div">
-          <input id="search" @click="semantic_search" @input="semantic_search" @keydown.enter="conduct_search()" type="text" placeholder="Search">
+          <input id="main-header-search" @click="semantic_search" @input="semantic_search" @keydown.enter="conduct_search()" type="text" placeholder="Search">
           <div id="clear-search">
             <i v-if="searching" class="bi bi-x-lg" @click="clear_search"></i>
           </div>
@@ -34,7 +34,7 @@
         </div>
         <RouterLink to="/help" class="hide-on-mobile link">Help</RouterLink>
         <RouterLink class="hide-on-mobile link" to="/cart" v-if="Object.keys(user).length > 0">Cart</RouterLink>
-        <RouterLink to="/settings" class="hide-on-mobile link" v-if="Object.keys(user).length > 0">Settings</RouterLink>
+        <RouterLink to="/settings" class="hide-on-mobile link">Settings</RouterLink>
         <p v-if="authenticated" class="hide-on-mobile link sign" @click="sign_out"> Sign out </p>
         <p v-if="!authenticated" @click="sign_in" class="hide-on-mobile link sign"> Sign in</p>
         <button id="show-on-mobile" @click="mobile_menu=true"><i class="bi bi-list"></i></button>
@@ -58,9 +58,9 @@
             </div>
           </transition>
           </div>
-          <RouterLink id="item3" class="hide-on-mobile link" to="/cart" v-if="Object.keys(user).length > 0">Cart</RouterLink>
+          <RouterLink id="item3" class="show-mobile link" to="/cart" v-if="authenticated">Cart</RouterLink>
           <RouterLink to="/help" id="item4" class="show-mobile">Help</RouterLink>
-          <RouterLink v-if="authenticated" to="/settings" id="item5" class="show-mobile">Settings</RouterLink>
+          <RouterLink to="/settings" id="item5" class="show-mobile">Settings</RouterLink>
           <p id="item6" v-if="authenticated" class="link sign" @click="sign_out"> Sign out </p>
           <p id="item6" v-if="!authenticated" @click="sign_in" class="link sign"> Sign in</p>
         </div>
@@ -168,13 +168,12 @@
         // Updating styling if user is logged out (there are less menu options available so the design should change appropriately)
         nextTick(() => {
           let header: HTMLHeadingElement = document.getElementById('main-header') as HTMLHeadingElement
-          header.style.gridTemplateColumns = '1fr 1fr 0fr 2fr 1fr 1fr'
+          header.style.gridTemplateColumns = '1fr 1fr 0fr 2fr 1fr 1fr 1fr'
         })
         if (!localStorage.getItem('first_session')) {
           localStorage.setItem('first_session', 'false')
           this.sign_in()
         }
-        console.log(localStorage.getItem('first_session'), !localStorage.getItem('first_session'))
       } else {
         this.authenticated = true
         useUserStore().saveUser(userData.user)
@@ -228,7 +227,7 @@
         this.clicked_profile_mobile = !this.clicked_profile_mobile
       },
       clear_search(): void {
-        const search: HTMLInputElement = document.getElementById('search') as HTMLInputElement
+        const search: HTMLInputElement = document.getElementById('main-header-search') as HTMLInputElement
         if (search) {
           search.value = ''
         }
@@ -258,7 +257,7 @@
         if (resource) {
           window.location.href = `/search/${resource.name}`
         } else {
-          const search: HTMLInputElement = document.getElementById('search') as HTMLInputElement
+          const search: HTMLInputElement = document.getElementById('main-header-search') as HTMLInputElement
           if (search) {
             window.location.href = `/search/${search.value}`
           }
@@ -266,7 +265,7 @@
       },
       async semantic_search(): Promise<void> {
         // Conduct semantic search to autocomplete search
-        const search: HTMLInputElement = document.getElementById('search') as HTMLInputElement
+        const search: HTMLInputElement = document.getElementById('main-header-search') as HTMLInputElement
         if (!search || search.value === '') {
           this.searching = false
           this.search_results = []
@@ -518,9 +517,34 @@
     z-index: 4;
   }
 
-
   /* Responsive Design */
-  @media (max-width: 1000px) {
+  #main-header-search {
+    width: 40rem !important;
+  }
+  
+  #app-vue #search-results {
+    width: 41.2rem !important;
+  }
+
+  @media (max-width: 1456px) {
+    #main-header-search {
+      width: 30rem !important;
+    }
+    #app-vue #search-results {
+      width: 31.2rem !important;
+    }
+  }
+
+  @media (max-width: 1205px) {
+    #main-header-search {
+      width: 25rem !important;
+    }
+    #app-vue #search-results {
+      width: 26.2rem !important;
+    }
+  }
+
+  @media (max-width: 1083px) {
     #hamburger {
       position: absolute;
       top: 0;
@@ -540,7 +564,12 @@
     }
 
     #app-vue header {
-      grid-template-columns: 1fr 2fr 1fr !important;
+      grid-template-columns: 1fr 2fr 0.5fr !important;
+      position: relative;
+      display: grid;
+      place-items: center;
+      padding-top: 0.8rem;
+      padding-bottom: 0.8rem;
     }
 
     .hide-on-mobile {
@@ -629,46 +658,66 @@
       grid-column: 3;
       grid-row: 6;
     }
-  }
 
-  /* Responsive Design */
-  @media (min-width: 1295px) {
-    #app-vue input {
-      width: 30rem;
+    #main-header-search {
+      width: 35rem !important;
     }
-
+    
     #app-vue #search-results {
-      width: 31.2rem;
+      width: 36.2rem !important;
     }
   }
 
-  @media (min-width: 1667px) {
-    #app-vue input {
-      width: 40rem;
+  @media (max-width: 800px) {
+    #main-header-search {
+      width: 32rem !important;
     }
     #app-vue #search-results {
-      width: 41.2rem;
+      width: 33.2rem !important;
     }
   }
 
-  @media (max-width: 654px) {
-    #app-vue header {
-      position: relative;
-      display: grid;
-      grid-template-columns: 1fr 2fr 1fr;
-      place-items: center;
-      padding-top: 0.8rem;
-      padding-bottom: 0.8rem;
+  @media (max-width: 748px) {
+    #main-header-search {
+      width: 30rem !important;
     }
+    #app-vue #search-results {
+      width: 31.2rem !important;
+    }
+  }
 
-    #app-vue .show-mobile {
-      display: block;
-      right: 0;
+  @media (max-width: 716px) {
+    #main-header-search {
+      width: 20rem !important;
     }
+    #app-vue #search-results {
+      width: 26.2rem !important;
+    }
+  }
 
-    #app-vue #dark .show-mobile {
-      color: black;
+  @media (max-width: 615px) {
+    #main-header-search {
+      width: 15rem !important;
     }
+    #app-vue #search-results {
+      width: 16.2rem !important;
+    }
+  }
+
+  @media (max-width: 496px) {
+    #show-on-mobile {
+      margin-right: 0.5rem;
+    }
+    #main-header-search {
+      width: 100% !important;
+    }
+    #app-vue #search-results {
+      width: 85% !important;
+    }
+  }
+
+  #app-vue #dark .show-mobile {
+    color: black !important;
   }
 
   ::-webkit-scrollbar {
