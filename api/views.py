@@ -808,7 +808,7 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
 
         # use first 8 search results
         reduced_search_dict = sorted_search_dict[0:min(8,len(sorted_search_dict))]
-        keys: list = [pair[0] for pair in reduced_search_dict if pair[1] >= 0.1]
+        keys: list = [pair[0] for pair in reduced_search_dict if pair[1] >= 0.2]
         resources: list = []
 
         # using iteration to preserve order of resources
@@ -831,7 +831,7 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
                 user.search_history = SearchHistory.objects.create(user=user)
                 user.save()
             for search_item in user.search_history.search_item.all():
-                if search_item.search.lower()==search.lower():
+                if search_item.search.lower() == search.lower():
                     contains_search = True
                     break
             if not contains_search:
@@ -849,8 +849,8 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
         list_similarity_matrix = similarity_matrix.tolist()[0]
         search_dict = dict(zip(dataset_resources, list_similarity_matrix))
         sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
-
-        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.2]
+        print(sorted_search_dict)
+        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.4]
         resources: list = []
         # using iteration to preserve order of resources
         for key in keys:

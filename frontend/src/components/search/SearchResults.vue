@@ -1546,7 +1546,6 @@
     select {
         padding: 0.4rem;
         border-radius: 0.5rem;
-        background-color: #d9d9d9;
         border: none;
     }
 

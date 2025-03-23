@@ -54,7 +54,7 @@
                     </div>
                     <div class="data-item">
                         <label>Estimated Delivery</label>
-                        <p>{{ parseFloat(resource.estimated_delivery_time.toString()) }} {{ resource.estimated_delivery_units }}</p>
+                        <p>{{ parseFloat(resource.estimated_delivery_time.toString()) }} {{ resource.estimated_delivery_units }}{{ parseFloat(resource.estimated_delivery_time.toString()) !== 1 ? 's' : '' }}</p>
                     </div>
                     <div class="data-item">
                         <label>Delivery Options</label>
