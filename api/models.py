@@ -41,8 +41,8 @@ class Wishlist(models.Model):
 class User(AbstractUser):
     """Defining attrbiutes and methods for User model"""
     email = models.EmailField(unique=True, null=False, blank=False)
-    first_name = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z ]+$', message='No special characters allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
-    last_name = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z ]+$', message='No special characters allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
+    first_name = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z ]+$', message='Only letters are allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
+    last_name = models.CharField(max_length=150, null=False, blank=False, validators=[RegexValidator(r'^[a-zA-Z ]+$', message='Only letters are allowed'), RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
     phone_number = models.CharField(max_length=11 ,unique=True, null=False, blank=False, validators=[RegexValidator(r'^07(\d{8,9})$', message='Must be 10 or 11 digit number starting with 07')])
     rating = models.DecimalField(null=False, blank=True, default=0.0, max_digits=2, decimal_places=1, validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
     description = models.TextField(null=False, blank=True, validators=[RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
