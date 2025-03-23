@@ -40,7 +40,7 @@
                         <p>2. Search for the item</p>
                         <p>3. Select the item</p>
                         <p>4. Add item to Cart</p>
-                        <p>5. Select Profile</p>
+                        <p>5. Select Account</p>
                         <p>6. Select Cart</p>
                         <p>7. Select Checkout</p>
                         <p>8. Select Place Order</p>
@@ -55,7 +55,7 @@
                 </div>
                 <div v-if="three" class="list">
                     <p>1. Ensure you are in seller mode (from settings)</p>
-                    <p>2. Select Profile</p>
+                    <p>2. Select Account</p>
                     <p>3. Select Listings</p>
                     <p>4. Select the + within the listing container</p>
                 </div>
@@ -67,7 +67,7 @@
                     <i v-if="four" class="bi bi-arrow-up-circle-fill"></i>
                 </div>
                 <div v-if="four" class="list">
-                    <p>1. Select Profile</p>
+                    <p>1. Select Account</p>
                     <p>2. Select Orders</p>
                     <p>3. Select Order</p>
                     <p>4. View Order Status</p>
@@ -81,7 +81,7 @@
                 </div>
                 <div v-if="five" class="list">
                     <p>1. Ensure you are in buyer mode (from settings)</p>
-                    <p>2. Select Profile</p>
+                    <p>2. Select Account</p>
                     <p>3. Select Orders</p>
                     <p>4. Select Order</p>
                     <p>5. Select Start Return</p>

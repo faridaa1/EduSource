@@ -1118,7 +1118,7 @@ known_questions_and_answers = {
     \n2. Search for the item
     \n3. Select the item
     \n4. Add item to Cart
-    \n5. Select Profile
+    \n5. Select Account
     \n6. Select Cart
     \n7. Select Checkout
     \n8. Select Place Order
@@ -1130,19 +1130,19 @@ known_questions_and_answers = {
     \nI hope that helps.''',
     'How do I list items' : '''
     1. Ensure you are in seller mode (from settings)
-    \n2. Select Profile
+    \n2. Select Account
     \n3. Select Listings
     \n4. Select the + within the listing container
     \nI hope that helps''',
     'How do I track an order?' : '''
-    1. Select Profile
+    1. Select Account
     \n2. Select Orders
     \n3. Select Order
     \n4. View Order Status
     \nI hope that helps''',
     'How do I start a return?' : '''    
     1. Ensure you are in buyer mode (from settings)
-    \n2. Select Profile
+    \n2. Select Account
     \n3. Select Orders
     \n4. Select Order
     \n5. Select Start Return
@@ -1190,7 +1190,7 @@ def chatbot(request: HttpRequest, user: int) -> JsonResponse:
                     return JsonResponse('This order does not belong to you, so I cannot provide details.', safe=False)
                 return JsonResponse(order.status, safe=False)
             except:
-                return JsonResponse('Sorry, I do not recogise that order number.\nEnter a whole integer which you can see in Profile -> Orders', safe=False)
+                return JsonResponse('Sorry, I do not recogise that order number.\nEnter a whole integer which you can see in Account -> Orders', safe=False)
         elif sorted_search_dict[0][0] == 'Provide me with personalised recommendations':
             # returning personalised recommendations
             if user == '-1':

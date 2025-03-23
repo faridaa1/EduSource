@@ -24,11 +24,11 @@
                         <option value="Placed">Placed</option>
                         <option value="Processing">Processing</option>
                         <option value="Dispatched">Dispatched</option>
-                        <option value="Cancelled">Cancelled</option>
                         <option value="Complete">Complete</option>
                         <option value="Return Started">Return Started</option>
                         <option value="Return Received">Return Received</option>
                         <option value="Refunded">Refunded</option>
+                        <option value="Cancelled">Cancelled</option>
                     </select>
                 </div>
             </div>
@@ -43,6 +43,7 @@
                     </div>
                     <div class="details">
                         <p :id="order.id.toString()">Order Number {{ order.id }}</p>
+                        <p id="status"> Total: {{ currency }}{{ order_total_number(order).toFixed(2) }}</p>
                         <p id="status"> Status: {{ order.status }}</p>
                         <p id="view-details">View Details</p>
                     </div>
@@ -170,15 +171,44 @@
                 window.location.href = `/${this.mode === 'buyer' ? 'order' : 'sold-order'}/${id}/${this.status}/${this.order}/${this.current_page}`
             },
             order_total(order: Order): number {
-                // Calculate order total
+                // Calculate total number of items
                 let total = 0
                 for (let resource of order.resources) {
                     total += resource.number
                 }
                 return total
+            },
+            order_total_number(order: Order): number {
+                // Calculate order total
+                let total = 0
+                for (let resource of order.resources) {
+                    const res: Resource | undefined = this.allResources.find(res => res.id === resource.resource)
+                    if (!res) return 0
+                    total += (resource.number * res.price)
+                }
+                console.log(total)
+                return total
+            },
+            async listedprice(resource: Resource): Promise<number> {
+                // Performing currency conversion
+                if (resource === undefined) return 0
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken' : useUserStore().csrf
+                    }
+                })
+                if (!convertedPrice.ok) return resource.price
+                let returnedPrice: {new_price: number} = await convertedPrice.json()
+                console.log(returnedPrice)
+                return parseFloat(returnedPrice.new_price.toString().replace('£', '').replace('$','').replace('€',''))
             }
         },
         computed: {
+            currency(): string {
+                return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
+            },
             url(): string {
                 return useURLStore().url
             },
@@ -186,9 +216,9 @@
                 // Filter orders
                 let temp_orders;
                 if (this.mode === 'buyer') {
-                    temp_orders = this.searched_items.length > 0 ? this.searched_items.filter(order => this.status === 'all' || order.status === this.status) : this.user.placed_orders.filter(order => this.status === 'all' || order.status === this.status)
+                    temp_orders = this.searched_items.length > 0 ? this.searched_items.filter(order => (this.status === 'all' && order.status !== 'Cancelled') || order.status === this.status) : this.user.placed_orders.filter(order => (this.status === 'all' && order.status !== 'Cancelled') || order.status === this.status)
                 } else {
-                    temp_orders = this.searched_items.length > 0 ? this.searched_items.filter(order => this.status === 'all' || order.status === this.status) : this.user.sold_orders.filter(order => this.status === 'all' || order.status === this.status)
+                    temp_orders = this.searched_items.length > 0 ? this.searched_items.filter(order => (this.status === 'all' && order.status !== 'Cancelled') || order.status === this.status) : this.user.sold_orders.filter(order => (this.status === 'all' && order.status !== 'Cancelled') || order.status === this.status)
                 }
                 this.total_pages = Math.ceil(temp_orders.length/10)
                 return temp_orders.sort((a,b) => {return this.order === 'new' ? b.id-a.id : a.id-b.id})
@@ -230,7 +260,10 @@
                 this.current_page = 1
             }
         },
-        mounted(): void {
+        async mounted(): Promise<void> {
+            for (const resource of this.allResources) {
+                resource.price = await this.listedprice(resource)
+            }
             if (Object.keys(this.user).length === 0) {
                 // Return unauthorised user home
                 window.location.href = '/'
