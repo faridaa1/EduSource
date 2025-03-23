@@ -21,7 +21,7 @@
             <div id="password-item">
                 <div id="passwords">
                     <div class="form-item">
-                        <label>Password</label>
+                        <label>Current Password</label>
                         <div class="button-container">
                             <input id="pass" type="password" placeholder="••••••••••" autocomplete="current-password" v-model="password" @input="validate_password(false)">
                             <button type="button" class="edit see" v-if="editingPassword && !show_pass" @click="toggle_password('password', true)"><i class="bi bi-eye"></i></button>

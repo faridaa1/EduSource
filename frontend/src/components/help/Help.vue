@@ -207,9 +207,9 @@
 
     #two {
         display: flex;
-        gap: 4rem;
-        /* flex-direction: column;
-        gap: 1.3rem; */
+        /* gap: 4rem; */
+        flex-direction: column;
+        gap: 1.3rem;
     }
 
     .list {
