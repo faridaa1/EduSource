@@ -48,12 +48,18 @@
       },
       mounted(): void {
         // Initialising with user preferences
-        this.currency_setting = this.user.currency
-        this.mode_setting = this.user.mode
         if (Object.keys(this.user).length > 0) {
             this.authenticated = true
+            this.mode_setting = this.user.mode
+            this.currency_setting = this.user.currency
         } else {
             this.toggle_theme('mounted')
+            const currency = localStorage.getItem('currency')
+            if (currency) {
+                this.currency_setting = currency
+            } else {
+                localStorage.setItem('currency', 'GBP')
+            }
         }
       },
       computed: {
@@ -73,6 +79,15 @@
       },
       methods: {
         async update_setting(called_by: string, data: string): Promise<void> {
+            if (!this.authenticated) {
+                const currency = localStorage.getItem('currency')
+                if (currency) {
+                    localStorage.setItem('currency', data)
+                } else {
+                    localStorage.setItem('currency', data)
+                }
+                return
+            }
             // Update setting
             let updateResponse: Response = await fetch(`${useURLStore().url}/api/user/${this.user.id}/${called_by}/`, {
                 method: 'PUT',

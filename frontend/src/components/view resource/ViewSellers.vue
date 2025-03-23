@@ -34,7 +34,7 @@
                     </div>
                     <div class="data-item">
                         <label>Price</label>
-                        <p>{{ Object.keys(user).length === 0 ? unauth_currency(resource as Resource) : '' }}{{ resource.price }}</p>
+                        <p>{{ resource.price }}</p>
                     </div>
                     <div class="data-item">
                         <label>Condition</label>
@@ -132,9 +132,6 @@
                 // Allow user to view seller profile
                 window.location.href = this.user.id === seller_id ? '/listings' : `/seller/${this.users.find(user => user.id === seller_id)?.username}`
             },
-            unauth_currency(resource: Resource): string {
-                return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
-            },
             to_date(date: string): string {
                 // Convert listing date 
                 const full_date: Date = new Date(date) 
@@ -157,10 +154,19 @@
                 return `${day} ${month} ${year}`
             },
             async listedprice(resource: Resource): Promise<number> {
-                if (Object.keys(this.user).length === 0) return resource.price
                 if (resource === undefined) return 0
+                let currency: string;
+                if (Object.keys(this.user).length === 0) {
+                    // if user is unauthenticated
+                    if (!localStorage.getItem('currency')) {
+                        localStorage.setItem('currency', 'GBP')
+                    } 
+                    currency = localStorage.getItem('currency') as string
+                } else {
+                    currency = this.user.currency
+                }
                 // Perform currency conversion
-                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {

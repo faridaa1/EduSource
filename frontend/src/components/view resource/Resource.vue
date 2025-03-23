@@ -6,7 +6,7 @@
         <div id="resource">
             <img id="resource-image" :src="`${url}/${(resource as Resource).image1}`" :alt="`${(resource as Resource).type}`">
             <div id="resource-price-and-rating">
-                <div>{{ Object.keys(user).length === 0 ? unauth_currency(resource as Resource) : '' }}{{ (resource as Resource).price }}</div>
+                <div>{{ (resource as Resource).price }}</div>
                 <div id="rating" @click="scrollReviewsIntoView()">
                     <i id="one" class="bi bi-star-fill"></i>
                     <i id="two" class="bi bi-star-fill"></i>
@@ -464,9 +464,6 @@
                     }
                 })
             },
-            unauth_currency(resource: Resource): string {
-                return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
-            },
             async edit_wishlist(): Promise<void> {
                 // User can add or remove resource from wishlist
                 if (this.cart_resource.number !== 0) {
@@ -860,8 +857,17 @@
             async listedprice(resource: Resource): Promise<number> {
                 // Performing currency conversion
                 if (resource === undefined) return 0
-                if (Object.keys(this.user).length === 0) return resource.price
-                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let currency: string;
+                if (Object.keys(this.user).length === 0) {
+                    // if user is unauthenticated
+                    if (!localStorage.getItem('currency')) {
+                        localStorage.setItem('currency', 'GBP')
+                    } 
+                    currency = localStorage.getItem('currency') as string
+                } else {
+                    currency = this.user.currency
+                }
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {

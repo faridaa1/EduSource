@@ -111,10 +111,10 @@
                 <div class="item" id="images">
                     <div class="data header">Price</div>
                     <div class="data image">
-                        <p v-if="Object.keys(resource1).length > 0">{{ Object.keys(user).length > 0 ? '' : unauth_currency(resource1) }}{{ resource1.price }}</p>
+                        <p v-if="Object.keys(resource1).length > 0">{{ resource1.price }}</p>
                     </div>
                     <div class="data image">
-                        <p v-if="Object.keys(resource2).length > 0">{{ Object.keys(user).length > 0 ? '' : unauth_currency(resource2) }}{{ resource2.price }}</p>
+                        <p v-if="Object.keys(resource2).length > 0">{{ resource2.price }}</p>
                     </div>
                 </div>
                 <hr class="divider">
@@ -313,9 +313,6 @@
                 // Show date if it happened more than one day ago
                 return `${String(date_format.getDate()).padStart(2, '0')}/${String(date_format.getMonth()+1).padStart(2, '0')}/${String(date_format.getFullYear()).slice(-2)}`
             },
-            unauth_currency(resource: Resource): string {
-                return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
-            },
             update_search(resource: 'resource1' | 'resource2'): void {
                 // Update which search results are being shown
                 if (resource === 'resource1') {
@@ -403,7 +400,17 @@
             async listedprice(resource: Resource): Promise<number> {
                 // Performing currency conversion
                 if (resource === undefined) return 0
-                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let currency: string;
+                if (Object.keys(this.user).length === 0) {
+                    // if user is unauthenticated
+                    if (!localStorage.getItem('currency')) {
+                        localStorage.setItem('currency', 'GBP')
+                    } 
+                    currency = localStorage.getItem('currency') as string
+                } else {
+                    currency = this.user.currency
+                }
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -420,6 +427,13 @@
                 return useURLStore().url
             },
             currency(): string {
+                if (Object.keys(this.user).length === 0) {
+                    if (!localStorage.getItem('currency')) {
+                        localStorage.setItem('currency', 'GBP')
+                    } 
+                    const currency = localStorage.getItem('currency')
+                    return currency === 'GBP' ? '£' : currency === 'USD' ? '$' : '€' 
+                }
                 return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
             },
             users(): User[] {
@@ -436,7 +450,7 @@
                 }
             },
             async resources(resources: Resource[]): Promise<void> {
-                if (Object.keys(this.user).length < 1 || Object.keys(resources).length < 1) return
+                if (Object.keys(resources).length < 1) return
                 for (const resource of resources) {
                     resource.price = await this.listedprice(resource)
                 }

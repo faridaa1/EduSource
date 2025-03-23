@@ -91,7 +91,7 @@
                                             <p :class="grey ? 'used' : 'not'" @click="grey=!grey">Grey</p>
                                         </div>
                                     </div>
-                                    <div v-if="Object.keys(user).length > 0" id="price">
+                                    <div id="price">
                                         <label>Price ({{ currency }})</label>
                                         <div class="number-filter">
                                             <button :class="all_price ? 'all' : 'not'" @click="all_price=!all_price">All</button>
@@ -235,7 +235,7 @@
                         </div>
                         <div id="search-data">
                             <p id="resource-name">{{ resource.name }}</p>
-                            <p>{{ Object.keys(user).length > 0 ? currency : unauth_currency(resource) }}{{ Object.keys(user).length > 0 ? parseFloat(resource.price.toString().replace('€','').replace('£','').replace('$','')).toFixed(2) : parseFloat(resource.price.toString()).toFixed(2) }}</p>
+                            <p>{{ currency }}{{ parseFloat(resource.price.toString().replace('€','').replace('£','').replace('$','')).toFixed(2) }}</p>
                             <div id="stars">
                                 <i v-if="resource.rating > 0" class="bi bi-star-fill" style="color: orange;"></i>
                                 <i v-if="resource.rating < 1" class="bi bi-star-fill"></i>
@@ -743,16 +743,23 @@
                 // Taking user to page where they can message the seller
                 window.location.href = `/message/${this.user.id}/${userID}`
             },
-            unauth_currency(resource: Resource): string {
-                return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
-            },
             showResourcePage(resourceId: number): void {
                 window.location.href = `/view/${resourceId}` 
             },
             async listedprice(resource: Resource): Promise<number> {
                 // Performing currency conversion
                 if (resource === undefined) return 0
-                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let currency: string;
+                if (Object.keys(this.user).length === 0) {
+                    // if user is unauthenticated
+                    if (!localStorage.getItem('currency')) {
+                        localStorage.setItem('currency', 'GBP')
+                    } 
+                    currency = localStorage.getItem('currency') as string
+                } else {
+                    currency = this.user.currency
+                }
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -952,6 +959,13 @@
                 return Object.keys(authors_map).sort((a,b) => authors_map[b]-authors_map[a]).slice(0,6)
             },
             currency(): string {
+                if (Object.keys(this.user).length === 0) {
+                    if (!localStorage.getItem('currency')) {
+                        localStorage.setItem('currency', 'GBP')
+                    } 
+                    const currency = localStorage.getItem('currency')
+                    return currency === 'GBP' ? '£' : currency === 'USD' ? '$' : '€' 
+                }
                 return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
             },
             users(): User[] {
@@ -1276,7 +1290,7 @@
             },
             async resources(resources: Resource[]): Promise<void> {
                 // Resetting values
-                if (Object.keys(this.user).length < 1 || Object.keys(resources).length < 1) return
+                if (Object.keys(resources).length < 1) return
                 for (const resource of resources) {
                     resource.price = await this.listedprice(resource)
                 }

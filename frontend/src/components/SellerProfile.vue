@@ -54,7 +54,7 @@
                 <div v-for="listing in textbooks">
                     <div class="listed" @click="showResourcePage(listing.id)">
                         <img :src="`${url}${listing.image1}`" alt="Textbook">
-                        {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
+                        {{ currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
             </div>
@@ -85,7 +85,7 @@
                 <div v-for="listing in notes">
                     <div class="listed" @click="showResourcePage(listing.id)">
                         <img :src="`${url}${listing.image1}`" alt="Note">
-                        {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
+                        {{ currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
             </div>
@@ -116,7 +116,7 @@
                 <div v-for="listing in stationery">
                     <div class="listed" @click="showResourcePage(listing.id)">
                         <img :src="`${url}${listing.image1}`" alt="Stationery">
-                        {{ Object.keys(user).length === 0 ? unauth_currency(listing) : currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
+                        {{ currency }}{{ listing.price.toString().replace('€','').replace('£','').replace('$','') }}
                     </div>
                 </div>
             </div>
@@ -177,10 +177,6 @@
             message(userID: number): void {
                 // Take user to message page between themselves and the other user
                 window.location.href = `/message/${this.user.id}/${userID}`
-            },
-            unauth_currency(resource: Resource): string {
-                // Set currency to price currency when user is unauthenticated - do not get currency conversion as we would need to store such a detail
-                return resource.price_currency === 'GBP' ? '£' : resource.price_currency === 'USD' ? '$' : '€' 
             },
             updateStationeryMessage(clickedByFirstButton: boolean): void {
                 // Toggle message based on what user is currently viewing
@@ -243,7 +239,17 @@
             async listedprice(resource: Resource): Promise<number> {
                 // Performing currency conversion
                 if (resource === undefined) return 0
-                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${this.user.currency}/${resource.price_currency}/`, {
+                let currency: string;
+                if (Object.keys(this.user).length === 0) {
+                    // if user is unauthenticated
+                    if (!localStorage.getItem('currency')) {
+                        localStorage.setItem('currency', 'GBP')
+                    } 
+                    currency = localStorage.getItem('currency') as string
+                } else {
+                    currency = this.user.currency
+                }
+                let convertedPrice: Response = await fetch(`${useURLStore().url}/api/currency-conversion/${resource.id}/${currency}/${resource.price_currency}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -330,6 +336,13 @@
                 return useURLStore().url
             },
             currency(): string {
+                if (Object.keys(this.user).length === 0) {
+                    if (!localStorage.getItem('currency')) {
+                        localStorage.setItem('currency', 'GBP')
+                    } 
+                    const currency = localStorage.getItem('currency')
+                    return currency === 'GBP' ? '£' : currency === 'USD' ? '$' : '€' 
+                }
                 return this.user.currency === 'GBP' ? '£' : this.user.currency === 'USD' ? '$' : '€' 
             },
             users(): User[] {
