@@ -218,11 +218,11 @@
     #buyer-home {
         display: grid;
         grid-template-areas: "recommendations" "textbooks" "notes" "stationery";
-        height: 90vh;
+        height: 85vh;
         box-sizing: border-box;
         width: 100vw;
-        margin-top: 1.5rem;
-        margin-bottom: 1.5rem;
+        justify-content: center;
+        align-items: center;
         overflow-y: auto;
         overflow-x: hidden;
         gap: 1.5rem;
