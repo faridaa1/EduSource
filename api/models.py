@@ -445,11 +445,13 @@ class SearchHistoryItem(models.Model):
     """Defining single search"""
     search = models.TextField(null=False, blank=False)
     search_history = models.ForeignKey(SearchHistory, on_delete=models.CASCADE, related_name='search_item')
+    last_searched = models.DateTimeField(auto_now=True)
 
     def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of SearchHistoryItem object"""
         return {
             'id': self.id,
             'search': self.search,
-            'search_history': self.search_history.id
+            'search_history': self.search_history.id,
+            'last_searched': self.last_searched
         }

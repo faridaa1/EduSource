@@ -237,10 +237,8 @@
         // Update theme to match user preference
         nextTick(() => {
           const div = document.getElementById('app-vue')
-          console.log('hii', div)
           if (div) {
           const theme = div.firstElementChild
-            console.log('should be')
             if (theme) {
               if (this.authenticated) {
                   theme.id = this.user.theme_preference 
@@ -253,7 +251,6 @@
                       theme.id = 'light'
                   }
               }
-              console.log('her')
               document.body.style.backgroundColor = theme.id === 'light' ? 'white' : '#807E7E'
               const logo: HTMLImageElement = document.getElementById('logo') as HTMLImageElement
               if (logo) {
@@ -297,7 +294,7 @@
           return
         }
         const search_results: Resource[] = await searchResults.json()
-        this.search_results = search_results
+        this.search_results = search_results.slice(0, 8)
       },
       go_home(): void {
         // Return to home page

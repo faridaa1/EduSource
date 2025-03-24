@@ -226,6 +226,7 @@
         overflow-y: auto;
         overflow-x: hidden;
         gap: 1.5rem;
+        margin-top: 1.5rem;
     }
 
     #recommendations {

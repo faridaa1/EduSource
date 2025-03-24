@@ -48,10 +48,6 @@
                         <label>Assisted Sources</label>
                         <p>{{ resource.source }}</p>
                     </div>
-                    <div class="data-item" v-if="resource.type !== 'Stationery'">
-                        <label>Pages</label>
-                        <p>{{ resource.page_start }} to {{ resource.page_end }}</p>
-                    </div>
                     <div class="data-item">
                         <label>Estimated Delivery</label>
                         <p>{{ parseFloat(resource.estimated_delivery_time.toString()) }} {{ resource.estimated_delivery_units }}{{ parseFloat(resource.estimated_delivery_time.toString()) !== 1 ? 's' : '' }}</p>

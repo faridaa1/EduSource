@@ -399,7 +399,7 @@
             sort_by: 'rating-high'
         }},
         async mounted(): Promise<void> {
-            const search: HTMLInputElement = document.getElementById('search') as HTMLInputElement
+            const search: HTMLInputElement = document.getElementById('main-header-search') as HTMLInputElement
             if (search) {
                 // Store search result
                 const window_location: string[] = window.location.href.split('/')

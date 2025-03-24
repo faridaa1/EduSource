@@ -51,6 +51,19 @@
             <div>Product Details</div>
             <div id="details">
                 <div class="detail">
+                    <label>Subject</label>
+                    <div class="data">
+                        <p>{{ (resource as Resource).subject }}</p>
+                    </div>
+                </div>
+                <div class="detail">
+                    <label>Pages</label>
+                    <div class="data">
+                        <p v-if="(resource as Resource).page_start === 1 && (resource as Resource).page_end === 1">1</p>
+                        <p v-else>{{ (resource as Resource).page_start }} to {{ (resource as Resource).page_end }}</p>
+                    </div>
+                </div>
+                <div class="detail">
                     <label>Height</label>
                     <div class="data">
                         <p>{{ parseFloat((resource as Resource).height.toString()) }}</p>

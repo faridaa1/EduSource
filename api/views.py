@@ -776,88 +776,102 @@ def message(request: HttpRequest, id: int, sender: int) -> JsonResponse:
 
 def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
     """Defining semantic search used to return relevant search results to user"""
+    if request.method != 'POST' and request.method != 'PUT':
+        return JsonResponse({})
+    
+    search: str = json.loads(request.body)
+
     # guide to perform semantic search: https://huggingface.co/sentence-transformers
     dataset_resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('id', flat=True))
 
     # data preprocessing
-    resources: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('description', 'name', 'subject', 'author', 'colour'))
-    dataset = [ " ".join(resource) for resource in resources ]
+    dataset_description: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('description', flat=True))
+    dataset_name: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('name', flat=True))
+    dataset_subject: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('subject', flat=True))
+    dataset_author: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('author', flat=True))
+    dataset_colour: list = list(Resource.objects.filter(stock__gt=0, is_draft=False).order_by('id').values_list('colour', flat=True))
+    
+    # determine embeddings
+    search_embeddings = semantic_search_model.encode(search)
+    embeddings_description = semantic_search_model.encode(dataset_description)
+    embeddings_name = semantic_search_model.encode(dataset_name)
+    embeddings_subject = semantic_search_model.encode(dataset_subject)
+    embeddings_author = semantic_search_model.encode(dataset_author)
+    embeddings_colour = semantic_search_model.encode(dataset_colour)
+
+    # generate similairty matrix
+    similarity_matrix_description: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings_description)
+    similarity_matrix_name: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings_name)
+    similarity_matrix_subject: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings_subject)
+    similarity_matrix_author: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings_author)
+    similarity_matrix_colour: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings_colour)
+
+    # convert tensor to dictionary sorted on values (similarity)
+    list_similarity_matrix_description = similarity_matrix_description.tolist()[0]
+    search_dict_description = list(zip(dataset_description, list_similarity_matrix_description))
+    
+    list_similarity_matrix_name = similarity_matrix_name.tolist()[0]
+    search_dict_name = list(zip(dataset_name, list_similarity_matrix_name))
+    
+    list_similarity_matrix_subject = similarity_matrix_subject.tolist()[0]
+    search_dict_subject = list(zip(dataset_subject, list_similarity_matrix_subject))
+    
+    list_similarity_matrix_author = similarity_matrix_author.tolist()[0]
+    search_dict_author = list(zip(dataset_author, list_similarity_matrix_author))
+    
+    list_similarity_matrix_colour = similarity_matrix_colour.tolist()[0]
+    search_dict_colour = list(zip(dataset_colour, list_similarity_matrix_colour))
+    
+    search_dict = {}
     if request.method == 'POST':
-        # ensuring values in lists are unique
-        values_included: list = []
-        new_dataset_resources: list = []
-        new_dataset: list = []
-        for i in range(len(dataset)):
-            if not dataset[i] in values_included:
-                new_dataset_resources.append(dataset_resources[i])
-                new_dataset.append(dataset[i])
-                values_included.append(dataset[i])
-
-        # determine embeddings
-        embeddings = semantic_search_model.encode(new_dataset)
-        search: str = json.loads(request.body)
-        search_embeddings = semantic_search_model.encode(search)
-
-        # generate similairty matrix
-        similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
+        for i in range(len(dataset_resources)):
+            search_dict[dataset_resources[i]] = (search_dict_description[i][1]*0.1+
+                search_dict_name[i][1]*0.6+
+                search_dict_subject[i][1]*0.1+ 
+                search_dict_author[i][1]*0.1+
+                search_dict_colour[i][1]*0.1)
         
-        # convert tensor to dictionary sorted on values (similarity)
-        list_similarity_matrix = similarity_matrix.tolist()[0]
-        search_dict = dict(zip(new_dataset_resources, list_similarity_matrix))
         sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
-
-        # use first 8 search results
-        reduced_search_dict = sorted_search_dict[0:min(8,len(sorted_search_dict))]
-        keys: list = [pair[0] for pair in reduced_search_dict if pair[1] >= 0.2]
-        resources: list = []
-
-        # using iteration to preserve order of resources
-        for key in keys:
-            resource = Resource.objects.get(id=key)
-            resources.append(resource.as_dict())
-        return JsonResponse(resources, safe=False)
+        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.2]
     if request.method == 'PUT':
-        # determine embeddings
-        embeddings = semantic_search_model.encode(dataset)
-        search: str = json.loads(request.body)
-
         # storing unique search history
         if user != '-1':
             user: User = get_object_or_404(User, id=user)
             contains_search = False
+            search_id = -1
             try:
-                SearchHistory.objects.get(user=user)
+                get_object_or_404(SearchHistory, user=user)
             except:
                 user.search_history = SearchHistory.objects.create(user=user)
                 user.save()
             for search_item in user.search_history.search_item.all():
                 if search_item.search.lower() == search.lower():
                     contains_search = True
+                    search_id = search_item.id
                     break
             if not contains_search:
                 SearchHistoryItem.objects.create(
                     search=search,
                     search_history=user.search_history
                 )
-
-        search_embeddings = semantic_search_model.encode(search)
-
-        # generate similairty matrix
-        similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
-        
-        # convert tensor to dictionary sorted on values (similarity)
-        list_similarity_matrix = similarity_matrix.tolist()[0]
-        search_dict = dict(zip(dataset_resources, list_similarity_matrix))
+            else:
+                # Update timestamp
+                search_history_item: SearchHistoryItem = get_object_or_404(SearchHistoryItem, id=search_id)
+                search_history_item.save()
+        for i in range(len(dataset_resources)):
+            search_dict[dataset_resources[i]] = (search_dict_description[i][1]*0.35+
+                search_dict_name[i][1]*0.35+
+                search_dict_subject[i][1]*0.1+ 
+                search_dict_author[i][1]*0.1+
+                search_dict_colour[i][1]*0.1)
         sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
-        print(sorted_search_dict)
-        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.4]
-        resources: list = []
-        # using iteration to preserve order of resources
-        for key in keys:
-            resource = Resource.objects.get(id=key)
-            resources.append(resource.as_dict())
-        return JsonResponse(resources, safe=False)
-    return JsonResponse({})
+        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.3]
+    resources: list = []
+    # using iteration to preserve order of resources
+    for key in keys:
+        resource = get_object_or_404(Resource, id=key)
+        resources.append(resource.as_dict())
+    return JsonResponse(resources, safe=False)
 
 
 def semantic_search_subjects(request: HttpRequest) -> JsonResponse:
@@ -968,9 +982,10 @@ def recommendations(request: HttpRequest, user: int) -> JsonResponse:
         search_history: SearchHistory = SearchHistory.objects.get(user=user)
     except:
         user.search_history = SearchHistory.objects.create(user=user)
-    search_history: list = list(SearchHistory.objects.get(user=user).search_item.all().order_by('id').values_list('search', flat=True))
+    search_history: list = list(SearchHistory.objects.get(user=user).search_item.all().order_by('-last_searched').values_list('search', flat=True))
     subject_preferences: list = list(user.subject.all().order_by('id').values_list('name', flat=True))
-    history = search_history + subject_preferences
+    subject_preferences.extend(search_history)
+    history = subject_preferences
     if len(history) == 0:
         return JsonResponse([], safe=False)
     search_embeddings = semantic_search_model.encode(history)
@@ -980,9 +995,9 @@ def recommendations(request: HttpRequest, user: int) -> JsonResponse:
     
     # convert tensor to dictionary sorted on values (similarity)
     list_similarity_matrix = similarity_matrix.tolist()[0]
-    search_dict = dict(zip(new_dataset_resources, list_similarity_matrix))
-    sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
-    keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.15]
+    search_list = list(zip(new_dataset_resources, list_similarity_matrix))
+    print(search_list)
+    keys: list = [pair[0] for pair in search_list if pair[1] >= 0.15]
     resources: list = []
 
     # using iteration to preserve order of resources

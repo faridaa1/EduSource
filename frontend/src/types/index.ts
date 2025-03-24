@@ -79,8 +79,10 @@ export interface SearchHistory {
 }
 
 export interface SearchHistoryItem {
+    id: number,
     search: string,
     search_history: number,
+    last_searched: string
 }
 
 export interface Review {
