@@ -244,8 +244,8 @@
                   theme.id = this.user.theme_preference 
               } else {
                   const theme_local = localStorage.getItem('theme')
-                  if (theme_local) {
-                      theme.id = theme_local
+                  if (theme_local && (theme_local === 'light' || theme_local === 'dark')) {
+                    theme.id = theme_local
                   } else {
                       localStorage.setItem('theme', 'light')
                       theme.id = 'light'
@@ -257,7 +257,7 @@
                   logo.src = theme.id === 'light' ? this.url.includes('localhost') ? '/logo-light.svg' : '/static/api/logo-light.svg' : this.url.includes('localhost') ? '/logo-dark.svg' : '/static/api/logo-dark.svg'
               }
             }
-          }
+          } 
         })
       },
       conduct_search(resource?: Resource): void {
