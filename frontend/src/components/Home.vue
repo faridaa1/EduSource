@@ -218,15 +218,16 @@
     #buyer-home {
         display: grid;
         grid-template-areas: "recommendations" "textbooks" "notes" "stationery";
-        height: 85vh;
+        height: 84vh;
         box-sizing: border-box;
-        width: 100vw;
+        width: 98vw;
         justify-content: center;
         align-items: center;
-        overflow-y: auto;
         overflow-x: hidden;
         gap: 1.5rem;
         margin-top: 1.5rem;
+        overflow-y: scroll;
+        padding-bottom: 2rem;
     }
 
     #recommendations {

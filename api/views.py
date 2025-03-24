@@ -996,7 +996,8 @@ def recommendations(request: HttpRequest, user: int) -> JsonResponse:
     # convert tensor to dictionary sorted on values (similarity)
     list_similarity_matrix = similarity_matrix.tolist()[0]
     search_list = list(zip(new_dataset_resources, list_similarity_matrix))
-    print(search_list)
+    for pair in search_list:
+        print(Resource.objects.get(id=pair[0]), pair[1])
     keys: list = [pair[0] for pair in search_list if pair[1] >= 0.15]
     resources: list = []
 
