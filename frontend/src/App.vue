@@ -30,7 +30,7 @@
               {{ resource.name }}
             </div>
           </div>
-          <button @click="conduct_search()"><i class="bi bi-search"></i></button>
+          <button @click="conduct_search()"><i id="searching-i" class="bi bi-search"></i></button>
         </div>
         <RouterLink to="/help" class="hide-on-mobile link">Help</RouterLink>
         <RouterLink class="hide-on-mobile link" to="/cart" v-if="Object.keys(user).length > 0">Cart</RouterLink>
@@ -443,7 +443,7 @@
     padding-right: 1.5rem;
   }
 
-  #main-header i {
+  #searching-i {
     color: black;
   }
 
