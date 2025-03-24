@@ -225,7 +225,7 @@
             </div>
         </div>
         <div id="search-content">
-            <div id="noresources" v-if="filtered_resources.length === 0 && searching"><Loading /></div>
+            <div id="loading" v-if="filtered_resources.length === 0 && searching"><Loading /></div>
             <div id="noresources" v-if="filtered_resources.length === 0 && !searching">No resources found</div>
             <div class="search-item" v-for="resource in filtered_resources">
                 <div id="row1">
@@ -1644,7 +1644,7 @@
     }
 
     #noresources {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         text-align: center;
     }
 
@@ -1733,6 +1733,11 @@
     #minus {
         border-top-right-radius: 0.2rem;
         border-bottom-right-radius: 0.2rem;
+    }
+
+    #loading {
+        overflow-y: hidden;
+        overflow-x: hidden;
     }
 
     .round-border {

@@ -11,8 +11,7 @@ export const useURLStore = defineStore('URL', {
             if (url === 'localhost') {
                 this.url = 'http://localhost:8000'
             } else {
-                this.url = 'https://edutest-edusource-test.apps.a.comp-teach.qmul.ac.uk'
-                // this.url = 'https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk'
+                this.url = 'https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk'
             }
         }
     }

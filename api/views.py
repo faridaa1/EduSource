@@ -65,8 +65,7 @@ def signup(request: HttpRequest) -> HttpResponse:
                 auth.login(request, authenticated_user)
             if 'localhost' in request.build_absolute_uri():
                 return redirect('http://localhost:5173/details')
-            return redirect('https://edutest-edusource-test.apps.a.comp-teach.qmul.ac.uk/details')
-            # return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/details')
+            return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/details')
         return render(request, 'api/signup.html', {'signup_form' : signup_form, 'address_form' : address_form})
     return render(request, 'api/signup.html', {'signup_form' : SignupForm(), 'address_form' : AddressForm()})
 
@@ -90,12 +89,10 @@ def login(request: HttpRequest) -> HttpResponse:
                 if authenticated_user.mode == 'buyer':
                     if 'localhost' in request.build_absolute_uri():
                         return redirect('http://localhost:5173/')
-                    return redirect('https://edutest-edusource-test.apps.a.comp-teach.qmul.ac.uk/')
-                    # return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/')
+                    return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/')
                 if 'localhost' in request.build_absolute_uri():
                     return redirect('http://localhost:5173/listings')
-                return redirect('https://edutest-edusource-test.apps.a.comp-teach.qmul.ac.uk/listings')
-                # return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/listings')
+                return redirect('https://edusource-edusource.apps.a.comp-teach.qmul.ac.uk/listings')
             login_form.add_error(None, 'Invalid email or password' if '@' in login_data['user'] else 'Invalid username or password')
         return render(request, 'api/login.html', {'login_form' : login_form})
     return render(request, 'api/login.html', {'login_form' : LoginForm()})
@@ -864,8 +861,13 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
                 search_dict_subject[i][1]*0.1+ 
                 search_dict_author[i][1]*0.1+
                 search_dict_colour[i][1]*0.1)
+            print(Resource.objects.get(id=dataset_resources[i]).name, search_dict[dataset_resources[i]])
         sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
-        keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.3]
+        threshold = 0.3
+        keys = []
+        while len(keys) == 0 or threshold > 0.25:
+            keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= threshold]
+            threshold = round(threshold - 0.01, 2)
     resources: list = []
     # using iteration to preserve order of resources
     for key in keys:
@@ -994,11 +996,10 @@ def recommendations(request: HttpRequest, user: int) -> JsonResponse:
     similarity_matrix: torch.Tensor = semantic_search_model.similarity(search_embeddings, embeddings)
     
     # convert tensor to dictionary sorted on values (similarity)
-    list_similarity_matrix = similarity_matrix.tolist()[0]
-    search_list = list(zip(new_dataset_resources, list_similarity_matrix))
-    for pair in search_list:
-        print(Resource.objects.get(id=pair[0]), pair[1])
-    keys: list = [pair[0] for pair in search_list if pair[1] >= 0.15]
+    list_similarity_matrix = similarity_matrix.sum(dim=0) / len(history)
+    search_list = dict(zip(new_dataset_resources, list_similarity_matrix))
+    sorted_search_list = sorted(search_list.items(), key=order_data, reverse=True)
+    keys: list = [pair[0] for pair in sorted_search_list if pair[1] >= 0.15]
     resources: list = []
 
     # using iteration to preserve order of resources
