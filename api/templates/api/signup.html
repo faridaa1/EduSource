@@ -64,9 +64,11 @@
                         {% endfor %}
                     {% endfor %}
                 </div>
+                <div id='signup-area'>
+                    <button id='submit'>Sign up</button>
+                    <a href='/login/' class='alt'>Log in instead</a>
+                </div>
             </form>
-            <button id='submit'>Sign up</button>
-            <a href='/login/' class='alt'>Log in instead</a>
         </div>
     </body>
 </html>
@@ -74,7 +76,7 @@
 <script>
     const usernameElement = document.querySelector('[name="username"]')
     usernameElement.setAttribute('autocomplete', 'username')
-    {% comment %} Toggling whether password is shown or not {% endcomment %}
+    // Toggling whether password is shown or not
     const passwordElement = document.querySelector('[name="password"]')
     passwordElement.type = 'password'
     passwordElement.setAttribute('autocomplete', 'new-password')
@@ -115,8 +117,8 @@
     reEnterPasswordShowButton.addEventListener('click', toggleReEnterPasswordVisibility)
     reEnterPasswordHideButton.addEventListener('click', toggleReEnterPasswordVisibility)
     
-    {% comment %} Adding an event listener to ensure a description about the user is only requested
-    if they want to be a seller {% endcomment %}
+    /* Adding an event listener to ensure a description about the user is only requested
+    if they want to be a seller */
     const mode = document.querySelector('[name="mode"]')
     const descriptionInput = document.querySelector('[name="description"]')
     descriptionInput.placeholder = 'Enter a description about yourself, and what you sell'
@@ -135,7 +137,7 @@
     }
     mode.addEventListener('change', toggleDescriptionVisibility) 
     
-    {% comment %} Allows users to see result of changing themes {% endcomment %}
+    // Allows users to see result of changing themes
     const theme = document.querySelector('[name="theme_preference"]')
     function toggleSignupTheme() {
         const body = document.querySelector('body')
@@ -147,7 +149,7 @@
     toggleSignupTheme()
     theme.addEventListener('change', toggleSignupTheme) 
 
-    {% comment %} Back button that takes a user home {% endcomment %}
+    // Back button that takes a user home
     function home() {
         if (window.location.href.includes('localhost')) {
             window.location.href = 'http://localhost:5173/'
@@ -157,6 +159,15 @@
     }
     document.getElementById('logo').addEventListener('click', home)
     document.getElementById('home').addEventListener('click', home)
+
+    // Scroll to error
+    document.addEventListener('DOMContentLoaded', function() {
+        const error = document.querySelector('.error')
+        const div = document.getElementById('fields')
+        if (div && error) {
+            div.scrollTop = error.offsetTop - div.offsetTop - 90
+        }
+    })
 </script>
 
 <style>
@@ -213,10 +224,17 @@
         position: relative;
     }
 
-    form {
+    #fields {
         overflow-y: auto;
-        height: 23rem;
+        height: 16rem;
         padding-right: 1rem;
+        margin-top: 1rem;
+    }
+
+    #signup-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     .signup-light {
@@ -281,6 +299,7 @@
         background: white;
         border: none;
         padding: 0.5rem;
+        font-size: 1rem;
         padding-left: 1rem;
         padding-right: 1rem;
         margin-top: 2rem;

@@ -8,8 +8,8 @@ from api.models import User, Address
 class AddressForm(ModelForm):
     """Defining Address attributes to be used in signup form"""
     class Meta:
-        model: Address = Address
-        fields: list[str, str] = [
+        model = Address
+        fields: list[str] = [
             'first_line',
             'second_line',
             'city',
@@ -29,7 +29,7 @@ class SignupForm(ModelForm):
     """Defining attributes used in signup form"""
     reenter_password = forms.CharField(max_length=15, required=True)
     class Meta:
-        model: User = User
+        model = User
         fields: list[str] = [
             'email',
             'first_name',
