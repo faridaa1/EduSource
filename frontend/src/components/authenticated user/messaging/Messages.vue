@@ -288,4 +288,16 @@
         }
         
     }
+
+    @media (max-height: 970px) {
+        #overflow {
+            height: 65vh !important;
+        }
+    }
+
+    @media (max-height: 664px) {
+        #overflow {
+            height: 60vh !important;
+        }
+    }
 </style>

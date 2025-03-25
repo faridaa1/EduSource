@@ -393,4 +393,34 @@
             flex-direction: row;
         }
     }
+
+    @media (max-height: 1061px) {
+        #resources {
+            height: 80vh;
+        }
+    }
+
+    @media (max-height: 958px) {
+        #resources {
+            height: 77vh;
+        }
+    }
+
+    @media (max-height: 850px) {
+        #resources {
+            height: 75vh;
+        }
+    }
+
+    @media (max-height: 796px) {
+        #resources {
+            height: 70vh;
+        }
+    }
+
+    @media (max-height: 710px) {
+        #resources {
+            height: 65vh;
+        }
+    }
 </style>

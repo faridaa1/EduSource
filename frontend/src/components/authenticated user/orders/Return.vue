@@ -20,7 +20,8 @@
                             <div class="resource" v-for="resource in order.resources.filter(resource => getResource(resource.resource).allow_return)">
                                 <div id="image">
                                     <img :src="`${url}/${getResource(resource.resource).image1}`">
-                                    <div v-if="order.status === 'Return Started'" id="resnum">{{ resource.number_for_return }}</div>
+                                    <div v-if="order.status === 'Complete'" id="resnum">{{ resource.number }}</div>
+                                    <div v-else>{{ resource.number_for_return }}</div>
                                 </div>
                                 <div class="name">
                                     <div>{{ getResource(resource.resource).name }}</div>
@@ -107,8 +108,8 @@
                     </div>
                 </div>
                 <div id="buttons">
-                    <button :disabled="making_change" v-if="(user.mode == 'buyer') && order.status === 'Complete'" @click="submit_return(order, false)">Submit</button>
-                    <button :disabled="making_change" id="cancel" v-if="(user.mode == 'buyer') && order.status === 'Return Started'" @click="submit_return(order, true)">Cancel</button>
+                    <button :disabled="making_change" v-if="(mode == 'buyer') && order.status === 'Complete'" @click="submit_return(order, false)">Submit</button>
+                    <button :disabled="making_change" id="cancel" v-if="(mode == 'buyer') && order.status === 'Return Started'" @click="submit_return(order, true)">Cancel</button>
                     <button :disabled="making_change" id="message_seller" v-if="(order.seller !== order.buyer) && order.status === 'Return Started'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
                 </div>
             </div>
@@ -939,6 +940,24 @@
 
         #resources {
             height: 76vh;
+        }
+    }
+
+    @media (max-height: 986px) {
+        #content {
+            height: 85vh;
+        }
+    }
+
+    @media (max-height: 958px) {
+        #content {
+            height: 83vh;
+        }
+    }
+
+    @media (max-height: 772px) {
+        #content {
+            height: 80vh;
         }
     }
 </style>

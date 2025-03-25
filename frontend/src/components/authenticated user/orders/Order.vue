@@ -57,22 +57,22 @@
                 <div id="number">
                     <div class="title">Status</div>
                     <div id="user_number">
-                        <select @input="update_status" v-if="(mode==='seller') && (order.status !== 'Cancelled') && (order.status !== 'Refunded') && (order.status !== 'Complete')" id='order-status' v-model="status">
+                        <select @input="update_status" v-if="(mode==='seller') && (order.status !== 'Cancelled') && (order.status !== 'Return Received') && (order.status !== 'Refunded') && (order.status !== 'Complete')" id='order-status' v-model="status">
                             <option style="display: none;" value="Placed" disabled>Placed</option>
                             <option v-if="(order.status === 'Placed') || (order.status === 'Processing')" value="Processing">Processing</option>
                             <option v-if="(order.status === 'Processing') || (order.status === 'Placed') || (order.status === 'Dispatched')" value="Dispatched">Dispatched</option>
                             <option v-if="(order.status === 'Processing') || (order.status === 'Placed') || (order.status === 'Dispatched')" value="Complete">Complete</option>
-                            <option style="display: none;" v-if="(order.status === 'Return Started')" value="Return Started">Return Started</option>
+                            <option v-if="(order.status === 'Return Started')" value="Return Started" disabled>Return Started</option>
                             <option v-if="(order.status === 'Return Started')" value="Return Received">Return Received</option>
                         </select>
                         <p v-else>{{ order.status }}</p>
                     </div>
                 </div>
                 <div id="buttons">
-                    <button :disabled="making_change" v-if="(user.mode == 'buyer') && returnable && order.status === 'Complete'" @click="start_return(order)">Start Return</button>
+                    <button :disabled="making_change" v-if="(mode == 'buyer') && returnable && order.status === 'Complete'" @click="start_return(order)">Start Return</button>
                     <button :disabled="making_change" id="cancel" v-if="returnable && order.status === 'Return Started'" @click="start_return(order)">{{ mode === 'buyer' ? 'Cancel' : 'View' }} Return</button>
                     <button :disabled="making_change" id="message_seller" v-if="(order.seller !== order.buyer) && returnable && order.status === 'Return Started'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
-                    <button :disabled="making_change" id="cancel" v-if="(user.mode == 'buyer') && order.status === 'Placed'" @click="cancel_order">Cancel</button>
+                    <button :disabled="making_change" id="cancel" v-if="(mode == 'buyer') && order.status === 'Placed'" @click="cancel_order">Cancel</button>
                 </div>
             </div>
         </div>
@@ -683,7 +683,7 @@
         background-color: darkred !important;
     }
 
-    button:disabled, button:disabled:hover {
+    button:disabled, button:disabled:hover, #cancel:disabled, #cancel:disabled:hover {
         background-color: darkgray !important;
         cursor: not-allowed !important;
     }
@@ -705,6 +705,24 @@
 
         #buttons {
             margin: auto;
+        }
+    }
+
+    @media (max-height: 986px) {
+        #content {
+            height: 85vh;
+        }
+    }
+
+    @media (max-height: 958px) {
+        #content {
+            height: 83vh;
+        }
+    }
+
+    @media (max-height: 772px) {
+        #content {
+            height: 80vh;
         }
     }
 </style>

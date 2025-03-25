@@ -16,7 +16,7 @@
                 <RouterLink class="profile-item rounded-bottom" to="/wishlist" v-if="user.mode==='buyer'">Wishlist</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/wishlist" v-if="user.mode==='seller'">Wishlist</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='seller'">Placed Orders</RouterLink>
-                <RouterLink class="profile-item rounded-bottom" to="/sold-orders" v-if="user.mode==='seller'">Sold Orders</RouterLink>
+                <RouterLink class="profile-item rounded-bottom" to="/cart" v-if="user.mode==='seller'">Cart</RouterLink>
             </div>
           </transition>
         </div>
@@ -33,7 +33,8 @@
           <button @click="conduct_search()"><i id="searching-i" class="bi bi-search"></i></button>
         </div>
         <RouterLink to="/help" class="hide-on-mobile link">Help</RouterLink>
-        <RouterLink class="hide-on-mobile link" to="/cart" v-if="Object.keys(user).length > 0">Cart</RouterLink>
+        <RouterLink class="hide-on-mobile link" to="/cart" v-if="authenticated && user.mode === 'buyer'">Cart</RouterLink>
+        <RouterLink class="hide-on-mobile link" to="/sold-orders" v-if="authenticated && user.mode === 'seller'">Sold Orders</RouterLink>
         <RouterLink to="/settings" class="hide-on-mobile link">Settings</RouterLink>
         <p v-if="authenticated" class="hide-on-mobile link sign" @click="sign_out"> Sign out </p>
         <p v-if="!authenticated" @click="sign_in" class="hide-on-mobile link sign"> Sign in</p>
@@ -51,14 +52,15 @@
                 <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='buyer'">Orders</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/exchanges" v-if="has_resources()">Exchanges</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/messages">Messages</RouterLink>
-                <RouterLink class="profile-item rounded-bottom" to="/wishlist" v-if="user.mode==='buyer'">Wishlist</RouterLink>
+                <RouterLink class="profile-item border-bottom" to="/cart" v-if="user.mode==='seller'">Cart</RouterLink>
                 <RouterLink class="profile-item border-bottom" to="/wishlist" v-if="user.mode==='seller'">Wishlist</RouterLink>
-                <RouterLink class="profile-item border-bottom" to="/orders" v-if="user.mode==='seller'">Placed Orders</RouterLink>
-                <RouterLink class="profile-item rounded-bottom" to="/sold-orders" v-if="user.mode==='seller'">Sold Orders</RouterLink>
+                <RouterLink class="profile-item rounded-bottom" to="/wishlist" v-if="user.mode==='buyer'">Wishlist</RouterLink>
+                <RouterLink class="profile-item rounded-bottom" to="/orders" v-if="user.mode==='seller'">Placed Orders</RouterLink>
             </div>
           </transition>
           </div>
-          <RouterLink id="item3" class="show-mobile link" to="/cart" v-if="authenticated">Cart</RouterLink>
+          <RouterLink id="item3" class="show-mobile link" to="/cart" v-if="authenticated && user.mode === 'buyer'">Cart</RouterLink>
+          <RouterLink id="item3" class="show-mobile link" to="/sold-orders" v-if="authenticated && user.mode === 'seller'">Sold Orders</RouterLink>
           <RouterLink to="/help" id="item4" class="show-mobile">Help</RouterLink>
           <RouterLink to="/settings" id="item5" class="show-mobile">Settings</RouterLink>
           <p id="item6" v-if="authenticated" class="link sign" @click="sign_out"> Sign out </p>

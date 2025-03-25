@@ -6,7 +6,7 @@
                     <i class="bi bi-arrow-left-circle-fill"></i>
                     <p>Exchanges</p>
                 </div>
-                <p>Resource Exchange</p>
+                <p id="exchange-header">Resource Exchange</p>
             </div>
             <div id="exchange-area">
                 <div class="resource">
@@ -266,7 +266,7 @@
         color: white !important;
     }
 
-    div, p, select {
+    #exchange-header {
         font-size: 1.2rem;
     }
 
@@ -323,7 +323,7 @@
         padding-left: 0.65rem;
         padding-right: 0.65rem;
         border-radius: 0.5rem;
-        font-size: 2rem;
+        font-size: 1.5rem;
     }
 
     #dark #swap i {
@@ -516,7 +516,7 @@
     }
 
     /* Responsive Design */
-    @media (max-width: 808px) {
+    @media (max-width: 808px), (max-height: 577px) {
         .image {
             height: 8rem;
             width: 8rem;
@@ -535,6 +535,12 @@
             top: 0.25rem;
             left: 1rem;
             gap: 0.4rem;
+        }
+    }
+
+    @media (max-height: 550px) {
+        #exchange-area {
+            height: 75vh;
         }
     }
 </style>

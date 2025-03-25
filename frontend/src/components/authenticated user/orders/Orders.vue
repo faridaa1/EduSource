@@ -2,7 +2,7 @@
     <div id="orders-view" v-if="(user && (mode === 'buyer') &&  user.placed_orders) || (user && (mode === 'seller') &&  user.sold_orders)">
         <div id="header">
             <div id="header1">
-                <p>{{ mode === 'buyer' ? 'My' : 'Sold' }} Orders</p>
+                <p>{{ mode === 'buyer' ? user.mode === 'buyer' ? 'My' : 'Placed' : 'Sold' }} Orders</p>
             <div id="search">
                 <input @input="clear_error" v-model="search" id="order-search" type="text" @click="remove_focus" placeholder="Enter resource name">
                 <i id="x" @click="handle_x_click" :class="search.trim() !== '' ? 'bi bi-x' : ''"></i>
@@ -180,6 +180,7 @@
             },
             order_total_number(order: Order): number {
                 // Calculate order total
+                if (order.is_exchange) return 0
                 let total = 0
                 for (let resource of order.resources) {
                     const res: Resource | undefined = this.allResources.find(res => res.id === resource.resource)
@@ -593,7 +594,7 @@
         }
 
         input {
-            width: 20rem !important;
+            width: 16rem !important;
         }
 
         #header1 {
@@ -602,6 +603,36 @@
 
         #resources {
             height: 71vh;
+        }
+    }
+
+    @media (max-height: 959px) {
+        #resources {
+            height: 70vh;
+        }
+    }
+
+    @media (max-height: 887px) {
+        #resources {
+            height: 67vh;
+        }
+    }
+
+    @media (max-height: 816px) {
+        #resources {
+            height: 65vh;
+        }
+    }
+
+    @media (max-height: 753px) {
+        #resources {
+            height: 62vh;
+        }
+    }
+
+    @media (max-height: 613px) {
+        #resources {
+            height: 60vh;
         }
     }
 </style>

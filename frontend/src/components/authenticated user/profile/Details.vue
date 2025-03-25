@@ -1393,7 +1393,7 @@
         cursor: not-allowed;
     }
 
-    /* Responsive design */
+    /* Responsive design */    
     @media (max-width: 1397px) {
         #details {
             flex-direction: column;
@@ -1456,6 +1456,18 @@
 
         #description-buttons {
             align-self: flex-start !important;
+        }
+    }
+
+    @media (max-height: 956px) {
+        #details {
+            height: 85vh !important;
+        }
+    }
+
+    @media (max-height: 667px) {
+        #details {
+            height: 82vh !important;
         }
     }
 </style>

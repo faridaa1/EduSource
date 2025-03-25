@@ -218,9 +218,8 @@
     #buyer-home {
         display: grid;
         grid-template-areas: "recommendations" "textbooks" "notes" "stationery";
-        height: 84vh;
+        height: 89vh;
         box-sizing: border-box;
-        width: 98vw;
         justify-content: center;
         align-items: center;
         overflow-x: hidden;
@@ -320,6 +319,12 @@
     }
 
     /* Responsive Design */
+    @media (max-height: 761px) {
+        #buyer-home {
+            height: 85vh;
+        }
+    }
+
     @media (max-width: 1221px) {
         #recommendations, #textbooks, #notes, #stationery {
             width: 90vw;

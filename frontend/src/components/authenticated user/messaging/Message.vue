@@ -527,4 +527,10 @@
             font-size: 1.6rem;
         }
     }
+
+    @media (max-height: 665px) {
+        #message-container {
+            height: 80vh;
+        }
+    }
 </style>

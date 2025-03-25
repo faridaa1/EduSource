@@ -544,7 +544,6 @@
         width: 12rem;
         background-color: white;
         border-radius: 0.5rem;
-        font-size: 1.3rem;
     }
 
     .edit-buttons {
@@ -553,7 +552,7 @@
     }
 
     #checkout-title {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         margin-bottom: 1rem;
         font-weight: bold;
     }
@@ -677,7 +676,6 @@
 
     #payment div, #number div, #address div {
         gap: 0.8rem;
-        font-size: 1.3rem;
     }
 
     #card_ending, #address_lines, #user_number {
@@ -693,7 +691,7 @@
     }
 
     #header div {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
     }
 
     .change_text { 
@@ -723,14 +721,13 @@
         display: flex;
         gap: 1.5rem;
         justify-content: center;
-        margin-top: 2rem;
+        margin-top: 1rem;
     }
 
     #buttons button {
         border-radius: 0.4rem;
-        font-size: 1.3rem;
         border: none;
-        padding: 0.8rem;
+        padding: 0.5rem;
     }
 
     #place_order {
@@ -826,7 +823,11 @@
         cursor: not-allowed;
     }
 
-    /* Responsive Design */
+    #content {
+        overflow-y: auto;
+    }
+
+    /* Responsive 75Design */
     @media (max-width: 1110px) {
         .input input {
             width: 92% !important;
@@ -847,4 +848,30 @@
             gap: 1rem;
         }
     }
+
+    @media (max-height: 853px) {
+        #content { 
+            overflow-y: auto;
+            max-height: 67vh !important;
+        }
+    }
+
+    @media (max-height: 732px) {
+        #content { 
+            max-height: 65vh !important;
+        }
+    }
+
+    @media (max-height: 668px) {
+        #content { 
+            max-height: 62vh !important;
+        }
+    }
+
+    @media (max-height: 620px) {
+        #content { 
+            max-height: 55vh !important;
+        }
+    }
+
 </style>
