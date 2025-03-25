@@ -861,7 +861,6 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
                 search_dict_subject[i][1]*0.1+ 
                 search_dict_author[i][1]*0.1+
                 search_dict_colour[i][1]*0.1)
-            print(Resource.objects.get(id=dataset_resources[i]).name, search_dict[dataset_resources[i]])
         sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
         threshold = 0.3
         keys = []

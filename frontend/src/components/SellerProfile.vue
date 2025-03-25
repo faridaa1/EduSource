@@ -812,19 +812,23 @@
 
     /* Responsive Design */
     @media (max-width: 1353px) {
-        #recommendations, #textbooks, #notes, #stationery {
+        #textbooks, #notes, #stationery {
             width: 90vw;
         }
     }
 
     @media (max-width: 827px) {
-        #recommendations, #textbooks, #notes, #stationery {
+        #textbooks, #notes, #stationery {
             width: 90vw;
+        }
+
+        #seller-home {
+            overflow-x: hidden
         }
     }
 
     @media (max-width: 789px) {
-        #recommendations, #textbooks, #notes, #stationery {
+        #textbooks, #notes, #stationery {
             width: 86vw;
         }
     }
