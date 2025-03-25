@@ -106,8 +106,8 @@
                 <label>Subject <span class="required">*</span></label>
                 <div>
                     <input id="subject" type="text" v-model="subject" :disabled="exists_resource">
-                    <select v-model="subject_select" :disabled="exists_resource">
-                        <option selected disabled hidden>
+                    <select v-model="subject_select" :disabled="exists_resource" v-if="all_subjects.length > 0">
+                        <option value="" selected style="display: none;">
                             Select
                         </option>
                         <option :value="subject" v-for="subject in all_subjects">
@@ -1175,6 +1175,18 @@
         #subject-container div {
             flex-direction: column;
             align-items: start;
+        }
+    }
+
+    @media (max-height: 914px) {
+        #new-listing {
+            height: 80vh;
+        }
+    }
+
+    @media (max-height: 722px) {
+        #new-listing {
+            height: 75vh;
         }
     }
 </style>
