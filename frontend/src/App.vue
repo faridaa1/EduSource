@@ -296,7 +296,13 @@
           return
         }
         const search_results: Resource[] = await searchResults.json()
-        this.search_results = search_results.slice(0, 8)
+        let temp_search_results: Resource[] = []
+        for (let search_result of search_results) {
+          if (!temp_search_results.map(resource => resource.name).includes(search_result.name)) {
+            temp_search_results.push(search_result)
+          }
+        }
+        this.search_results = temp_search_results.slice(0, 8)
       },
       go_home(): void {
         // Return to home page
