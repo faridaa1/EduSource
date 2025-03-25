@@ -59,6 +59,16 @@
                 </div>
                 <hr class="divider">
                 <div class="item" id="images">
+                    <div class="data header">Type</div>
+                    <div class="data image">
+                        <p>{{ resource1.type }}</p>
+                    </div>
+                    <div class="data image">
+                        <p>{{ resource2.type }}</p>
+                    </div>
+                </div>
+                <hr class="divider">
+                <div class="item" id="images">
                     <div class="data header">Description</div>
                     <div class="data image">
                         <p>{{ resource1.description }}</p>
@@ -131,10 +141,10 @@
                 <div class="item" id="images">
                     <div class="data header">Subject</div>
                     <div class="data image">
-                        <p>{{ resource1.type }}</p>
+                        <p>{{ resource1.subject }}</p>
                     </div>
                     <div class="data image">
-                        <p>{{ resource2.type }}</p>
+                        <p>{{ resource2.subject }}</p>
                     </div>
                 </div>
                 <hr class="divider">
@@ -147,14 +157,18 @@
                         <p>{{ resource2.author }}</p>
                     </div>
                 </div>
-                <hr class="divider">
+                <hr class="divider" v-if="(resource1.type !== 'Stationery') || (resource2.type !== 'Stationery')">
                 <div class="item" id="images" v-if="(resource1.type !== 'Stationery') || (resource2.type !== 'Stationery')">
                     <div class="data header">Pages</div>
                     <div class="data image">
-                        <p v-if="Object.keys(resource1).length > 0">{{ resource1.page_start }} to {{ resource1.page_end }}</p>
+                        <p v-if="(Object.keys(resource1).length > 0) && (resource1.type !== 'Stationery') && (resource1.page_start === resource1.page_end) && (resource1.page_start === 1)">1</p>
+                        <p v-else-if="(Object.keys(resource1).length > 0) && (resource1.type !== 'Stationery')">{{ resource1.page_start }} to {{ resource1.page_end }}</p>
+                        <p v-else="(Object.keys(resource1).length > 0) && resource1.type">-</p>
                     </div>
                     <div class="data image">
-                        <p v-if="Object.keys(resource2).length > 0">{{ resource2.page_start }} to {{ resource2.page_end }}</p>
+                        <p v-if="(Object.keys(resource2).length > 0) && (resource2.type !== 'Stationery') && (resource2.page_start === resource2.page_end) && (resource2.page_start === 1)">1</p>
+                        <p v-else-if="(Object.keys(resource2).length > 0) && (resource2.type !== 'Stationery')">{{ resource2.page_start }} to {{ resource2.page_end }}</p>
+                        <p v-else="(Object.keys(resource2).length > 0) && resource2.type">-</p>
                     </div>
                 </div>
                 <hr class="divider">
