@@ -686,6 +686,7 @@
     button:disabled, button:disabled:hover, #cancel:disabled, #cancel:disabled:hover {
         background-color: darkgray !important;
         cursor: not-allowed !important;
+        color: white !important;
     }
 
     /* Responsive Design */

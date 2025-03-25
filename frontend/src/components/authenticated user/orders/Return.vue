@@ -870,6 +870,7 @@
     button:disabled, button:disabled:hover {
         background-color: darkgray !important;
         cursor: not-allowed !important;
+        color: white !important;
     }
 
     /* Responsive Design */
