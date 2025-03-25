@@ -1170,6 +1170,18 @@ known_questions_and_answers = {
     'Can you provide resource recommendations for': '',
     'What is the status of order': '',
     'Provide me with personalised recommendations': '',
+    'Where is my wishlist': '''1. Select Account
+    \n2. Select Wishlist''',
+    'How can I find my wishlist': '''1. Select Account
+    \n2. Select Wishlist''',
+    'How can I find my order details': "Click 'View Details' on the order",
+    'How do I compare resources': "Click 'Compare Resources' after searching for an item. You can compare a maximum of 2 resources at one time.",
+    'How do I delete my account': '''1. Select Account
+    \n2. Select Details
+    \n3. Click 'Delete Account' at the bottom of the page''',
+    'How can I view messages': '''1. Select Account
+    \n2. Select Messages
+    \n3. (Optional) Select a message'''
 }
 
 def chatbot(request: HttpRequest, user: int) -> JsonResponse:

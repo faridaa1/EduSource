@@ -1466,6 +1466,14 @@
         padding-left: 0.1rem;
     }
 
+    option {
+        background-color: white;
+    }
+
+    #dark option {
+        background-color: #D9D9D9;
+    }
+
     .number-filter input {
         text-align: center;
         width: 4rem !important;

@@ -184,6 +184,7 @@
         padding: 0.5rem;
         margin-right: auto;
         border-radius: 0.5rem;
+        color: black;
     }
 
     .heading {
