@@ -51,6 +51,12 @@
             <div>Product Details</div>
             <div id="details">
                 <div class="detail">
+                    <label>Author</label>
+                    <div class="data">
+                        <p>{{ (resource as Resource).author }}</p>
+                    </div>
+                </div>
+                <div class="detail">
                     <label>Subject</label>
                     <div class="data">
                         <p>{{ (resource as Resource).subject }}</p>
@@ -1523,7 +1529,7 @@
         padding: 0.5rem;
         display: flex;
         gap: 0.4rem;
-        width: 5rem;
+        width: 8rem;
         justify-content: center;
     }
 

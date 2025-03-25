@@ -29,10 +29,6 @@
                 </div>
                 <div id="data">
                     <div class="data-item">
-                        <label>Author</label>
-                        <p>{{ resource.author }}</p>
-                    </div>
-                    <div class="data-item">
                         <label>Price</label>
                         <p>{{ resource.price }}</p>
                     </div>
