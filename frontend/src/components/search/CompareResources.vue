@@ -210,10 +210,10 @@
                 <hr class="divider">
                 <div class="item" id="images">
                     <div class="data header">Allows Returns</div>
-                    <div class="data image">
+                    <div class="data image" v-if="Object.keys(resource1).length > 0">
                         <p>{{ resource1.allow_return ? 'Yes': 'No' }}</p>
                     </div>
-                    <div class="data image">
+                    <div class="data image" v-if="Object.keys(resource2).length > 0">
                         <p>{{ resource2.allow_return ? 'Yes': 'No' }}</p>
                     </div>
                 </div>
@@ -643,6 +643,18 @@
 
         #images i {
             font-size: 4.5rem !important;
+        }
+    }
+
+    @media (max-height: 824px) {
+        #main-block {
+            height: 80vh;
+        }
+    }
+
+    @media (max-height: 615px) {
+        #main-block {
+            height: 75vh;
         }
     }
 </style>

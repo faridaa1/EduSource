@@ -220,7 +220,7 @@
                     </div>
                 </div>
                 <div id="compare_resources" v-if="filtered_resources.length > 0">
-                    <button @click="compare_resources">Compare Resources</button>
+                    <button @click="compare_resources" id="compres">Compare Resources</button>
                 </div>
             </div>
         </div>
@@ -1547,6 +1547,15 @@
         padding: 0.4rem;
         border-radius: 0.5rem;
         border: none;
+        background-color: #0DCAF0;
+    }
+
+    select, #compres {
+        color: black;
+    }
+
+    #dark select {
+        background-color: white;
     }
 
     #sort_by {
@@ -1782,7 +1791,7 @@
         height: 0.01rem;
         background-color: #d9d9d9;
         border-radius: 0.5rem;
-        width: 100%;
+        width: 95%;
         margin-top: 0.8rem;
     }
 
@@ -1951,7 +1960,7 @@
             flex-direction: row;
             gap: 2rem;
             margin-right: 0;
-            align-self: center;
+            margin-top: 1rem;
         }
 
         #cart-filter {
@@ -1997,19 +2006,25 @@
         }
     }
 
+    @media (max-height: 1360px), (max-width: 559px) {
+        #search-content {
+            height: 77vh;
+        }
+    }
+
     @media (max-height: 1100px) {
         #search-content {
             height: 74vh;
         }
     }
 
-    @media (max-height: 995px) {
+    @media (max-height: 1240px) {
         #search-content {
             height: 73vh;
         }
     }
 
-    @media (max-height: 957px) {
+    @media (max-height: 1036px) {
         #search-content {
             height: 70vh;
         }
@@ -2024,6 +2039,24 @@
     @media (max-height: 889px) {
         #search-content {
             height: 67vh;
+        }
+    }
+
+    @media (max-height: 816px) {
+        #search-content {
+            height: 65vh;
+        }
+    }
+
+    @media (max-height: 794px) {
+        #search-content {
+            height: 60vh;
+        }
+    }
+
+    @media (max-height: 672px) {
+        #search-content {
+            height: 54vh;
         }
     }
 
