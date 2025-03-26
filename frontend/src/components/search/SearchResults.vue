@@ -772,19 +772,45 @@
             },
             sort_resources(): void {
                 // Sorting resources
-                this.resources.sort((a,b) => {
+                this.resources.sort((resourceA, resourceB) => {
+                    const userA: User = this.users.find(user => user.id === resourceA.user) as User
+                    const userB: User = this.users.find(user => user.id === resourceA.user) as User
                     if (this.sort_by === 'listing-new') {
-                        return new Date(b.upload).getTime() - new Date(a.upload).getTime()
+                        return new Date(resourceB.upload).getTime() - new Date(resourceA.upload).getTime()
                     } else if (this.sort_by === 'listing-old') {
-                        return new Date(a.upload).getTime() - new Date(b.upload).getTime()
+                        return new Date(resourceA.upload).getTime() - new Date(resourceB.upload).getTime()
                     } else if (this.sort_by === 'rating-high') {
-                        return b.rating - a.rating
+                        if (resourceB.rating === resourceA.rating) {
+                            if (userA.rating === userB.rating) {
+                                return userB.sold_orders.filter(order => order.status === 'Complete').length, userA.sold_orders.filter(order => order.status === 'Complete').length
+                            }
+                            return userB.rating - userA.rating
+                        }
+                        return resourceB.rating - resourceA.rating
                     } else if (this.sort_by === 'rating-low') {
-                        return a.rating - b.rating
+                        if (resourceB.rating === resourceA.rating) {
+                            if (userA.rating === userB.rating) {
+                                return userB.sold_orders.filter(order => order.status === 'Complete').length, userA.sold_orders.filter(order => order.status === 'Complete').length
+                            }
+                            return userB.rating - userA.rating
+                        }
+                        return resourceA.rating - resourceB.rating
                     } else if (this.sort_by === 'price-high') {
-                        return parseFloat(b.price.toString().replace('$','').replace('£','').replace('€','')) - parseFloat(a.price.toString().replace('$','').replace('£','').replace('€',''))
+                        if (resourceB.price === resourceA.price) {
+                            if (userA.rating === userB.rating) {
+                                return userB.sold_orders.filter(order => order.status === 'Complete').length, userA.sold_orders.filter(order => order.status === 'Complete').length
+                            }
+                            return userB.rating - userA.rating
+                        }
+                        return parseFloat(resourceB.price.toString().replace('$','').replace('£','').replace('€','')) - parseFloat(resourceA.price.toString().replace('$','').replace('£','').replace('€',''))
                     }
-                    return parseFloat(a.price.toString().replace('$','').replace('£','').replace('€','')) - parseFloat(b.price.toString().replace('$','').replace('£','').replace('€',''))
+                    if (resourceB.price === resourceA.price) {
+                        if (userA.rating === userB.rating) {
+                            return userB.sold_orders.filter(order => order.status === 'Complete').length, userA.sold_orders.filter(order => order.status === 'Complete').length
+                        }
+                        return userB.rating - userA.rating
+                    }
+                    return parseFloat(resourceA.price.toString().replace('$','').replace('£','').replace('€','')) - parseFloat(resourceB.price.toString().replace('$','').replace('£','').replace('€',''))
                 })
             },
             maximum_price(): void {

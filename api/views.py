@@ -864,6 +864,7 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
         keys = []
         keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= threshold]
         while len(keys) == 0 and threshold > 0.35:
+            print(' aim',threshold)
             keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= threshold]
             threshold = round(threshold - 0.01, 2)
     resources: list = []
