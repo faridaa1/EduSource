@@ -823,10 +823,8 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
     if request.method == 'POST':
         for i in range(len(dataset_resources)):
             search_dict[dataset_resources[i]] = (search_dict_description[i][1]*0.1+
-                search_dict_name[i][1]*0.6+
-                search_dict_subject[i][1]*0.1+ 
-                search_dict_author[i][1]*0.1+
-                search_dict_colour[i][1]*0.1)
+                search_dict_name[i][1]*0.8+
+                search_dict_subject[i][1]*0.1)
         
         sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
         keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= 0.2]
@@ -864,7 +862,7 @@ def semantic_search(request: HttpRequest, user: int) -> JsonResponse:
         sorted_search_dict = sorted(search_dict.items(), key=order_data, reverse=True)
         threshold = 0.3
         keys = []
-        while len(keys) == 0 or threshold > 0.25:
+        while len(keys) == 0 or threshold > 0.4:
             keys: list = [pair[0] for pair in sorted_search_dict if pair[1] >= threshold]
             threshold = round(threshold - 0.01, 2)
     resources: list = []
