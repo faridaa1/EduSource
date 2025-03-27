@@ -705,8 +705,8 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
         order: Order = get_object_or_404(Order, id=json.loads(request.body))
         order.status = 'Cancelled'
         order.save()
-        send_mail(f'Order {order.id} Update', f'Hi {order.buyer.first_name},\n\nThis is to confirm that the status of your order {order.id} is now {order.status}. \n\nThank you for shopping with EduSource.', 'edusource9325@gmail.com', [order.buyer.email])
-        send_mail(f'Order {order.id} Update', f'Hi {order.seller.first_name},\n\nThis is to inform you that you that the status of order {order.id} is now {order.status}.\n\nEduSource', 'edusource9325@gmail.com', [order.seller.email])
+        send_mail(f'Order {order.id}: {order.status}', f'Hi {order.buyer.first_name},\n\nThis is to confirm that the status of your order {order.id} is now {order.status}. \n\nThank you for shopping with EduSource.', 'edusource9325@gmail.com', [order.buyer.email])
+        send_mail(f'Order {order.id}: {order.status}', f'Hi {order.seller.first_name},\n\nThis is to inform you that you that the status of order {order.id} is now {order.status}.\n\nEduSource', 'edusource9325@gmail.com', [order.seller.email])
         return JsonResponse(user.as_dict())
     elif request.method == 'PUT': 
         """Updating order status"""
@@ -716,14 +716,17 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
         order.status = data['status']
         order.save()
         if order.status == 'Processing' or order.status == 'Dispatched' or order.status == 'Complete':
-            send_mail(f'Order {order.id} Update', f'Hi {order.buyer.first_name},\n\nThis is to inform you that you that the status of your order {order.id} is now {order.status}.\n\nEduSource', 'edusource9325@gmail.com', [order.buyer.email])
+            send_mail(f'Order {order.id}: {order.status}', f'Hi {order.buyer.first_name},\n\nThis is to inform you that you that the status of your order {order.id} is now {order.status}.\n\nEduSource', 'edusource9325@gmail.com', [order.buyer.email])
+            if order.status == 'Complete':
+                order.delivery_date = timezone.now()
+                order.save()
         elif order.status == 'Return Received':
-            send_mail(f'Order {order.id} Update', f'Hi {order.buyer.first_name},\n\nThis is to inform you that you that the return of your order {order.id} has been received.\n\nEduSource', 'edusource9325@gmail.com', [order.buyer.email])
+            send_mail(f'Order {order.id}: {order.status}', f'Hi {order.buyer.first_name},\n\nThis is to inform you that you that the return of your order {order.id} has been received.\n\nEduSource', 'edusource9325@gmail.com', [order.buyer.email])
         elif order.status == 'Cancelled':
-            send_mail(f'Order {order.id} Update', f'Hi {order.buyer.first_name},\n\nThis is to inform you that you that your order {order.id} is now {order.status}.\n\nEduSource', 'edusource9325@gmail.com', [order.buyer.email])
-            send_mail(f'Order {order.id} Update', f'Hi {order.seller.first_name},\n\nThis is to inform you that you that order {order.id} has been Cancelled.\n\nEduSource', 'edusource9325@gmail.com', [order.seller.email])
+            send_mail(f'Order {order.id}: {order.status}', f'Hi {order.buyer.first_name},\n\nThis is to inform you that you that your order {order.id} is now {order.status}.\n\nEduSource', 'edusource9325@gmail.com', [order.buyer.email])
+            send_mail(f'Order {order.id}: {order.status}', f'Hi {order.seller.first_name},\n\nThis is to inform you that you that order {order.id} has been Cancelled.\n\nEduSource', 'edusource9325@gmail.com', [order.seller.email])
         elif order.status == 'Refunded':
-            send_mail(f'Order {order.id} Update', f'Hi {order.buyer.first_name},\n\nThis is to inform you that you that the return of your order {order.id} has been refunded.\n\nEduSource', 'edusource9325@gmail.com', [order.buyer.email])
+            send_mail(f'Order {order.id}: {order.status}', f'Hi {order.buyer.first_name},\n\nThis is to inform you that you that the return of your order {order.id} has been refunded.\n\nEduSource', 'edusource9325@gmail.com', [order.buyer.email])
         return JsonResponse(user.as_dict())
     return JsonResponse({})
 
@@ -1031,11 +1034,11 @@ def submit_return(request: HttpRequest, user: id, order: id) -> JsonResponse:
         order.status = 'Complete' if data['cancel'] == 'true' else 'Return Started'
         order.save()
         if order.status == 'Return Started':
-            send_mail(f'Order {order.id} Update', f'Hi {order.buyer.first_name},\n\nThis is to inform you that you that a return has been started for your order {order.id}.\n\nEduSource', 'edusource9325@gmail.com', [order.buyer.email])
-            send_mail(f'Order {order.id} Update', f'Hi {order.seller.first_name},\n\nThis is to inform you that you that a request has been made for the return of order {order.id}.\n\nEduSource', 'edusource9325@gmail.com', [order.seller.email])
+            send_mail(f'Order {order.id}: {order.status}', f'Hi {order.buyer.first_name},\n\nThis is to inform you that you that a return has been started for your order {order.id}.\n\nEduSource', 'edusource9325@gmail.com', [order.buyer.email])
+            send_mail(f'Order {order.id}: {order.status}', f'Hi {order.seller.first_name},\n\nThis is to inform you that you that a request has been made for the return of order {order.id}.\n\nEduSource', 'edusource9325@gmail.com', [order.seller.email])
         elif order.status == 'Complete':
-            send_mail(f'Order {order.id} Update', f'Hi {order.buyer.first_name},\n\nThis is to inform you that you that the return of your order {order.id} has been cancelled.\n\nEduSource', 'edusource9325@gmail.com', [order.buyer.email])
-            send_mail(f'Order {order.id} Update', f'Hi {order.seller.first_name},\n\nThis is to inform you that you that the return of order {order.id} is has been cancelled.\n\nEduSource', 'edusource9325@gmail.com', [order.seller.email])
+            send_mail(f'Order {order.id}: {order.status}', f'Hi {order.buyer.first_name},\n\nThis is to inform you that you that the return of your order {order.id} has been cancelled.\n\nEduSource', 'edusource9325@gmail.com', [order.buyer.email])
+            send_mail(f'Order {order.id}: {order.status}', f'Hi {order.seller.first_name},\n\nThis is to inform you that you that the return of order {order.id} is has been cancelled.\n\nEduSource', 'edusource9325@gmail.com', [order.seller.email])
         
         if data['cancel'] == 'true':
             for order_resource in order.order_resource.all():
