@@ -586,6 +586,9 @@
         display: flex;
         align-items: center;
         gap: 2rem;
+    }
+
+    #plus, #minus {
         text-align: center;
     }
 
