@@ -68,10 +68,17 @@
                         <p v-else>{{ order.status }}</p>
                     </div>
                 </div>
+                <div id="number" v-if="(order.status !== 'Cancelled')">
+                    <div class="title">{{ !order_complete ? 'Estimated' : ''}} Delivery Date</div>
+                    <div id="user_number">
+                        <p>{{ new Date(order_complete ? order.delivery_date : order.estimated_delivery_date).getDate() }} {{ new Date(order_complete ? order.delivery_date : order.estimated_delivery_date).toLocaleString('en-UK', {'month' : 'long'}) }}</p>
+                    </div>
+                </div>
                 <div id="buttons">
-                    <button :disabled="making_change" v-if="(mode == 'buyer') && returnable && order.status === 'Complete'" @click="start_return(order)">Start Return</button>
-                    <button :disabled="making_change" id="cancel" v-if="returnable && order.status === 'Return Started'" @click="start_return(order)">{{ mode === 'buyer' ? 'Cancel' : 'View' }} Return</button>
+                    <button :disabled="making_change" v-if="(mode == 'buyer') && returnable && order.status === 'Complete'" @click="view_return(order)">Start Return</button>
+                    <button :disabled="making_change" v-if="returnable && order.status === 'Return Started'" @click="view_return(order)">View Return</button>
                     <button :disabled="making_change" id="message_seller" v-if="(order.seller !== order.buyer) && returnable && order.status === 'Return Started'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
+                    <button :disabled="making_change" id="cancel" v-if="returnable && order.status === 'Return Started' && mode === 'buyer'" @click="start_return(order)">Cancel Return</button>
                     <button :disabled="making_change" id="cancel" v-if="(mode == 'buyer') && order.status === 'Placed'" @click="cancel_order">Cancel</button>
                 </div>
             </div>
@@ -142,9 +149,16 @@
                 // Allow user to message buyer/seller
                 window.location.href = `/message/${this.user.id}/${seller_id}`
             },
+            view_return(order: Order): void {
+                const window_location: string[] = window.location.href.split('/')
+                if (window_location.length === 5) {
+                    window.location.href = `/${this.mode === 'buyer' ? 'return' : 'sold-return'}/${order.id}`
+                } else {
+                    window.location.href = `/${this.mode === 'buyer' ? 'return' : 'sold-return'}/${order.id}/${window_location[5]}/${window_location[6]}/${window_location[7]}`
+                }
+            },
             async start_return(order: Order): Promise<void> {
                 // Cancelling return
-                const window_location: string[] = window.location.href.split('/')
                 if (order.status === 'Return Started') {
                     this.making_change = true
                     let returnResponse = await fetch(`${useURLStore().url}/api/user/${this.user.id}/return/${this.order.id}/`, {
@@ -166,11 +180,6 @@
                     useUsersStore().updateUser(data.user)
                     useResourcesStore().saveResources(data.resources)
                     return
-                }
-                if (window_location.length === 5) {
-                    window.location.href = `/${this.mode === 'buyer' ? 'return' : 'sold-return'}/${order.id}`
-                } else {
-                    window.location.href = `/${this.mode === 'buyer' ? 'return' : 'sold-return'}/${order.id}/${window_location[5]}/${window_location[6]}/${window_location[7]}`
                 }
             },
             view_resource(event: Event, id: number): void {
@@ -258,6 +267,12 @@
             }
         },
         computed: {
+            order_complete(): boolean {
+                if (this.order.status === 'Complete' || this.order.status === 'Refunded' || this.order.status === 'Return Received' || this.order.status === 'Return Started') {
+                    return true
+                }
+                return false
+            },
             url(): string {
                 return useURLStore().url
             },

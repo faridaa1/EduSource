@@ -149,6 +149,7 @@ export interface Order {
     seller: number,
     resources: OrderResource[],
     estimated_delivery_date: string,
+    delivery_date: string,
     delivery_image: string,
     date: string,
     return_method: 'Delivery' | 'Collection',
