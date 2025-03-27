@@ -109,8 +109,8 @@
                 </div>
                 <div id="buttons">
                     <button :disabled="making_change" v-if="(mode == 'buyer') && order.status === 'Complete'" @click="submit_return(order, false)">Submit</button>
-                    <button :disabled="making_change" id="cancel" v-if="(mode == 'buyer') && order.status === 'Return Started'" @click="submit_return(order, true)">Cancel</button>
                     <button :disabled="making_change" id="message_seller" v-if="(order.seller !== order.buyer) && order.status === 'Return Started'" @click="message_seller(mode === 'buyer' ? order.seller : order.buyer)">Message {{ mode === 'buyer' ? 'Seller' : 'Buyer' }}</button>
+                    <button :disabled="making_change" id="cancel" v-if="(mode == 'buyer') && order.status === 'Return Started'" @click="submit_return(order, true)">Cancel</button>
                 </div>
             </div>
         </div>
@@ -867,7 +867,7 @@
         resize: none;
     }
 
-    button:disabled, button:disabled:hover {
+    button:disabled, button:disabled:hover, #cancel:disabled, #cancel:disabled:hover {
         background-color: darkgray !important;
         cursor: not-allowed !important;
         color: white !important;
@@ -877,7 +877,7 @@
     @media (max-width: 1002px) {
         #content { 
             flex-direction: column;
-            gap: 4rem;
+            gap: 3rem;
             overflow-y: auto;
             padding-right: 1rem;
             max-height: 86vh;
