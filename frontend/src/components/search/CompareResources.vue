@@ -332,19 +332,30 @@
                 if (resource === 'resource1') {
                     // Show resource 1 search results if its search bar has been clicked
                     if (this.resource1_search.trim() === '') {
+                        if (this.searching_resource1) {
+                            this.searching_resource1 = false
+                            return
+                        }
+                        this.searching_resource1 = true
+                        this.resource1_search_results = this.resources.slice(0,5)
                         this.searching_resource2 = false
-                        this.searching_resource1 = false
+                        // this.searching_resource1 = false
                         return
                     }
                     this.searching_resource1 = !this.searching_resource1
                     if (this.searching_resource1) {
                         this.searching_resource2 = false
-                    }
+                    } 
                 } else {
                     // Show resource 2 search results if its search bar has been clicked
                     if (this.resource2_search.trim() === '') {
+                        if (this.searching_resource2) {
+                            this.searching_resource2 = false
+                            return
+                        }
+                        this.searching_resource2 = true
                         this.searching_resource1 = false
-                        this.searching_resource2 = false
+                        this.resource2_search_results = this.resources.slice(0,5)
                         return
                     }
                     this.searching_resource2 = !this.searching_resource2
@@ -356,8 +367,10 @@
             async conduct_search(resource: 'resource1' | 'resource2'): Promise<void> {
                 // Show top 5 search results 
                 if (resource === 'resource1') {
-                    if (this.resource1_search.trim() === '') {
+                        if (this.resource1_search.trim() === '') {
                         this.searching_resource1 = false
+                        this.searching_resource1 = true
+                        this.resource1_search_results = this.resources.slice(0,5)
                         this.resource1_search = ''
                         return
                     }
