@@ -3,6 +3,8 @@ from django.conf.urls.static import static
 from django.urls import path, re_path
 from .views import order, frontend, delete_account, chatbot, order_return, feedback, signout, exchange, recommendations, submit_return, semantic_search_orders, semantic_search_subjects, semantic_search, message, messages, signup, login, users, edit_review, currency_conversion, cart_to_wishlist, user, review, resources, user_details, check_details, update_wishlist, new_listing, sentiment_analysis, update_cart, get_cart
 
+app_name = 'api'
+
 """Defining routing"""
 urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [
     path('signout/', signout, name='signout'),
