@@ -134,10 +134,10 @@ class Subject(models.Model):
 
 class Address(models.Model):
     """Defining attributes and methods for Address model"""
-    first_line = models.CharField(max_length=255, null=False, blank=False)
-    second_line = models.CharField(max_length=255, null=False, blank=True)
-    city = models.CharField(max_length=255, null=False, blank=False)
-    postcode = models.CharField(max_length=7, null=False, blank=False)
+    first_line = models.CharField(max_length=255, null=False, blank=False, validators=[RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
+    second_line = models.CharField(max_length=255, null=False, blank=True, validators=[RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
+    city = models.CharField(max_length=255, null=False, blank=False, validators=[RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
+    postcode = models.CharField(max_length=7, null=False, blank=False, validators=[RegexValidator(r'^\S+( \S+)*$', message='Only one space between words')])
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='address')
     
     def __str__(self) -> str:
