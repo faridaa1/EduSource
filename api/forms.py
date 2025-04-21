@@ -68,6 +68,8 @@ class SignupForm(ModelForm):
         if mode == 'buyer':
             return ''
         description: str = self.cleaned_data['description']
+        if description == '':
+            raise ValidationError('Description cannot be empty')
         return description
     
     def clean_password(self) -> ValidationError | str:
