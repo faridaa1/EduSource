@@ -69,7 +69,7 @@ class SignupForm(ModelForm):
             return ''
         description: str = self.cleaned_data['description']
         if description == '':
-            raise ValidationError('Description cannot be empty')
+            raise ValidationError('This field is required')
         return description
     
     def clean_password(self) -> ValidationError | str:
