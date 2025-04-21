@@ -73,16 +73,23 @@ class UnitTesting(TestCase):
             'reenter_password': 'l',
             'theme_preference': TEST_THEME,
             'mode': TEST_MODE,
-            'description': 'more than  one spaces  between',
-            'first_line': '',
-            'second_line': '',
-            'city': '',
+            'description': 'two  spaces',
+            'first_line': 'two  spaces',
+            'second_line': 'two  spaces',
+            'city': 'two  spaces',
             'postcode': 'toomanycharacters',
         }, follow=True)
         print(response.context['signup_form'].errors)
         print(response.context['address_form'].errors)
-        # self.assertEqual(response.request['PATH_INFO'], '/signup')
-
+        self.asssertContains(response, 'Enter a valid email address')
+        self.asssertContains(response.content.decode().count('Only letters are allowed'), 2)
+        self.asssertContains(response, 'Username cannot contain special characters')
+        self.asssertContains(response, 'Must be 10 or 11 digit number starting with 07')
+        self.asssertContains(response, 'Username cannot contain special characters')
+        self.asssertContains(response, 'Password must be between 8 to 15 characters long')
+        self.asssertContains(response.content.decode().count('Only one space between words'), 4)
+        self.asssertContains(response, 'Ensure this value has at most 7 characters')
+        self.assertEqual(response.request['PATH_INFO'], '/signup')
 
 
 # class FunctionalTesting(StaticLiveServerTestCase):
