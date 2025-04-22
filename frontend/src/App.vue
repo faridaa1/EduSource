@@ -4,7 +4,7 @@
       <!-- Defining main header/navigation of application -->
       <header id="main-header">
         <img id='logo' src="/logo-light.svg" alt="EduSource" width="125" height="125"/>
-        <RouterLink :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="hide-on-mobile link">Home</RouterLink>
+        <RouterLink name="home" :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="hide-on-mobile link">Home</RouterLink>
         <div id="profile-div" class="hide-on-mobile">
           <p id="profile-header" v-if="authenticated" @click="toggle_profile_view">Account</p>
           <transition name="nav">
@@ -43,7 +43,7 @@
       <transition name="nav">
         <!-- Defining navbar for mobile devices -->
         <div id="hamburger" v-if="mobile_menu">
-          <RouterLink id="item1" :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="show-mobile">Home</RouterLink>
+          <RouterLink name="home" id="item1" :to="Object.keys(user).length > 0 && user.mode === 'seller' ? '/listings' : '/'" class="show-mobile">Home</RouterLink>
           <div id="item2" class="show-mobile" v-if="authenticated">
             <p id="profile-header" @click="toggle_profile_view_mobile">Account</p>
             <transition name="nav">

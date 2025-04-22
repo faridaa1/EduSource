@@ -4,6 +4,9 @@ from django.urls import reverse
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
+import time
 
 from api.models import User
 
@@ -135,7 +138,7 @@ class UnitTesting(TestCase):
         self.assertEqual(response.request['PATH_INFO'], '/signup/')
 
     def test_existing_username_signup(self):
-        # Creating existing user
+        # Creating user in database
         user = User.objects.create(username=TEST_USERNAME)
         user.set_password(TEST_PASSWORD)
         user.save()
@@ -167,7 +170,7 @@ class UnitTesting(TestCase):
         self.assertEqual(response.request['PATH_INFO'], '/signup/')
 
     def test_existing_email_signup(self):
-        # Creating existing user
+        # Creating user in database
         user = User.objects.create(username='test123')
         user.set_password(TEST_PASSWORD)
         user.email = TEST_EMAIL
@@ -197,11 +200,10 @@ class UnitTesting(TestCase):
         }, follow=True)
 
         self.assertContains(response, 'User with this Email already exists')
-        # print(response.context['signup_form'].errors)
         self.assertEqual(response.request['PATH_INFO'], '/signup/')
     
     def test_existing_number_signup(self):
-        # Creating existing user
+        # Creating user in database
         user = User.objects.create(username='test123')
         user.set_password(TEST_PASSWORD)
         user.phone_number = TEST_PHONE_NUMBER
@@ -258,12 +260,11 @@ class UnitTesting(TestCase):
         }, follow=True)
 
         self.assertContains(response, 'Both passwords must match')
-        # print(response.context['signup_form'].errors)
         self.assertEqual(response.request['PATH_INFO'], '/signup/')
     
-    def test_valid_login(self):
-        # Creating existing user
-        user = User.objects.create(username=TEST_EMAIL)
+    def test_valid_email_login(self):
+        # Creating user in database
+        user = User.objects.create(username=TEST_USERNAME, email=TEST_EMAIL)
         user.set_password(TEST_PASSWORD)
         user.save()
 
@@ -274,98 +275,305 @@ class UnitTesting(TestCase):
         csrf_token = soup.find('input', attrs={'name': 'csrfmiddlewaretoken'})
         response = self.client.post(url, {
             'csrfmiddlewaretoken': csrf_token['value'],
-            'email': TEST_EMAIL,
+            'user': TEST_EMAIL,
             'password': TEST_PASSWORD,
         }, follow=True)
-        print(response.request['PATH_INFO'])
-        # self.assertEqual(response.request['PATH_INFO'], '/details')
 
-# class FunctionalTesting(StaticLiveServerTestCase):
-#     """Functional testing in Selenium"""
-#     port = 8000
-
-#     @classmethod
-#     def setUpClass(cls):
-#         cls.selenium = WebDriver()
-#         super().setUpClass()
+        self.assertEqual(response.request['PATH_INFO'], '/')
     
-#     # @classmethod
-#     # def tearDownClass(cls):
-#     #     cls.selenium.quit()
-#     #     super().tearDownClass()
+    def test_valid_username_login(self):
+        # Creating user in database
+        user = User.objects.create(username=TEST_USERNAME, email=TEST_EMAIL)
+        user.set_password(TEST_PASSWORD)
+        user.save()
+
+        url = reverse('api:login') # Retrieve path
+        response = self.client.get(url) # Retrieve response
+        self.assertContains(response, 'csrfmiddlewaretoken') # Check inclusion of csrfmiddlewaretoken
+        soup = BeautifulSoup(response.content, features="html.parser")
+        csrf_token = soup.find('input', attrs={'name': 'csrfmiddlewaretoken'})
+        response = self.client.post(url, {
+            'csrfmiddlewaretoken': csrf_token['value'],
+            'user': TEST_USERNAME,
+            'password': TEST_PASSWORD,
+        }, follow=True)
+
+        self.assertEqual(response.request['PATH_INFO'], '/')
     
-#     def get_url(self, path):
-#         """Function to retrieve url given a path"""
-#         self.selenium.get(f"{self.live_server_url}/{path}/")
+    def test_valid_buyer_login(self):
+        # Creating user in database
+        user = User.objects.create(username=TEST_USERNAME, email=TEST_EMAIL, mode='buyer')
+        user.set_password(TEST_PASSWORD)
+        user.save()
+
+        url = reverse('api:login') # Retrieve path
+        response = self.client.get(url) # Retrieve response
+        self.assertContains(response, 'csrfmiddlewaretoken') # Check inclusion of csrfmiddlewaretoken
+        soup = BeautifulSoup(response.content, features="html.parser")
+        csrf_token = soup.find('input', attrs={'name': 'csrfmiddlewaretoken'})
+        response = self.client.post(url, {
+            'csrfmiddlewaretoken': csrf_token['value'],
+            'user': TEST_EMAIL,
+            'password': TEST_PASSWORD,
+        }, follow=True)
+
+        self.assertEqual(response.request['PATH_INFO'], '/')
     
-#     def test_signup(self):
-#         """Testing signup"""
-#         # Retrieve url
-#         self.get_url('signup')
+    def test_valid_seller_login(self):
+        # Creating user in database
+        user = User.objects.create(username=TEST_USERNAME, email=TEST_EMAIL, mode='seller')
+        user.set_password(TEST_PASSWORD)
+        user.save()
 
-#         # Fill in fields
-#         email_field = self.selenium.find_element(By.NAME, 'email')
-#         email_field.click() # Simulate user clicking input box
-#         email_field.send_keys(TEST_EMAIL)
+        url = reverse('api:login') # Retrieve path
+        response = self.client.get(url) # Retrieve response
+        self.assertContains(response, 'csrfmiddlewaretoken') # Check inclusion of csrfmiddlewaretoken
+        soup = BeautifulSoup(response.content, features="html.parser")
+        csrf_token = soup.find('input', attrs={'name': 'csrfmiddlewaretoken'})
+        response = self.client.post(url, {
+            'csrfmiddlewaretoken': csrf_token['value'],
+            'user': TEST_EMAIL,
+            'password': TEST_PASSWORD,
+        }, follow=True)
+        self.assertEqual(response.request['PATH_INFO'], '/listings')
+    
+    def test_invalid_login(self):
+        # Creating user in database
+        user = User.objects.create(username=TEST_USERNAME, email=TEST_EMAIL)
+        user.set_password(TEST_PASSWORD)
+        user.save()
 
-#         first_name_field = self.selenium.find_element(By.NAME, 'first_name')
-#         first_name_field.click()
-#         first_name_field.send_keys(TEST_FIRST_NAME)
+        url = reverse('api:login') # Retrieve path
+        response = self.client.get(url) # Retrieve response
+        self.assertContains(response, 'csrfmiddlewaretoken') # Check inclusion of csrfmiddlewaretoken
+        soup = BeautifulSoup(response.content, features="html.parser")
+        csrf_token = soup.find('input', attrs={'name': 'csrfmiddlewaretoken'})
+        response = self.client.post(url, {
+            'csrfmiddlewaretoken': csrf_token['value'],
+            'user': 'not correct',
+            'password': TEST_PASSWORD,
+        }, follow=True)
 
-#         last_name_field = self.selenium.find_element(By.NAME, 'last_name')
-#         last_name_field.click()
-#         last_name_field.send_keys(TEST_LAST_NAME)
+        self.assertEqual(response.request['PATH_INFO'], '/login/')
+        self.assertContains(response, 'Invalid username or password')
+    
+    def test_empty_login(self):
+        # Creating user in database
+        user = User.objects.create(username=TEST_USERNAME, email=TEST_EMAIL)
+        user.set_password(TEST_PASSWORD)
+        user.save()
 
-#         phone_number_field = self.selenium.find_element(By.NAME, 'phone_number')
-#         phone_number_field.click()
-#         phone_number_field.send_keys(TEST_PHONE_NUMBER)
+        url = reverse('api:login') # Retrieve path
+        response = self.client.get(url) # Retrieve response
+        self.assertContains(response, 'csrfmiddlewaretoken') # Check inclusion of csrfmiddlewaretoken
+        soup = BeautifulSoup(response.content, features="html.parser")
+        csrf_token = soup.find('input', attrs={'name': 'csrfmiddlewaretoken'})
+        response = self.client.post(url, {
+            'csrfmiddlewaretoken': csrf_token['value'],
+            'user': '',
+            'password': '',
+        }, follow=True)
 
-#         username_field = self.selenium.find_element(By.NAME, 'username')
-#         username_field.click()
-#         username_field.send_keys(TEST_USERNAME)
+        self.assertEqual(response.content.decode().count('This field is required'), 2)
+        self.assertEqual(response.request['PATH_INFO'], '/login/')
+    
+    def test_incorrect_password_login(self):
+        # Creating user in database
+        user = User.objects.create(username=TEST_USERNAME, email=TEST_EMAIL)
+        user.set_password(TEST_PASSWORD)
+        user.save()
 
-#         password_field = self.selenium.find_element(By.NAME, 'password')
-#         password_field.click()
-#         password_field.send_keys(TEST_PASSWORD)
+        url = reverse('api:login') # Retrieve path
+        response = self.client.get(url) # Retrieve response
+        self.assertContains(response, 'csrfmiddlewaretoken') # Check inclusion of csrfmiddlewaretoken
+        soup = BeautifulSoup(response.content, features="html.parser")
+        csrf_token = soup.find('input', attrs={'name': 'csrfmiddlewaretoken'})
+        response = self.client.post(url, {
+            'csrfmiddlewaretoken': csrf_token['value'],
+            'user': TEST_EMAIL,
+            'password': 'wrongpass123',
+        }, follow=True)
+        
+        self.assertEqual(response.request['PATH_INFO'], '/login/')
+        self.assertContains(response, 'Invalid email or password')
 
-#         reenter_password_field = self.selenium.find_element(By.NAME, 'reenter_password')
-#         reenter_password_field.click()
-#         reenter_password_field.send_keys(TEST_PASSWORD)
+    def test_incorrect_username_login(self):
+        # Creating user in database
+        user = User.objects.create(username=TEST_USERNAME, email=TEST_EMAIL)
+        user.set_password(TEST_PASSWORD)
+        user.save()
 
-#         last_name_field = self.selenium.find_element(By.NAME, 'last_name')
-#         last_name_field.click()
-#         last_name_field.send_keys(TEST_LAST_NAME)
+        url = reverse('api:login') # Retrieve path
+        response = self.client.get(url) # Retrieve response
+        self.assertContains(response, 'csrfmiddlewaretoken') # Check inclusion of csrfmiddlewaretoken
+        soup = BeautifulSoup(response.content, features="html.parser")
+        csrf_token = soup.find('input', attrs={'name': 'csrfmiddlewaretoken'})
+        response = self.client.post(url, {
+            'csrfmiddlewaretoken': csrf_token['value'],
+            'user': 'wrongusername',
+            'password': TEST_PASSWORD,
+        }, follow=True)
+        
+        self.assertEqual(response.request['PATH_INFO'], '/login/')
+        self.assertContains(response, 'Invalid username or password')
+    
+    def test_incorrect__login(self):
+        url = reverse('api:login') # Retrieve path
+        response = self.client.get(url) # Retrieve response
+        self.assertContains(response, 'csrfmiddlewaretoken') # Check inclusion of csrfmiddlewaretoken
+        soup = BeautifulSoup(response.content, features="html.parser")
+        csrf_token = soup.find('input', attrs={'name': 'csrfmiddlewaretoken'})
+        response = self.client.post(url, {
+            'csrfmiddlewaretoken': csrf_token['value'],
+            'user': 'wrongusername',
+            'password': 'wrongpass',
+        }, follow=True)
+        
+        self.assertEqual(response.request['PATH_INFO'], '/login/')
+        self.assertContains(response, 'Invalid username or password')
+        # print(response.context['login_form'].errors)
 
-#         theme_field = self.selenium.find_element(By.NAME, 'theme_preference')
-#         theme_field.click()
-#         dark_option = self.selenium.find_element(By.XPATH, "//option[@value='dark']")
-#         dark_option.click()
+class FunctionalTesting(StaticLiveServerTestCase):
+    """Functional testing in Selenium"""
+    port = 8000
 
-#         mode_field = self.selenium.find_element(By.NAME, 'mode')
-#         mode_field.click()
-#         seller_option = self.selenium.find_element(By.XPATH, "//option[@value='seller']")
-#         seller_option.click()
+    def setUp(self):
+        self.selenium = WebDriver()
+    
+    def tearDown(self):
+        self.selenium.quit()
+    
+    def get_url(self, path):
+        """Function to retrieve url given a path"""
+        self.selenium.get(f"{self.live_server_url}/{path}/")
+    
+    def buyer_login(self):
+        """Method to log in user"""
+        # Creating user in database
+        user = User.objects.create(
+            username=TEST_USERNAME, 
+            email=TEST_EMAIL,
+            first_name=TEST_FIRST_NAME,
+            last_name=TEST_LAST_NAME,
+            phone_number=TEST_PHONE_NUMBER,
+            mode='buyer',
+            first_line=TEST_ADDRESS_FIRST_LINE,
+            second_line=TEST_ADDRESS_SECOND_LINE,
+            city=TEST_CITY,
+            postcode=TEST_POSTCODE
+            )
+        user.set_password(TEST_PASSWORD)
+        user.save()
 
-#         description_field = self.selenium.find_element(By.NAME, 'description')
-#         description_field.click()
-#         description_field.send_keys(TEST_DESCRIPTION)
+        # Retrieve url
+        self.get_url('login')
 
-#         first_line_field = self.selenium.find_element(By.NAME, 'first_line')
-#         first_line_field.click()
-#         first_line_field.send_keys(TEST_ADDRESS_FIRST_LINE)
+        # Fill in fields
+        self.selenium.find_element(By.NAME, 'user').send_keys(TEST_USERNAME)
+        self.selenium.find_element(By.NAME, 'password').send_keys(TEST_PASSWORD)
 
-#         second_line_field = self.selenium.find_element(By.NAME, 'second_line')
-#         second_line_field.click()
-#         second_line_field.send_keys(TEST_ADDRESS_SECOND_LINE)
+        # Submit form
+        self.selenium.find_element(By.ID, 'submit').click()
 
-#         city_field = self.selenium.find_element(By.NAME, 'city')
-#         city_field.click()
-#         city_field.send_keys(TEST_CITY)
+    def seller_login(self):
+        """Method to log in user"""
+        # Creating user in database
+        user = User.objects.create(
+            username=TEST_USERNAME, 
+            email=TEST_EMAIL,
+            first_name=TEST_FIRST_NAME,
+            last_name=TEST_LAST_NAME,
+            phone_number=TEST_PHONE_NUMBER,
+            mode='seller',
+            description=TEST_DESCRIPTION,
+            first_line=TEST_ADDRESS_FIRST_LINE,
+            second_line=TEST_ADDRESS_SECOND_LINE,
+            city=TEST_CITY,
+            postcode=TEST_POSTCODE
+            )
+        user.set_password(TEST_PASSWORD)
+        user.save()
 
-#         postcode_field = self.selenium.find_element(By.NAME, 'postcode')
-#         postcode_field.click()
-#         postcode_field.send_keys(TEST_POSTCODE)
+        # Retrieve url
+        self.get_url('login')
 
-#         # Submit form
-#         submit_button = self.selenium.find_element(By.ID, 'submit')
-#         submit_button.click()
+        # Fill in fields
+        self.selenium.find_element(By.NAME, 'user').send_keys(TEST_USERNAME)
+        self.selenium.find_element(By.NAME, 'password').send_keys(TEST_PASSWORD)
+
+        # Submit form
+        self.selenium.find_element(By.ID, 'submit').click()
+
+    def test_signup(self):
+        # Retrieve url
+        self.get_url('signup')
+
+        # Fill in fields
+        self.selenium.find_element(By.NAME, 'email').send_keys(TEST_EMAIL)
+        self.selenium.find_element(By.NAME, 'first_name').send_keys(TEST_FIRST_NAME)
+        self.selenium.find_element(By.NAME, 'last_name').send_keys(TEST_LAST_NAME)
+        self.selenium.find_element(By.NAME, 'phone_number').send_keys(TEST_PHONE_NUMBER)
+        self.selenium.find_element(By.NAME, 'username').send_keys(TEST_USERNAME)
+        self.selenium.find_element(By.NAME, 'password').send_keys(TEST_PASSWORD)
+        self.selenium.find_element(By.NAME, 'reenter_password').send_keys(TEST_PASSWORD)
+        self.selenium.find_element(By.NAME, 'last_name').send_keys(TEST_LAST_NAME)
+        self.selenium.find_element(By.NAME, 'theme_preference').click()
+        self.selenium.find_element(By.XPATH, "//option[@value='dark']").click()
+        self.selenium.find_element(By.NAME, 'mode').click()
+        self.selenium.find_element(By.XPATH, "//option[@value='seller']").click()
+        self.selenium.find_element(By.NAME, 'description').send_keys(TEST_DESCRIPTION)
+        self.selenium.find_element(By.NAME, 'first_line').send_keys(TEST_ADDRESS_FIRST_LINE)
+        self.selenium.find_element(By.NAME, 'second_line').send_keys(TEST_ADDRESS_SECOND_LINE)
+        self.selenium.find_element(By.NAME, 'city').send_keys(TEST_CITY)
+        self.selenium.find_element(By.NAME, 'postcode').send_keys(TEST_POSTCODE)
+
+        # Submit form
+        self.selenium.find_element(By.ID, 'submit').click()
+
+        time.sleep(2) # Accounting for processing delay
+
+        # Ensuring url has updated to details page
+        self.assertEqual(self.selenium.current_url, 'http://localhost:5173/details')
+    
+    def test_login(self):
+        # Creating user in database
+        user = User.objects.create(username=TEST_USERNAME)
+        user.set_password(TEST_PASSWORD)
+        user.save()
+
+        # Retrieve url
+        self.get_url('login')
+
+        # Fill in fields
+        self.selenium.find_element(By.NAME, 'user').send_keys(TEST_USERNAME)
+        self.selenium.find_element(By.NAME, 'password').send_keys(TEST_PASSWORD)
+
+        # Submit form
+        self.selenium.find_element(By.ID, 'submit').click()
+
+        time.sleep(2) # Accounting for processing delay
+
+        # Ensuring url has updated to home page
+        self.assertEqual(self.selenium.current_url, 'http://localhost:5173/')
+    
+    def test_redirect_form(self):
+        """Ensuring 'Home' click on signup/login pages go to home page"""
+        # Signup page
+        self.get_url('signup') # Retrieve url
+        self.selenium.find_element(By.ID, 'home').click() # Click home
+        self.assertEqual(self.selenium.current_url, 'http://localhost:5173/') # Ensuring url has updated to home page
+
+        # Login page
+        self.get_url('login')
+        self.selenium.find_element(By.ID, 'home').click() 
+        self.assertEqual(self.selenium.current_url, 'http://localhost:5173/')
+    
+    def test_buyer_menu_navigation(self):
+        self.buyer_login()
+
+        # Home page
+        self.get_url('/') 
+        self.selenium.find_element(By.ID, 'logo').click() 
+        self.assertEqual(self.selenium.current_url, 'http://localhost:5173/') 
+        self.selenium.find_element(By.NAME, 'home').click() 
+        self.assertEqual(self.selenium.current_url, 'http://localhost:5173/') 
