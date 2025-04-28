@@ -124,7 +124,7 @@ def resources(request: HttpRequest) -> JsonResponse:
     return JsonResponse([resource.as_dict() for resource in Resource.objects.all()], safe=False)
 
 
-def currency_conversion(request: HttpRequest, id: int, from_currency: str, to_currency: float) -> JsonResponse:
+def currency_conversion(request: HttpRequest, id: int, from_currency: str, to_currency: str) -> JsonResponse:
     """Implementing currency conversion"""
     resource: Resource = get_object_or_404(Resource, id=id)
     initial_value: Money = Money(resource.price, to_currency)
