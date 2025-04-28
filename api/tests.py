@@ -1,15 +1,11 @@
+from decimal import Decimal
+import json
 from bs4 import BeautifulSoup
 from django.test import Client, TestCase
+from django.utils import timezone
 from django.urls import reverse
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from selenium.webdriver.chrome.webdriver import WebDriver
-from selenium.webdriver import ChromeOptions
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions
-import time
-
-from api.models import Address, User
+from django.contrib.auth.models import AnonymousUser
+from api.models import Address, Resource, Subject, User
 
 TEST_EMAIL = 'farida@gmail.com'
 TEST_FIRST_NAME = 'farida'
@@ -29,6 +25,101 @@ class UnitTesting(TestCase):
     """Comprehensive unit testing"""
     def setUp(self):
         self.client = Client()
+        user = User.objects.create(
+            username='admin', 
+            email='admin@gmail.com',
+            first_name='ad',
+            last_name='min',
+            phone_number='072332232',
+            mode='buyer',
+            theme_preference=TEST_THEME,
+        )
+        user.set_password(TEST_PASSWORD)
+        user.save()
+        address = Address.objects.create(
+            first_line=TEST_ADDRESS_FIRST_LINE,
+            second_line=TEST_ADDRESS_SECOND_LINE,
+            city=TEST_CITY,
+            postcode=TEST_POSTCODE,
+            user=user
+        )
+        address.save()
+        resource1 = Resource.objects.create(
+            name='Test Resource',
+            description='A test description for the resource.',
+            height=Decimal('20.5'),
+            width=Decimal('15.2'),
+            weight=Decimal('1.2'),
+            price=Decimal('1.00'),
+            stock=Decimal('50'),
+            estimated_delivery_time=Decimal('5'),
+            subject='Mathematics',
+            author='John Doe',
+            self_made=True,
+            is_draft=False,
+            unique=True,
+            allow_delivery=False,
+            allow_collection=False,
+            allow_return=False,
+            page_start=1,
+            page_end=100,
+            height_unit='cm',
+            width_unit='cm',
+            image1='https://m.media-amazon.com/images/I/51+yjR0P2ML._SY445_SX342_.jpg', 
+            image2='https://m.media-amazon.com/images/I/51+yjR0P2ML._SY445_SX342_.jpg', 
+            video='https://m.media-amazon.com/images/I/51+yjR0P2ML._SY445_SX342_.jpg', 
+            upload_date=timezone.now(),
+            last_edited=timezone.now(),
+            rating=Decimal('4.5'),
+            user=user,  
+            weight_unit='kg',
+            price_currency='GBP',
+            estimated_delivery_units='days',
+            type='Textbook', 
+            colour='Blue',
+            source='AI',
+            condition='New',
+            media='Online',
+        )
+        resource1.save()
+        resource2 = Resource.objects.create(
+            name='Test Resource Two',
+            description='A test description for the resource.',
+            height=Decimal('20.5'),
+            width=Decimal('15.2'),
+            weight=Decimal('1.2'),
+            price=Decimal('1.00'),
+            stock=Decimal('50'),
+            estimated_delivery_time=Decimal('5'),
+            subject='Mathematics',
+            author='John Doe',
+            self_made=True,
+            is_draft=False,
+            unique=True,
+            allow_delivery=False,
+            allow_collection=False,
+            allow_return=False,
+            page_start=1,
+            page_end=100,
+            height_unit='cm',
+            width_unit='cm',
+            image1='https://m.media-amazon.com/images/I/51+yjR0P2ML._SY445_SX342_.jpg', 
+            image2='https://m.media-amazon.com/images/I/51+yjR0P2ML._SY445_SX342_.jpg', 
+            video='https://m.media-amazon.com/images/I/51+yjR0P2ML._SY445_SX342_.jpg', 
+            upload_date=timezone.now(),
+            last_edited=timezone.now(),
+            rating=Decimal('4.5'),
+            user=user,  
+            weight_unit='kg',
+            price_currency='GBP',
+            estimated_delivery_units='days',
+            type='Textbook', 
+            colour='Blue',
+            source='AI',
+            condition='New',
+            media='Online',
+        )
+        resource2.save()
     
     def test_valid_signup(self):
         # Beginning of code taken from ECS639U socialnetwork_v2 folder
@@ -412,28 +503,8 @@ class UnitTesting(TestCase):
         
         self.assertEqual(response.request['PATH_INFO'], '/login/')
         self.assertContains(response, 'Invalid username or password')
-        # print(response.context['login_form'].errors)
 
-class FunctionalTesting(StaticLiveServerTestCase):
-    """Functional testing in Selenium"""
-    port = 8000
-
-    def setUp(self):
-        # Ensure full screen is shown
-        options = ChromeOptions()
-        options.add_argument("--start-maximized")
-        self.selenium = WebDriver(options=options)
-    
-    def tearDown(self):
-        self.selenium.quit()
-    
-    def get_url(self, path):
-        """Function to retrieve url given a path"""
-        self.selenium.get(f"{self.live_server_url}/{path}/")
-    
-    def buyer_login(self):
-        """Method to log in user"""
-        # Creating user in database
+    def buyer_user(self):
         user = User.objects.create(
             username=TEST_USERNAME, 
             email=TEST_EMAIL,
@@ -441,6 +512,7 @@ class FunctionalTesting(StaticLiveServerTestCase):
             last_name=TEST_LAST_NAME,
             phone_number=TEST_PHONE_NUMBER,
             mode='buyer',
+            theme_preference=TEST_THEME,
         )
         user.set_password(TEST_PASSWORD)
         user.save()
@@ -452,20 +524,8 @@ class FunctionalTesting(StaticLiveServerTestCase):
             user=user
         )
         address.save()
-        
-        # Retrieve url
-        self.get_url('login')
 
-        # Fill in fields
-        self.selenium.find_element(By.NAME, 'user').send_keys(TEST_USERNAME)
-        self.selenium.find_element(By.NAME, 'password').send_keys(TEST_PASSWORD)
-
-        # Submit form
-        self.selenium.find_element(By.ID, 'submit').click()
-
-    def seller_login(self):
-        """Method to log in user"""
-        # Creating user in database
+    def seller_user(self):
         user = User.objects.create(
             username=TEST_USERNAME, 
             email=TEST_EMAIL,
@@ -474,6 +534,7 @@ class FunctionalTesting(StaticLiveServerTestCase):
             phone_number=TEST_PHONE_NUMBER,
             mode='seller',
             description=TEST_DESCRIPTION,
+            theme_preference=TEST_THEME,
         )
         user.set_password(TEST_PASSWORD)
         user.save()
@@ -486,99 +547,229 @@ class FunctionalTesting(StaticLiveServerTestCase):
         )
         address.save()
 
-        # Retrieve url
-        self.get_url('login')
+    def test_signout(self):
+        self.client.login(username='admin', password=TEST_PASSWORD)
+        url = reverse('health') # Retrieve path
+        response = self.client.get(url) # Retrieve response
+        # Ensure currently signed in user is admin
+        self.assertEqual(response.wsgi_request.user.username, 'admin')
+        self.assertEqual(response.status_code, 200)
+        url = reverse('api:signout') # Retrieve path
+        response = self.client.get(url) # Retrieve response
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.wsgi_request.user, AnonymousUser)
 
-        # Fill in fields
-        self.selenium.find_element(By.NAME, 'user').send_keys(TEST_USERNAME)
-        self.selenium.find_element(By.NAME, 'password').send_keys(TEST_PASSWORD)
-
-        # Submit form
-        self.selenium.find_element(By.ID, 'submit').click()
-
-    # def test_signup(self):
-    #     # Retrieve url
-    #     self.get_url('signup')
-
-    #     # Fill in fields
-    #     self.selenium.find_element(By.NAME, 'email').send_keys(TEST_EMAIL)
-    #     self.selenium.find_element(By.NAME, 'first_name').send_keys(TEST_FIRST_NAME)
-    #     self.selenium.find_element(By.NAME, 'last_name').send_keys(TEST_LAST_NAME)
-    #     self.selenium.find_element(By.NAME, 'phone_number').send_keys(TEST_PHONE_NUMBER)
-    #     self.selenium.find_element(By.NAME, 'username').send_keys(TEST_USERNAME)
-    #     self.selenium.find_element(By.NAME, 'password').send_keys(TEST_PASSWORD)
-    #     self.selenium.find_element(By.NAME, 'reenter_password').send_keys(TEST_PASSWORD)
-    #     self.selenium.find_element(By.NAME, 'last_name').send_keys(TEST_LAST_NAME)
-    #     self.selenium.find_element(By.NAME, 'theme_preference').click()
-    #     self.selenium.find_element(By.XPATH, "//option[@value='dark']").click()
-    #     self.selenium.find_element(By.NAME, 'mode').click()
-    #     self.selenium.find_element(By.XPATH, "//option[@value='seller']").click()
-    #     self.selenium.find_element(By.NAME, 'description').send_keys(TEST_DESCRIPTION)
-    #     self.selenium.find_element(By.NAME, 'first_line').send_keys(TEST_ADDRESS_FIRST_LINE)
-    #     self.selenium.find_element(By.NAME, 'second_line').send_keys(TEST_ADDRESS_SECOND_LINE)
-    #     self.selenium.find_element(By.NAME, 'city').send_keys(TEST_CITY)
-    #     self.selenium.find_element(By.NAME, 'postcode').send_keys(TEST_POSTCODE)
-
-    #     # Submit form
-    #     self.selenium.find_element(By.ID, 'submit').click()
-
-    #     time.sleep(2) # Accounting for processing delay
-
-    #     # Ensuring url has updated to details page
-    #     self.assertEqual(self.selenium.current_url, 'http://localhost:5173/details')
+    def test_user(self):
+        # Checking that unauthenticated is returned
+        url = reverse('api:user') 
+        response = self.client.get(url) 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content)['user'], 'unauthenticated')
+        # Checking that a dict with 24 keys is returned
+        self.client.login(username='admin', password=TEST_PASSWORD)
+        response = self.client.get(url) 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(json.loads(response.content)['user']), 24)
     
-    # def test_login(self):
-    #     # Creating user in database
-    #     user = User.objects.create(username=TEST_USERNAME)
-    #     user.set_password(TEST_PASSWORD)
-    #     user.save()
-
-    #     # Retrieve url
-    #     self.get_url('login')
-
-    #     # Fill in fields
-    #     self.selenium.find_element(By.NAME, 'user').send_keys(TEST_USERNAME)
-    #     self.selenium.find_element(By.NAME, 'password').send_keys(TEST_PASSWORD)
-
-    #     # Submit form
-    #     self.selenium.find_element(By.ID, 'submit').click()
-
-    #     time.sleep(2) # Accounting for processing delay
-
-    #     # Ensuring url has updated to home page
-    #     self.assertEqual(self.selenium.current_url, 'http://localhost:5173/')
+    def test_users(self):
+        self.buyer_user()
+        url = reverse('api:users') 
+        response = self.client.get(url) 
+        self.assertEqual(response.status_code, 200)
+        # Checking there are two users, each with 24 items
+        self.assertEqual(len(json.loads(response.content)), 2)
+        self.assertEqual(len(json.loads(response.content)[0]), 24)
     
-    # def test_back_signup(self):
-    #     self.get_url('signup') # Retrieve url
-    #     self.selenium.find_element(By.ID, 'home').click() # Click home
-    #     self.assertEqual(self.selenium.current_url, 'http://localhost:5173/') # Ensuring url has updated to home page
-    
-    # def test_back_login(self):
-    #     self.get_url('login')
-    #     self.selenium.find_element(By.ID, 'home').click() 
-    #     self.assertEqual(self.selenium.current_url, 'http://localhost:5173/')
-    
-    def test_settings(self):
-        self.buyer_login()
-        self.get_url('settings')
-        user: User = User.objects.first()
-        self.assertEqual(user.theme_preference, 'light') 
-        self.selenium.find_element(By.ID, 'toggle').click() 
-        # self.assertEqual(user.theme_preference, 'dark') 
-        time.sleep(8)
+    def test_delete_account(self):
+        self.buyer_user()
+        url = reverse('api:review') 
+        response = self.client.get(url) 
+        self.assertEqual(response.status_code, 200)
+        # Checking there are two users, each with 24 items
+        self.assertEqual(len(json.loads(response.content)), 2)
+        self.assertEqual(len(json.loads(response.content)[0]), 37)
 
-    # def test_buyer_menu_navigation(self):
-    #     self.buyer_login()
-    #     time.sleep(5) # Processing time
+    def test_delete_account(self):
+        self.buyer_user()
+        url = reverse('api:delete account', kwargs={
+            'user' : 1
+        }) 
+        response = self.client.delete(url) 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.filter(id=1).exists(), False)
 
-    #     # Home page
-    #     # self.selenium.find_element(By.ID, 'logo').click() 
-    #     # self.assertEqual(self.selenium.current_url, 'http://localhost:5173/') 
-    #     # self.selenium.find_element(By.LINK_TEXT, 'Home').click() 
-    #     # self.assertEqual(self.selenium.current_url, 'http://localhost:5173/')
-    #     WebDriverWait(self.selenium, 10).until(
-    #         expected_conditions.element_to_be_clickable((By.LINK_TEXT, 'Settings'))
-    #     )
-    #     self.selenium.find_element(By.LINK_TEXT, 'Settings').click() 
-    #     time.sleep(50)
-    #     self.assertEqual(self.selenium.current_url, 'http://localhost:5173/settings') 
+    def test_update_details(self):
+        self.buyer_user()
+        
+        url = reverse('api:details', kwargs={'id' : 1,'attribute' : 'theme'}) 
+        response = self.client.put(url, data=json.dumps('light'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.get(id=1).theme_preference, 'light')
+        
+        url = reverse('api:details', kwargs={'id' : 1,'attribute' : 'currency'}) 
+        response = self.client.put(url, data=json.dumps('EUR'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.get(id=1).currency, 'EUR')
+
+        url = reverse('api:details', kwargs={'id' : 1,'attribute' : 'mode'}) 
+        response = self.client.put(url, data=json.dumps('seller'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.get(id=1).mode, 'seller')
+
+        url = reverse('api:details', kwargs={'id' : 1,'attribute' : 'email'}) 
+        response = self.client.put(url, data=json.dumps('newemail@gmail.com'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.get(id=1).email, 'newemail@gmail.com')
+
+        url = reverse('api:details', kwargs={'id' : 1,'attribute' : 'username'}) 
+        response = self.client.put(url, data=json.dumps('admin1'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.get(id=1).username, 'admin1')
+
+        url = reverse('api:details', kwargs={'id' : 1,'attribute' : 'password'}) 
+        response = self.client.put(url, data=json.dumps('password123'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.get(id=1).check_password('password123'), True)
+
+        url = reverse('api:details', kwargs={'id' : 1,'attribute' : 'name'}) 
+        response = self.client.put(url, data=json.dumps('newname'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.get(id=1).first_name, 'newname')
+
+        url = reverse('api:details', kwargs={'id' : 1,'attribute' : 'surname'}) 
+        response = self.client.put(url, data=json.dumps('surname'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.get(id=1).last_name, 'surname')
+
+        url = reverse('api:details', kwargs={'id' : 1,'attribute' : 'number'}) 
+        response = self.client.put(url, data=json.dumps('0712345683'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.get(id=1).phone_number, '0712345683')
+
+        url = reverse('api:details', kwargs={'id' : 1,'attribute' : 'description'}) 
+        response = self.client.put(url, data=json.dumps('A new updated description.'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.get(id=1).description, 'A new updated description.')
+
+        url = reverse('api:details', kwargs={'id' : 1,'attribute' : 'address_line_one'}) 
+        response = self.client.put(url, data=json.dumps('new line one'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Address.objects.get(user__id=1).first_line, 'new line one')
+
+        url = reverse('api:details', kwargs={'id' : 1,'attribute' : 'address_line_two'}) 
+        response = self.client.put(url, data=json.dumps('new line two'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Address.objects.get(user__id=1).second_line, 'new line two')
+
+        url = reverse('api:details', kwargs={'id' : 1,'attribute' : 'city'}) 
+        response = self.client.put(url, data=json.dumps('new city'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Address.objects.get(user__id=1).city, 'new city')
+
+        url = reverse('api:details', kwargs={'id' : 1,'attribute' : 'postcode'}) 
+        response = self.client.put(url, data=json.dumps('new post'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Address.objects.get(user__id=1).postcode, 'new post')
+
+        url = reverse('api:details', kwargs={'id' : 1, 'attribute' : 'subjects'}) 
+        response = self.client.put(url, data=json.dumps('English'), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Subject.objects.filter(user__id=1, name='English').exists())
+        # Delete subject
+        response = self.client.delete(url, data=json.dumps(1), content_type='application/json') 
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Subject.objects.filter(user__id=1, name='English').exists())
+
+    def test_check_details_email(self):
+        self.buyer_user()
+        url = reverse('api:check details', kwargs={
+            'id' : 1,
+            'attribute' : 'email'
+        }) 
+        response = self.client.put(url,
+            data=json.dumps(TEST_EMAIL),
+            content_type='application/json'
+        ) 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), True)
+        response = self.client.put(url,
+            data=json.dumps('nonexistentemail@gmail.com'),
+            content_type='application/json'
+        ) 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), False)
+    
+    def test_check_details_username(self):
+        self.buyer_user()
+        url = reverse('api:check details', kwargs={
+            'id' : 1,
+            'attribute' : 'username'
+        }) 
+        response = self.client.put(url,
+            data=json.dumps(TEST_USERNAME),
+            content_type='application/json'
+        ) 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), True)
+        response = self.client.put(url,
+            data=json.dumps('nonexistentusername'),
+            content_type='application/json'
+        ) 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), False)
+    
+    def test_check_details_number(self):
+        self.buyer_user()
+        url = reverse('api:check details', kwargs={
+            'id' : 1,
+            'attribute' : 'number'
+        }) 
+        response = self.client.put(url,
+            data=json.dumps(TEST_PHONE_NUMBER),
+            content_type='application/json'
+        ) 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), True)
+        response = self.client.put(url,
+            data=json.dumps('0711111118'),
+            content_type='application/json'
+        ) 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), False)
+    
+    def test_check_details_password(self):
+        self.buyer_user()
+        url = reverse('api:check details', kwargs={
+            'id' : 1,
+            'attribute' : 'password'
+        }) 
+        response = self.client.put(url,
+            data=json.dumps(TEST_PASSWORD),
+            content_type='application/json'
+        ) 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), True)
+        response = self.client.put(url,
+            data=json.dumps('nfdsd'),
+            content_type='application/json'
+        ) 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), False)
+    
+    def test_resources(self):
+        self.buyer_user()
+        url = reverse('api:resources') 
+        response = self.client.get(url) 
+        self.assertEqual(response.status_code, 200)
+        # Checking there are two users, each with 24 items
+        self.assertEqual(len(json.loads(response.content)), 2)
+        self.assertEqual(len(json.loads(response.content)[0]), 37)
+
+    def test_resources(self):
+        self.buyer_user()
+        url = reverse('api:resources') 
+        response = self.client.get(url) 
+        self.assertEqual(response.status_code, 200)
+        # Checking there are two users, each with 24 items
+        self.assertEqual(len(json.loads(response.content)), 2)
+        self.assertEqual(len(json.loads(response.content)[0]), 37)
