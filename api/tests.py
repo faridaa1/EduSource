@@ -1,11 +1,11 @@
-from decimal import Decimal
 import json
 from bs4 import BeautifulSoup
 from django.test import Client, TestCase
 from django.utils import timezone
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import AnonymousUser
-from api.models import Address, Resource, Subject, User
+from api.models import Address, Resource, Review, Subject, User
 
 TEST_EMAIL = 'farida@gmail.com'
 TEST_FIRST_NAME = 'farida'
@@ -47,12 +47,12 @@ class UnitTesting(TestCase):
         resource1 = Resource.objects.create(
             name='Test Resource',
             description='A test description for the resource.',
-            height=Decimal('20.5'),
-            width=Decimal('15.2'),
-            weight=Decimal('1.2'),
-            price=Decimal('1.00'),
-            stock=Decimal('50'),
-            estimated_delivery_time=Decimal('5'),
+            height=20.5,
+            width=15.2,
+            weight=1.2,
+            price=1.00,
+            stock=50,
+            estimated_delivery_time=5,
             subject='Mathematics',
             author='John Doe',
             self_made=True,
@@ -70,7 +70,6 @@ class UnitTesting(TestCase):
             video='https://m.media-amazon.com/images/I/51+yjR0P2ML._SY445_SX342_.jpg', 
             upload_date=timezone.now(),
             last_edited=timezone.now(),
-            rating=Decimal('4.5'),
             user=user,  
             weight_unit='kg',
             price_currency='GBP',
@@ -85,12 +84,12 @@ class UnitTesting(TestCase):
         resource2 = Resource.objects.create(
             name='Test Resource Two',
             description='A test description for the resource.',
-            height=Decimal('20.5'),
-            width=Decimal('15.2'),
-            weight=Decimal('1.2'),
-            price=Decimal('1.00'),
-            stock=Decimal('50'),
-            estimated_delivery_time=Decimal('5'),
+            height=20.5,
+            width=15.2,
+            weight=1.2,
+            price=1.00,
+            stock=50,
+            estimated_delivery_time=5,
             subject='Mathematics',
             author='John Doe',
             self_made=True,
@@ -108,7 +107,6 @@ class UnitTesting(TestCase):
             video='https://m.media-amazon.com/images/I/51+yjR0P2ML._SY445_SX342_.jpg', 
             upload_date=timezone.now(),
             last_edited=timezone.now(),
-            rating=Decimal('4.5'),
             user=user,  
             weight_unit='kg',
             price_currency='GBP',
@@ -765,11 +763,170 @@ class UnitTesting(TestCase):
         self.assertEqual(len(json.loads(response.content)), 2)
         self.assertEqual(len(json.loads(response.content)[0]), 37)
 
-    def test_resources(self):
+    def test_handle_listing(self):
         self.buyer_user()
-        url = reverse('api:resources') 
+        url = reverse('api:new listing', kwargs={
+            'id' : 1,
+        }) 
+        response = self.client.post(url,
+            data={
+                'name': 'Test Resource 3',
+                'description': 'A test description for the resource.',
+                'height': 20.5,
+                'width': 15.2,
+                'weight': 1.2,
+                'price': 1.00,
+                'stock': 50,
+                'estimated_number': 5,
+                'subject': 'Mathematics',
+                'author': 'John Doe',
+                'self_made': True,
+                'is_draft': False,
+                'unique': True,
+                'allow_delivery': False,
+                'allow_collection': False,
+                'allow_return': False,
+                'page_start': 1,
+                'page_end': 100,
+                'height_unit': 'cm',
+                'width_unit': 'cm',
+                'image1': SimpleUploadedFile('test.jpg', b''), 
+                'image2': SimpleUploadedFile('test.jpg', b''), 
+                'video': SimpleUploadedFile('test.mp4', b''), 
+                'weight_unit': 'kg',
+                'price_currency': 'GBP',
+                'estimated_units': 'days',
+                'type': 'Textbook', 
+                'colour': 'Blue',
+                'source': 'AI',
+                'condition': 'New',
+                'media': 'Online',
+            },
+        ) 
+        self.assertEqual(response.status_code, 200)
+        id = json.loads(response.content)['id']
+        # Check if created ID exists in database
+        self.assertTrue(Resource.objects.filter(id=id).exists())
+
+        # Edit old listing
+        response = self.client.post(url,
+            data={
+                'id': json.loads(response.content)['id'],
+                'name': 'Test Resource 3 - Edited',
+                'description': 'An edited test description for the resource.',
+                'height': 20.51,
+                'width': 15.21,
+                'weight': 1.21,
+                'price': 1.001,
+                'stock': 501,
+                'estimated_number': 6,
+                'subject': 'Maths',
+                'author': 'John Doent',
+                'self_made': False,
+                'is_draft': True,
+                'unique': False,
+                'allow_delivery': True,
+                'allow_collection': True,
+                'allow_return': True,
+                'page_start': 1,
+                'page_end': 2,
+                'height_unit': 'm',
+                'width_unit': 'm',
+                'image1': SimpleUploadedFile('test0.jpg', b''), 
+                'image2': SimpleUploadedFile('test0.jpg', b''), 
+                'video': SimpleUploadedFile('test0.mp4', b''), 
+                'weight_unit': 'g',
+                'price_currency': 'EUR',
+                'estimated_units': 'months',
+                'type': 'Note', 
+                'colour': 'Red',
+                'source': 'Internet',
+                'condition': 'Used',
+                'media': 'Paper',
+            },
+        ) 
+        self.assertEqual(response.status_code, 200)
+        # Checking name has updated
+        self.assertTrue(Resource.objects.get(id=id).name == 'Test Resource 3 - Edited')
+
+        # Delete resource
+        response = self.client.delete(url,
+            data=json.dumps(id),
+            content_type='application/json'
+        ) 
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Resource.objects.filter(id=id).exists())
+
+    def test_reviews(self):
+        self.buyer_user()
+        print(User.objects.get(id=1).rating)
+        # Create review
+        url = reverse('api:review', kwargs={
+            'user' : 1,
+            'resource' : 1
+        }) 
+        response = self.client.post(url,
+            data={
+                'title': 'Great product',
+                'stars': 4,
+                'description': 'No issues, nice product.',
+                'image': SimpleUploadedFile('test.jpg', b''), 
+                'video': SimpleUploadedFile('test.mp4', b''), 
+            }
+        ) 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Review.objects.count(), 1)
+        self.assertEqual(Resource.objects.get(id=1).rating, 4)
+
+        # Edit review
+        url = reverse('api:edit review', kwargs={
+            'user' : 1,
+            'id' : Review.objects.first().id,
+            'resource' : 1
+        }) 
+        response = self.client.post(url,
+            data={
+                'old_resource': Review.objects.first().id,
+                'title': 'Great product - Edited',
+                'stars': 2,
+                'description': 'No issues yet, nice product.',
+                'image': SimpleUploadedFile('test0.jpg', b''), 
+                'video': SimpleUploadedFile('test0.mp4', b''), 
+            }
+        ) 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Review.objects.first().title, 'Great product - Edited')
+        self.assertEqual(Resource.objects.get(id=1).rating, 2)
+
+        # Delete review
+        url = reverse('api:review', kwargs={
+            'user' : 1,
+            'resource' : 1
+        }) 
+        response = self.client.delete(url) 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Review.objects.count(), 0)
+        self.assertEqual(Resource.objects.get(id=1).rating, 0)
+    
+    def test_sentiment_analysis(self):
+        Review.objects.create(
+            title='Great product',
+            rating=4,
+            review='No issues, nice product.',
+            resource=Resource.objects.get(id=1),
+            user=User.objects.get(id=1)
+        )
+        Review.objects.create(
+            title='Bad product',
+            rating=1,
+            review='So bad, never buying again',
+            resource=Resource.objects.get(id=1),
+            user=User.objects.get(id=1)
+        )
+
+        url = reverse('api:sentiment analysis', kwargs={
+            'resource' : 1
+        }) 
         response = self.client.get(url) 
         self.assertEqual(response.status_code, 200)
-        # Checking there are two users, each with 24 items
-        self.assertEqual(len(json.loads(response.content)), 2)
-        self.assertEqual(len(json.loads(response.content)[0]), 37)
+        print(Review.objects.all(),json.loads(response.content))
