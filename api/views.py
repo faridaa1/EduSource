@@ -549,6 +549,7 @@ def cart_to_wishlist(request: HttpRequest, user: int) -> JsonResponse:
         user.cart.save()
         cart_resource.delete()
         return JsonResponse({ 'wishlist': user.wishlist.as_dict(), 'cart': user.cart.as_dict() }) 
+    return JsonResponse({})
     
 
 def order(request: HttpRequest, user: int) -> JsonResponse:
@@ -601,6 +602,8 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
             resource.save()
         # clear cart 
         user.cart.cart_resource.all().delete()
+        user.cart.items = 0
+        user.cart.save()
         return JsonResponse({'user': user.as_dict(), 'resources': [resource.as_dict() for resource in Resource.objects.all()]})
     elif request.method == 'POST':
         data = json.loads(request.body)
@@ -692,6 +695,9 @@ def order(request: HttpRequest, user: int) -> JsonResponse:
             )
             orderResource.save()
             order.save()
+            # update cart total
+            user.cart.items -= cart_resource.number 
+            user.cart.save()
             # reduce stock
             resource.stock = resource.stock - cart_resource.number
             resource.save()
