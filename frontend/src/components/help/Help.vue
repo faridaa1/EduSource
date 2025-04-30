@@ -13,10 +13,11 @@
                     <i v-if="one" class="bi bi-arrow-up-circle-fill"></i>
                 </div>
                 <div v-if="one" class="list">
-                    <p>1. Search for the item</p>
-                    <p>2. Select the item</p>
-                    <p>3. Select 'Exchange'</p>
-                    <p>4. Select a resource you want to exchange</p>
+                    <p>1. Log in</p>
+                    <p>2. Search for the item</p>
+                    <p>3. Select the item</p>
+                    <p>4. Select 'Exchange'</p>
+                    <p>5. Select a resource you want to exchange</p>
                 </div>
             </div>
             <div class="item">
@@ -27,8 +28,8 @@
                 </div>
                 <div v-if="two" id="two">
                     <div class="list">
-                    <p>Method 1:</p>
-                    <p>1. Ensure you are in buyer mode (from settings)</p>
+                        <p>Method 1:</p>
+                        <p>1. Ensure you are logged in and in buyer mode (from settings)</p>
                         <p>2. Search for the item</p>
                         <p>3. Select the item</p>
                         <p>4. Select Buy Now</p>
@@ -36,7 +37,7 @@
                     </div>
                     <div class="list">
                         <p>Method 2:</p>
-                        <p>1. Ensure you are in buyer mode (from settings)</p>
+                        <p>1. Ensure you are logged in and in buyer mode (from settings)</p>
                         <p>2. Search for the item</p>
                         <p>3. Select the item</p>
                         <p>4. Add item to Cart</p>
@@ -53,7 +54,7 @@
                     <i v-if="three" class="bi bi-arrow-up-circle-fill"></i>
                 </div>
                 <div v-if="three" class="list">
-                    <p>1. Ensure you are in seller mode (from settings)</p>
+                    <p>1. Ensure you are logged in and in seller mode (from settings)</p>
                     <p>2. Select Account</p>
                     <p>3. Select Listings</p>
                     <p>4. Select the + within the listing container</p>
@@ -66,10 +67,11 @@
                     <i v-if="four" class="bi bi-arrow-up-circle-fill"></i>
                 </div>
                 <div v-if="four" class="list">
-                    <p>1. Select Account</p>
-                    <p>2. Select Orders</p>
-                    <p>3. Select Order</p>
-                    <p>4. View Order Status</p>
+                    <p>1. Log in</p>
+                    <p>2. Select Account</p>
+                    <p>3. Select Orders</p>
+                    <p>4. Select Order</p>
+                    <p>5. View Order Status</p>
                 </div>
             </div>
             <div class="item">
@@ -79,7 +81,7 @@
                     <i v-if="five" class="bi bi-arrow-up-circle-fill"></i>
                 </div>
                 <div v-if="five" class="list">
-                    <p>1. Ensure you are in buyer mode (from settings)</p>
+                    <p>1. Ensure you are logged in and in buyer mode (from settings)</p>
                     <p>2. Select Account</p>
                     <p>3. Select Orders</p>
                     <p>4. Select Order</p>

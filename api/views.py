@@ -1131,13 +1131,13 @@ def feedback(request: HttpRequest) -> JsonResponse:
 known_questions_and_answers = {
     'How do I place an order?' : '''There are two ways to do this:\n
     The first way is as follows:
-    \n1. Ensure you are in buyer mode (from settings)
+    \n1. Ensure you are logged in and in buyer mode (from settings)
     \n2. Search for the item
     \n3. Select the item
     \n4. Select Buy Now
     \n5. Select Place Order
     \nThe second way is as follows:
-    \n1. Ensure you are in buyer mode (from settings)
+    \n1. Ensure you are logged in and in buyer mode (from settings)
     \n2. Search for the item
     \n3. Select the item
     \n4. Add item to Cart
@@ -1145,25 +1145,28 @@ known_questions_and_answers = {
     \n6. Select Checkout
     \n7. Select Place Order
     \nI hope that helps.''',
-    'How do I exchange resources?' : '''1. Search for the Item
-    \n2. Select the item
-    \n3. Select Exchange
-    \n4. Select a resource you want to exchange
+    'How do I exchange resources?' : 
+    '''1. Log in 
+    \n2. Search for the Item
+    \n3. Select the item
+    \n4. Select Exchange
+    \n5. Select a resource you want to exchange
     \nI hope that helps.''',
     'How do I list items' : '''
-    1. Ensure you are in seller mode (from settings)
+    1. Ensure you are logged in and in seller mode (from settings)
     \n2. Select Account
     \n3. Select Listings
     \n4. Select the + within the listing container
     \nI hope that helps''',
     'How do I track an order?' : '''
-    1. Select Account
-    \n2. Select Orders
-    \n3. Select Order
-    \n4. View Order Status
+    1. Log in
+    \n2. Select Account
+    \n3. Select Orders
+    \n4. Select Order
+    \n5. View Order Status
     \nI hope that helps''',
     'How do I start a return?' : '''    
-    1. Ensure you are in buyer mode (from settings)
+    1. Ensure you are logged in and in buyer mode (from settings)
     \n2. Select Account
     \n3. Select Orders
     \n4. Select Order
@@ -1177,18 +1180,26 @@ known_questions_and_answers = {
     'Can you provide resource recommendations for': '',
     'What is the status of order': '',
     'Provide me with personalised recommendations': '',
-    'Where is my wishlist': '''1. Select Account
-    \n2. Select Wishlist''',
-    'How can I find my wishlist': '''1. Select Account
-    \n2. Select Wishlist''',
-    'How can I find my order details': "Click 'View Details' on the order",
+    'Where is my wishlist': 
+    '''1. Log in
+    \n2. Select Account
+    \n3. Select Wishlist''',
+    'How can I find my wishlist': 
+    '''1. Log in
+    \n2. Select Account
+    \n3. Select Wishlist''',
+    'How can I find my order details': "Log in and click 'View Details' on the order",
     'How do I compare resources': "Click 'Compare Resources' after searching for an item. You can compare a maximum of 2 resources at one time.",
-    'How do I delete my account': '''1. Select Account
-    \n2. Select Details
-    \n3. Click 'Delete Account' at the bottom of the page''',
-    'How can I view messages': '''1. Select Account
-    \n2. Select Messages
-    \n3. (Optional) Select a message'''
+    'How do I delete my account': 
+    '''1. Log in
+    \n2. Select Account
+    \n3. Select Details
+    \n4. Click 'Delete Account' at the bottom of the page''',
+    'How can I view messages': 
+    '''1. Log in
+    \n2. Select Account
+    \n3. Select Messages
+    \n4. (Optional) Select a message'''
 }
 
 def chatbot(request: HttpRequest, user: int) -> JsonResponse:
