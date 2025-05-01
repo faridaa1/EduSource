@@ -53,7 +53,7 @@ const router = createRouter({
     { path: '/seller/:name', name: 'seller profile', component: SellerProfile },
     { path: '/message/:user1/:user2', name: 'message', component: Message },
     { path: '/messages', name: 'messages', component: Messages },
-    { path: '/search/:name', name: 'search', component: SearchResults },
+    { path: '/search/:name(.*)', name: 'search', component: SearchResults },
     { path: '/exchanges', name: 'exchanges', component: Exchanges },
     { path: '/compare/:catchAll(.*)', name: 'compare', component: CompareResources },
     { path: '/exchange/:catchAll(.*)', name: 'exchange', component: Exchange },
