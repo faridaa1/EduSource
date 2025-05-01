@@ -62,7 +62,7 @@ class User(AbstractUser):
 
     def __str__(self) -> str:
         """Defining string representation of User model"""
-        return f"{self.first_name} {self.last_name}: {self.email}"
+        return f"({self.id}) {self.first_name} {self.last_name}: {self.email}"
     
     def as_dict(self) -> dict[str, any]:
         """Defining dictionary representation of User object"""
