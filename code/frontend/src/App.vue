@@ -266,11 +266,11 @@
         // Take user to search results page
         this.searching = false
         if (resource) {
-          window.location.href = `/search/${resource.name}`
+          window.location.href = `/search/${resource.name.replaceAll('/', '')}`
         } else {
           const search: HTMLInputElement = document.getElementById('main-header-search') as HTMLInputElement
           if (search) {
-            window.location.href = `/search/${search.value}`
+            window.location.href = `/search/${search.value.replaceAll('/', '')}`
           }
         }
       },
