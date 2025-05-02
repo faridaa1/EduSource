@@ -267,11 +267,13 @@
         this.searching = false
         if (resource) {
           window.location.href = `/search/${resource.name.replaceAll('/', '')}`
+          console.log(resource.name.replaceAll('/', ''))
         } else {
           const search: HTMLInputElement = document.getElementById('main-header-search') as HTMLInputElement
           if (search) {
             window.location.href = `/search/${search.value.replaceAll('/', '')}`
-          }
+          console.log(search.value.replaceAll('/', ''))
+        }
         }
       },
       async semantic_search(): Promise<void> {
