@@ -401,6 +401,7 @@
     place-items: center;
     padding-top: 0.8rem;
     background-color: #0DCAF0;
+    background-color: pink;
     padding-bottom: 0.8rem;
   }
 
