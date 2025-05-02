@@ -266,14 +266,12 @@
         // Take user to search results page
         this.searching = false
         if (resource) {
-          console.log(resource.name.replaceAll('/', ''))
-          // window.location.href = `/search/${resource.name.replaceAll('/', '')}`
+          window.location.href = `/search/${resource.name.replaceAll('/', ' ')}`
         } else {
           const search: HTMLInputElement = document.getElementById('main-header-search') as HTMLInputElement
           if (search) {
-          console.log(search.value.replaceAll('/', ''))
-          // window.location.href = `/search/${search.value.replaceAll('/', '')}`
-        }
+            window.location.href = `/search/${search.value.replaceAll('/', ' ')}`
+          }
         }
       },
       async semantic_search(): Promise<void> {
