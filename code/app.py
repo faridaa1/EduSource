@@ -1,0 +1,1 @@
+from project.asgi import application
