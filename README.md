@@ -14,7 +14,8 @@ The steps below outline how to run the code, where the use of a virtual environm
 5. Run `pip install -r requirements.txt `
 6. Run  `python manage.py update_rates`
 
-If an error occurs related to torch installation, run Windows Powershell as admin and run `Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\FileSystem\' -Name LongPathsEnabled -Value 1
+If an error occurs related to torch installation, run Windows Powershell as admin and run `Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\FileSystem\' -Name LongPathsEnabled -Value 1`
+
 7. Run `python manage.py runserver`
 8. Within the code directory, enter the frontend directory: `cd frontend`
 9. Run `npm install`
