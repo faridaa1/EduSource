@@ -1,3 +1,4 @@
+# EduSource: A school resource marketplace
 This supporting materials repository contains three folders:
 
 * code - implementation code
