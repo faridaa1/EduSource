@@ -11,8 +11,7 @@ The steps below outline how to run the code, where the use of a virtual environm
 1. Open the terminal
 2. Ensure ports 8000 (backend) and 5173 (frontend) are free
 3. Clone this GitHub repository using `git clone https://github.com/faridaa1/EduSource.git` or select Code -> Download ZIP and unzip the file
-4. Ensure ports 8000 (backend) and 5173 (frontend) are free
-5. Enter the code directory: `cd code`
+4. Enter the code directory: `cd code`
 6. Run `pip install -r requirements.txt `
 7. Run  `python manage.py update_rates`
 
