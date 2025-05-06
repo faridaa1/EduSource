@@ -6,6 +6,7 @@ This supporting materials repository contains three folders:
 
 * deployment test data - test data that was used to deploy EduSource using OpenShift, and can replicate test conditions
 
+There is no executable file because EduSource is a web app. However, the frontend and backend can be configured below, and EduSource can run on a browser.
 
 The steps below outline how to run the code, where the use of a virtual environment is recommended:
 1. Open the terminal
