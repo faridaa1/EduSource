@@ -1,2 +1,4 @@
-# EduSource
-EduSource - a school resource marketplace developed as part of my final year project.
+This supporting materials repository contains three folders:
+code - implementation code
+data gathering questionnaire - ethics approval document, consent form, participant information sheet
+deployment test data - test data that was used to deploy EduSource using OpenShift, and can replicate test conditions
